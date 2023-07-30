@@ -27,6 +27,8 @@ exports.addAdmin = async(req, res) => {
                 userName: req.body.emailId,
                 emailId: req.body.emailId,
                 password: encryptedPassword,
+                phoneNumber: req.body.phoneNumber,
+                joinedOn: new Date(0),
                 adminRole: "user"
             })
             // Create token
@@ -89,7 +91,19 @@ exports.logout = (req, res) => {
 exports.getLoginInfo = (req, res) => {
     res.send(req.user);
 };
-
+exports.getAllAdmins = async(req, res) => {
+    try {
+        let members = await Admin.find();
+        // return all members
+        res.status(200).json(members);
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+    
 // Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {
     const title = req.query.title;

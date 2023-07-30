@@ -93,6 +93,19 @@ exports.getLoginInfo = (req, res) => {
         res.send(null)
 };
 
+exports.getAllUsers = async (req, res) => {
+    try {
+        let users = await User.find();
+        // return all members
+        res.status(200).json(users);
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}; 
+
 // Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {
     const title = req.query.title;

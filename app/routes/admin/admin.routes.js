@@ -9,6 +9,7 @@ module.exports = app => {
     router.post("/add", auth, admin.addAdmin);
     router.post("/logout", auth, admin.logout);
     router.get("/getLoginInfo", auth, admin.getLoginInfo);
+    router.get("/getAllAdmins",auth,admin.getAllAdmins);
 
     router.post("/login", admin.authenticateAdmin);
 

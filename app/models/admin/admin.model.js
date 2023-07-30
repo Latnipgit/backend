@@ -4,6 +4,8 @@ module.exports = mongoose => {
         userName: { type: String, unique: true },
         name: String,
         emailId: { type: String, unique: true },
+        phoneNumber: String,
+        joinedOn: Date,
         password: String,
         adminRole: String,
         token: { type: String }

@@ -3,8 +3,12 @@ module.exports = mongoose => {
         user: String,
         userName: String,
         name: String,
-        mobile: String,
-        password: String
+        companyName: String,
+        emailId: { type: String, unique: true },
+        phoneNumber: String,
+        joinedOn: Date,
+        password: String,
+        status: Boolean
     }, { timestamps: true });
 
     schema.method("toJSON", function() {
