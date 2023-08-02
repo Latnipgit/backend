@@ -7,7 +7,7 @@ require("dotenv").config();
 const app = express();
 
 var corsOptions = {
-    origin: "https://latnipgit.github.io"
+    origin: "http://localhost:3000"
 };
 
 app.use(cors(corsOptions));
@@ -49,7 +49,7 @@ app.get("/", (req, res) => {
 require("./app/routes/turorial.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/debtors.routes")(app);
-require("./app/routes/companies.routes")(app);
+require("./app/routes/user/companies.routes")(app);
 require("./app/routes/sendBillTransactions.routes")(app);
 require("./app/routes/creditors.routes")(app);
 require("./app/routes/dashboard.routes")(app);
