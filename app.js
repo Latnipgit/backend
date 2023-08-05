@@ -27,7 +27,7 @@ app.use(sessions({
     resave: false
 }));
 
-const db = require("./app/models");
+const db = require("./app/models/user");
 db.mongoose
     .connect(db.url, {
         useNewUrlParser: true,
@@ -46,13 +46,13 @@ app.get("/", (req, res) => {
     res.json({ message: "Welcome to bezkoder application." });
 });
 
-require("./app/routes/turorial.routes")(app);
-require("./app/routes/user.routes")(app);
-require("./app/routes/debtors.routes")(app);
-require("./app/routes/companies.routes")(app);
-require("./app/routes/sendBillTransactions.routes")(app);
-require("./app/routes/creditors.routes")(app);
-require("./app/routes/dashboard.routes")(app);
+require("./app/routes/user/turorial.routes")(app);
+require("./app/routes/user/user.routes")(app);
+require("./app/routes/user/debtors.routes")(app);
+require("./app/routes/user/companies.routes")(app);
+require("./app/routes/user/sendBillTransactions.routes")(app);
+require("./app/routes/user/creditors.routes")(app);
+require("./app/routes/user/dashboard.routes")(app);
 require("./app/routes/admin/admin.routes")(app);
 
 // set port, listen for requests
