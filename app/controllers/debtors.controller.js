@@ -21,11 +21,12 @@ exports.add = (req, res) => {
     debtor
         .save(debtor)
         .then(data => {
-            res.send(data);
+            res.send({message: data, success: true});
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while creating the Tutorial."
+                message: err.message || "Some error occurred while creating the Tutorial.", 
+                success: false
             });
         });
 };
@@ -38,11 +39,12 @@ exports.getDebtors = (req, res) => {
 
     Debtors.find(condition)
         .then(data => {
-            res.send(data);
+            res.send({message: data, success: true});
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
+                message: err.message || "Some error occurred while retrieving tutorials.",
+                success:false
             });
         });
 };
@@ -55,11 +57,12 @@ exports.getCreditors = (req, res) => {
 
     Debtors.find(condition)
         .then(data => {
-            res.send(data);
+            res.send({message: data, success: true});
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
+                message: err.message || "Some error occurred while retrieving tutorials.",
+                success: false
             });
         });
 };

@@ -30,16 +30,25 @@ exports.signup = (req, res) => {
                 companyPan: req.body.companyPan,
                 user: data
             });
+            const token = jwt.sign({ user_id: user._id, emailId: req.body.email },
+                process.env.TOKEN_KEY, {
+                    expiresIn: "2h",
+                }
+            );
+            // save user token
+            user.token = token;
+            console.log(token);
 
             // Save Tutorial in the database
             company
                 .save(company)
                 .then(data => {
-                    res.send(data);
+                    res.send({message: data, success: true});
                 })
                 .catch(err => {
                     res.status(500).send({
-                        message: err.message || "Some error occurred while creating the Company."
+                        message: err.message || "Some error occurred while creating the Company.", 
+                        success: false
                     });
                 });
 
@@ -58,7 +67,7 @@ exports.authenticateUser = (req, res) => {
     const id = req.body.userName;
     User.findOne({ userName: req.body.userName }).then(data => {
         if (!data)
-            res.status(404).send({ message: "Not found User with id " + id });
+            res.status(404).send({ message: "Not found User with id " + id, success: false });
         else {
             if (data.password == req.body.password) {
                 //Setting logged in company in session
@@ -66,7 +75,7 @@ exports.authenticateUser = (req, res) => {
                     req.session.companyDetails = company;
                     session = req.session;
                     session.loginInfo = data;
-                    res.send(req.session)
+                    res.send({message: req.session, success: true})
                 });
             } else {
                 res.send(null)
@@ -76,7 +85,7 @@ exports.authenticateUser = (req, res) => {
         console.log(err)
         res
             .status(500)
-            .send({ message: "Error retrieving User with id=" + id });
+            .send({ message: "Error retrieving User with id=" + id, success: false });
     });
 
 };
@@ -88,7 +97,7 @@ exports.logout = (req, res) => {
 exports.getLoginInfo = (req, res) => {
     session = req.session;
     if (session && session.loginInfo) {
-        res.send(session);
+        res.send({message: session, success: true});
     } else
         res.send(null)
 };

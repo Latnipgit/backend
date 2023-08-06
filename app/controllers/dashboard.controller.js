@@ -35,12 +35,13 @@ exports.getData = (req, res) => {
                         }
                     });
 
-                    res.send(result)
+                    res.send({message: result, success: true})
                 });
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
+                message: err.message || "Some error occurred while retrieving tutorials.",
+                success: false
             });
         });
 };
@@ -52,11 +53,12 @@ exports.findAll = (req, res) => {
 
     Tutorial.find(condition)
         .then(data => {
-            res.send(data);
+            res.send({message: data, success: true});
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
+                message: err.message || "Some error occurred while retrieving tutorials.",
+                success: false
             });
         });
 };

@@ -30,17 +30,19 @@ exports.create = (req, res) => {
             bill
                 .save(bill)
                 .then(data => {
-                    res.send(data);
+                    res.send({message: data, success: true});
                 })
                 .catch(err => {
                     res.status(500).send({
-                        message: err.message || "Some error occurred while creating the Tutorial."
+                        message: err.message || "Some error occurred while creating the Tutorial.",
+                        success: false
                     });
                 });
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
+                message: err.message || "Some error occurred while retrieving tutorials.",
+                success: false
             });
         });
 

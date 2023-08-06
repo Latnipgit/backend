@@ -5,7 +5,7 @@ const Companies = db.companies;
 exports.create = (req, res) => {
     // Validate request
     if (!req.body.title) {
-        res.status(400).send({ message: "Content can not be empty!" });
+        res.status(400).send({ message: "Content can not be empty!", success: false });
         return;
     }
 
@@ -20,11 +20,12 @@ exports.create = (req, res) => {
     tutorial
         .save(tutorial)
         .then(data => {
-            res.send(data);
+            res.send({message: data, success:true});
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while creating the Tutorial."
+                message: err.message || "Some error occurred while creating the Tutorial.",
+                success: false
             });
         });
 };
@@ -36,11 +37,12 @@ exports.findAll = (req, res) => {
 
     Companies.find(condition)
         .then(data => {
-            res.send(data);
+            res.send({message: data, success: true});
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
+                message: err.message || "Some error occurred while retrieving tutorials.",
+                success: false
             });
         });
 };
@@ -48,17 +50,17 @@ exports.findAll = (req, res) => {
 // Find a single Company with an id
 exports.findOne = (req, res) => {
     const id = req.params.id;
-    condition = { $or: [{ companyPan: req.body.companyPan }, { gstin: req.body.gstin }] }
+    condition = { $or: [{ companyPan: req.body.companyPan }, { gstin: req.body.gstin }, {aadharCardNo: req.body.aadharCardNo}] }
     Companies.find(condition)
         .then(data => {
             if (!data)
-                res.status(404).send({ message: "Not found company " });
+                res.status(404).send({ message: "Not found company ", success: false });
             else res.send(data);
         })
         .catch(err => {
             res
                 .status(500)
-                .send({ message: "Error retrieving company" });
+                .send({ message: "Error retrieving company", success: false });
         });
 };
 
@@ -66,7 +68,8 @@ exports.findOne = (req, res) => {
 exports.update = (req, res) => {
     if (!req.body) {
         return res.status(400).send({
-            message: "Data to update can not be empty!"
+            message: "Data to update can not be empty!",
+            success: false
         });
     }
 

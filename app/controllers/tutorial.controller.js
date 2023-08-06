@@ -20,12 +20,13 @@ exports.create = (req, res) => {
   tutorial
     .save(tutorial)
     .then(data => {
-      res.send(data);
+      res.send({message: data, success: true});
     })
     .catch(err => {
       res.status(500).send({
         message:
-          err.message || "Some error occurred while creating the Tutorial."
+          err.message || "Some error occurred while creating the Tutorial.",
+          success: false
       });
     });
 };

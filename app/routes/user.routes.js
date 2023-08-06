@@ -6,7 +6,7 @@ module.exports = app => {
     const auth = require("../middleware/auth.js");
 
     // Create a new Tutorial
-    router.post("/signup", auth, user.signup);
+    router.post("/signup", user.signup);
     router.post("/login", user.authenticateUser);
     router.post("/logout", auth, user.logout);
     router.get("/getLoginInfo",auth, user.getLoginInfo);

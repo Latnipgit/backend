@@ -4,11 +4,13 @@ module.exports = mongoose => {
         userName: String,
         name: String,
         companyName: String,
+        aadharCardNo: String,
         emailId: { type: String, unique: true },
         phoneNumber: String,
         joinedOn: Date,
         password: String,
-        status: Boolean
+        status: Boolean,
+        token: { type: String }
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

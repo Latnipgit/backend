@@ -115,7 +115,7 @@ exports.findAll = (req, res) => {
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
+                message: err.message || "Some error occurred while retrieving tutorials.", success: false
             });
         });
 };
@@ -126,13 +126,13 @@ exports.findOne = (req, res) => {
     Tutorial.findById(id)
         .then(data => {
             if (!data)
-                res.status(404).send({ message: "Not found Tutorial with id " + id });
+                res.status(404).send({ message: "Not found Tutorial with id " + id, success: false });
             else res.send(data);
         })
         .catch(err => {
             res
                 .status(500)
-                .send({ message: "Error retrieving Tutorial with id=" + id });
+                .send({ message: "Error retrieving Tutorial with id=" + id, success: false });
         });
 };
 
@@ -140,7 +140,8 @@ exports.findOne = (req, res) => {
 exports.update = (req, res) => {
     if (!req.body) {
         return res.status(400).send({
-            message: "Data to update can not be empty!"
+            message: "Data to update can not be empty!",
+            success: false
         });
     }
 
@@ -150,7 +151,8 @@ exports.update = (req, res) => {
         .then(data => {
             if (!data) {
                 res.status(404).send({
-                    message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`
+                    message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`,
+                    success: false
                 });
             } else res.send({ message: "Tutorial was updated successfully." });
         })
@@ -169,17 +171,20 @@ exports.delete = (req, res) => {
         .then(data => {
             if (!data) {
                 res.status(404).send({
-                    message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`
+                    message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
+                    success: false
                 });
             } else {
                 res.send({
-                    message: "Tutorial was deleted successfully!"
+                    message: "Tutorial was deleted successfully!",
+                    success: false
                 });
             }
         })
         .catch(err => {
             res.status(500).send({
-                message: "Could not delete Tutorial with id=" + id
+                message: "Could not delete Tutorial with id=" + id,
+                success: false
             });
         });
 };
