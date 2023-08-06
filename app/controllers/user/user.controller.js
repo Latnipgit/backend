@@ -12,9 +12,11 @@ exports.signup = (req, res) => {
     // Create a Tutorial
     const user = new User({
         name: req.body.name,
-        userName: req.body.companyPan,
+        userName: req.body.emailId,
+        companyPan: req.body.companyPan,
         mobile: req.body.mobile,
-        password: req.body.password
+        password: req.body.password,
+        emailId: req.body.emailId
     });
     var userId = null;
     // Save Tutorial in the database
@@ -102,7 +104,7 @@ exports.getLoginInfo = (req, res) => {
         res.send(null)
 };
 
-exports.getAllUsers = async (req, res) => {
+exports.getAllUsers = async(req, res) => {
     try {
         let users = await User.find();
         // return all members
@@ -113,7 +115,7 @@ exports.getAllUsers = async (req, res) => {
             .status(500)
             .send({ message: "Something went wrong", success: false });
     }
-}; 
+};
 
 // Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {

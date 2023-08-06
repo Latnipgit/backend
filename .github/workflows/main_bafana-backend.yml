@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'bafana-backend'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6FEEC1B111F24BCF8B1DE1F2FFF24F65 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C06E49DB7F45442AB5D32DD61809F9DA }}
           package: .

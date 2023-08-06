@@ -15,7 +15,7 @@ exports.addAdmin = async(req, res) => {
     try {
         const oldUser = await Admin.findOne({ emailId: req.body.emailId });
         if (oldUser) {
-            return res.status(409).send({ message: "User Already Exist. Please Login", success: false });
+            return res.status(409).send({ message: "User Already Exist.", success: false });
         }
         console.log(req.body.email, oldUser)
 
