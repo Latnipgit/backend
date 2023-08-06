@@ -1,4 +1,4 @@
-const db = require("../../models");
+const db = require("../../models/admin/admin.model");
 const Admin = db.admin;
 const Companies = db.companies;
 const jwt = require('jsonwebtoken');

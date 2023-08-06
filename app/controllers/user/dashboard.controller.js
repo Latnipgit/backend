@@ -1,4 +1,4 @@
-const db = require("../models");
+const db = require("../../models/user/sendBillTransactions.model");
 const SendBillTransactions = db.sendBillTransactions;
 const Debtors = db.debtors;
 
@@ -35,13 +35,14 @@ exports.getData = (req, res) => {
                         }
                     });
 
-                    res.send({message: result, success: true})
+                    res.send({message: 'Get Successful', success: true, response: result})
                 });
         })
         .catch(err => {
             res.status(500).send({
                 message: err.message || "Some error occurred while retrieving tutorials.",
-                success: false
+                success: false,
+                response: null
             });
         });
 };

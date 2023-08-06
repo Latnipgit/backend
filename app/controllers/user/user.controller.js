@@ -1,4 +1,4 @@
-const db = require("../models");
+const db = require("../../models/user/user.model");
 const User = db.user;
 const Companies = db.companies;
 
@@ -45,19 +45,22 @@ exports.signup = (req, res) => {
             company
                 .save(company)
                 .then(data => {
-                    res.send({message: data, success: true});
+                    res.send({message: 'User Created', success: true, response:data});
                 })
                 .catch(err => {
                     res.status(500).send({
                         message: err.message || "Some error occurred while creating the Company.", 
-                        success: false
+                        success: false,
+                        response: null
                     });
                 });
 
         })
         .catch(err => {
             res.status(500).send({
-                message: err.message || "Some error occurred while creating the User."
+                message: err.message || "Some error occurred while creating the User.",
+                success: false,
+                response: null
             });
         });
 
@@ -77,7 +80,7 @@ exports.authenticateUser = (req, res) => {
                     req.session.companyDetails = company;
                     session = req.session;
                     session.loginInfo = data;
-                    res.send({message: req.session, success: true})
+                    res.send({message: 'Login Successful', success: true, response: req.session})
                 });
             } else {
                 res.send(null)
@@ -87,7 +90,7 @@ exports.authenticateUser = (req, res) => {
         console.log(err)
         res
             .status(500)
-            .send({ message: "Error retrieving User with id=" + id, success: false });
+            .send({ message: "Error retrieving User with id=" + id, success: false, response: null});
     });
 
 };
@@ -99,7 +102,7 @@ exports.logout = (req, res) => {
 exports.getLoginInfo = (req, res) => {
     session = req.session;
     if (session && session.loginInfo) {
-        res.send({message: session, success: true});
+        res.send({message: 'Login Info', success: true, response: session});
     } else
         res.send(null)
 };
@@ -113,7 +116,7 @@ exports.getAllUsers = async(req, res) => {
         console.log(err)
         res
             .status(500)
-            .send({ message: "Something went wrong", success: false });
+            .send({ message: "Something went wrong", success: false, response: null });
     }
 };
 

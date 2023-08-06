@@ -1,5 +1,5 @@
 module.exports = app => {
-    const dashboard = require("../controllers/dashboard.controller.js");
+    const dashboard = require("../../controllers/user/dashboard.controller.js");
 
     var router = require("express").Router();
 

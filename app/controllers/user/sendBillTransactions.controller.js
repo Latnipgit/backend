@@ -1,4 +1,4 @@
-const db = require("../models");
+const db = require("../../models/user/sendBillTransactions.model");
 const SendBillTransactions = db.sendBillTransactions;
 const Debtors = db.debtors;
 

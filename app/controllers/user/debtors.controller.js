@@ -1,4 +1,4 @@
-const db = require("../models");
+const db = require("../../models/user/debtors.model");
 const Debtors = db.debtors;
 const Companies = db.companies;
 
@@ -21,12 +21,13 @@ exports.add = (req, res) => {
     debtor
         .save(debtor)
         .then(data => {
-            res.send({message: data, success: true});
+            res.send({message: 'Debtor added', success: true, response: data});
         })
         .catch(err => {
             res.status(500).send({
                 message: err.message || "Some error occurred while creating the Tutorial.", 
-                success: false
+                success: false,
+                response: null
             });
         });
 };
@@ -39,12 +40,13 @@ exports.getDebtors = (req, res) => {
 
     Debtors.find(condition)
         .then(data => {
-            res.send({message: data, success: true});
+            res.send({message: 'found', success: true, response: data});
         })
         .catch(err => {
             res.status(500).send({
                 message: err.message || "Some error occurred while retrieving tutorials.",
-                success:false
+                success:false,
+                response: null
             });
         });
 };
@@ -57,12 +59,13 @@ exports.getCreditors = (req, res) => {
 
     Debtors.find(condition)
         .then(data => {
-            res.send({message: data, success: true});
+            res.send({message: 'found creditors', success: true, response: data});
         })
         .catch(err => {
             res.status(500).send({
                 message: err.message || "Some error occurred while retrieving tutorials.",
-                success: false
+                success: false,
+                response: null
             });
         });
 };

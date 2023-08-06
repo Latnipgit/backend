@@ -1,9 +1,9 @@
 module.exports = app => {
-    const user = require("../controllers/user.controller.js");
+    const user = require("../../controllers/user/user.controller.js");
 
     var router = require("express").Router();
     const jwt = require('jsonwebtoken');
-    const auth = require("../middleware/auth.js");
+    const auth = require("../../middleware/auth.js");
 
     // Create a new Tutorial
     router.post("/signup", user.signup);

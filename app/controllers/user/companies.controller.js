@@ -1,11 +1,11 @@
-const db = require("../../models");
+const db = require("../../models/user/companies.model");
 const Companies = db.companies;
 
 // Create and Save a new Tutorial
 exports.create = (req, res) => {
     // Validate request
     if (!req.body.title) {
-        res.status(400).send({ message: "Content can not be empty!", success: false });
+        res.status(400).send({ message: "Content can not be empty!", success: false, response:null });
         return;
     }
 
@@ -20,12 +20,13 @@ exports.create = (req, res) => {
     tutorial
         .save(tutorial)
         .then(data => {
-            res.send({message: data, success:true});
+            res.send({message: 'Created', success:true, response: data});
         })
         .catch(err => {
             res.status(500).send({
                 message: err.message || "Some error occurred while creating the Tutorial.",
-                success: false
+                success: false,
+                response: null
             });
         });
 };
