@@ -10,6 +10,6 @@ module.exports = mongoose => {
         return object;
     });
 
-    const User = mongoose.model("admin", schema);
+    const User = mongoose.model("manualTransactions", schema);
     return User;
 };

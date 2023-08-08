@@ -1,4 +1,4 @@
-const db = require("../../models/user/companies.model");
+const db = require("../../models/user");
 const Companies = db.companies;
 
 // Create and Save a new Tutorial

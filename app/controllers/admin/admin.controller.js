@@ -1,6 +1,5 @@
-const db = require("../../models/admin/admin.model");
+const db = require("../../models/admin/");
 const Admin = db.admin;
-const Companies = db.companies;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
@@ -32,7 +31,7 @@ exports.addAdmin = async(req, res) => {
                 adminRole: "user"
             })
             // Create token
-        const token = jwt.sign({ user_id: admin._id, emailId: req.body.email },
+        const token = jwt.sign({ user_id: admin._id, emailId: req.body.emailId },
             process.env.TOKEN_KEY, {
                 expiresIn: "2h",
             }

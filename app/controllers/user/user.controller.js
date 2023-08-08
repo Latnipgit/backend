@@ -1,97 +1,88 @@
-const db = require("../../models/user/user.model");
+const db = require("../../models/user");
 const User = db.user;
 const Companies = db.companies;
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
-exports.signup = (req, res) => {
+exports.signup = async(req, res) => {
     // Validate request
     // if (!req.body.title) {
     //   res.status(400).send({ message: "Content can not be empty!" });
     //   return;
     // }
+    try {
+        const oldUser = await User.findOne({ emailId: req.body.emailId });
+        if (oldUser) {
+            return res.status(409).send({ message: "User Already Exist.", success: false });
+        }
+        console.log(req.body.email, oldUser)
+        let encryptedPassword = await bcrypt.hash(req.body.password, 10);
 
-    // Create a Tutorial
-    const user = new User({
-        name: req.body.name,
-        userName: req.body.emailId,
-        companyPan: req.body.companyPan,
-        mobile: req.body.mobile,
-        password: req.body.password,
-        emailId: req.body.emailId
-    });
-    var userId = null;
-    // Save Tutorial in the database
-    user
-        .save(user)
-        .then(data => {
-            userId = data.id
-
-            // Create a Tutorial
-            const company = new Companies({
-                companyName: req.body.companyName,
-                gstin: req.body.gstin,
-                companyPan: req.body.companyPan,
-                user: data
-            });
-            const token = jwt.sign({ user_id: user._id, emailId: req.body.email },
-                process.env.TOKEN_KEY, {
-                    expiresIn: "2h",
-                }
-            );
-            // save user token
-            user.token = token;
-            console.log(token);
-
-            // Save Tutorial in the database
-            company
-                .save(company)
-                .then(data => {
-                    res.send({message: 'User Created', success: true, response:data});
-                })
-                .catch(err => {
-                    res.status(500).send({
-                        message: err.message || "Some error occurred while creating the Company.", 
-                        success: false,
-                        response: null
-                    });
-                });
-
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating the User.",
-                success: false,
-                response: null
-            });
+        // Create a Tutorial
+        const user = await User.create({
+            name: req.body.name,
+            userName: req.body.emailId,
+            companyPan: req.body.companyPan,
+            mobile: req.body.mobile,
+            password: encryptedPassword,
+            emailId: req.body.emailId
         });
+        const company = await Companies.create({
+            companyName: req.body.companyName,
+            gstin: req.body.gstin,
+            companyPan: req.body.companyPan,
+            user: user
+        }); 
+        
+        const token = jwt.sign({ user_id: user._id, emailId: req.body.emailId},
+            process.env.TOKEN_KEY, {
+            expiresIn: "2h",
+        });
+                
+        user.token = token;
+       // Save Tutorial in the database
+                
+        res.status(201).json(user);
+
+    }catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
 
 };
 
 
 // Find a single Tutorial with an id
-exports.authenticateUser = (req, res) => {
-    const id = req.body.userName;
-    User.findOne({ userName: req.body.userName }).then(data => {
-        if (!data)
-            res.status(404).send({ message: "Not found User with id " + id, success: false });
-        else {
-            if (data.password == req.body.password) {
-                //Setting logged in company in session
-                Companies.findOne({ companyPan: req.body.userName }).then(company => {
-                    req.session.companyDetails = company;
-                    session = req.session;
-                    session.loginInfo = data;
-                    res.send({message: 'Login Successful', success: true, response: req.session})
-                });
-            } else {
-                res.send(null)
-            }
-        };
-    }).catch(err => {
+exports.authenticateUser = async(req, res) => {
+    try {
+        const id = req.body.userName;
+        // Validate if user exist in our database
+        const user = await User.findOne({ userName: req.body.userName });
+        if (!user) {
+            res.status(200).send({ message: "user not found, Please signup", success: false });
+        } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
+            // Create token
+            const token = jwt.sign({ user_id: user._id, emailId: req.body.emailId},
+                process.env.TOKEN_KEY, {
+                expiresIn: "2h",
+            });
+            // save user token
+            user.token = token;
+
+            res.status(200).json(user);
+        } else {
+            res.status(400).send({ message: "Invalid Credentials", success: false });
+        }
+
+    } catch (err) {
         console.log(err)
         res
             .status(500)
-            .send({ message: "Error retrieving User with id=" + id, success: false, response: null});
-    });
+            .send({ message: "Something went wrong", success: false });
+    };
+    
 
 };
 

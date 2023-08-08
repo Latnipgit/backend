@@ -1,4 +1,4 @@
-const db = require("../../models/user/debtors.model");
+const db = require("../../models/user");
 const Debtors = db.debtors;
 const Companies = db.companies;
 

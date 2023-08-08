@@ -12,6 +12,6 @@ module.exports = mongoose => {
         return object;
     });
 
-    const User = mongoose.model("admin", schema);
+    const User = mongoose.model("email", schema);
     return User;
 };
