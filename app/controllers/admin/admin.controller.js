@@ -2,6 +2,7 @@ const db = require("../../models/admin/");
 const Admin = db.admin;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
 
 exports.addAdmin = async(req, res) => {
     // Validate request
@@ -31,13 +32,7 @@ exports.addAdmin = async(req, res) => {
                 adminRole: "user"
             })
             // Create token
-        const token = jwt.sign({ user_id: admin._id, emailId: req.body.emailId },
-            process.env.TOKEN_KEY, {
-                expiresIn: "2h",
-            }
-        );
-        // save user token
-        admin.token = token;
+        admin.token = jwtUtil.generateAdminToken(admin);
 
         // return new user
         res.status(201).json(admin);
@@ -59,15 +54,9 @@ exports.authenticateAdmin = async(req, res) => {
         if (!user) {
             res.status(200).send({ message: "user not found, Please signup", success: false });
         } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
-            // Create token
-            const token = jwt.sign({ user_id: user._id, emailId: req.body.emailId, role: user.adminRole, "name": user.name },
-                process.env.TOKEN_KEY, {
-                    expiresIn: "2h",
-                }
-            );
 
             // save user token
-            user.token = token;
+            user.token = jwtUtil.generateAdminToken(admin);
 
             res.status(200).json(user);
         } else {

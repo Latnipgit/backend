@@ -1,34 +1,30 @@
 const db = require("../../models/user");
 const Companies = db.companies;
+const User = db.user;
 
 // Create and Save a new Tutorial
-exports.create = (req, res) => {
+exports.addCompany = async(req, res) => {
     // Validate request
-    if (!req.body.title) {
-        res.status(400).send({ message: "Content can not be empty!", success: false, response:null });
-        return;
-    }
-
     // Create a Tutorial
-    const tutorial = new Tutorial({
-        title: req.body.title,
-        description: req.body.description,
-        published: req.body.published ? req.body.published : false
-    });
+    try {
 
-    // Save Tutorial in the database
-    tutorial
-        .save(tutorial)
-        .then(data => {
-            res.send({message: 'Created', success:true, response: data});
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating the Tutorial.",
-                success: false,
-                response: null
-            });
-        });
+        const loggedInUser = await User.findOne({ emailId: req.user.userId });
+
+        const company = await Companies.create({
+            companyName: req.body.companyName,
+            gstin: req.body.gstin,
+            companyPan: req.body.companyPan,
+            user: loggedInUser
+        }); 
+
+        // return new user
+        res.status(200).json(company);
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
 };
 
 // Retrieve all Tutorials from the database.

@@ -3,6 +3,7 @@ const User = db.user;
 const Companies = db.companies;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
 
 exports.signup = async(req, res) => {
     // Validate request
@@ -34,12 +35,7 @@ exports.signup = async(req, res) => {
             user: user
         }); 
         
-        const token = jwt.sign({ user_id: user._id, emailId: req.body.emailId},
-            process.env.TOKEN_KEY, {
-            expiresIn: "2h",
-        });
-                
-        user.token = token;
+        user.token = jwtUtil.generateUserToken(user);
        // Save Tutorial in the database
                 
         res.status(201).json(user);
@@ -64,13 +60,7 @@ exports.authenticateUser = async(req, res) => {
             res.status(200).send({ message: "user not found, Please signup", success: false });
         } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
             // Create token
-            const token = jwt.sign({ user_id: user._id, emailId: req.body.emailId},
-                process.env.TOKEN_KEY, {
-                expiresIn: "2h",
-            });
-            // save user token
-            user.token = token;
-
+            user.token = jwtUtil.generateUserToken(user);
             res.status(200).json(user);
         } else {
             res.status(400).send({ message: "Invalid Credentials", success: false });
@@ -90,10 +80,11 @@ exports.authenticateUser = async(req, res) => {
 exports.logout = (req, res) => {
     req.session.destroy();
 };
-exports.getLoginInfo = (req, res) => {
-    session = req.session;
-    if (session && session.loginInfo) {
-        res.send({message: 'Login Info', success: true, response: session});
+exports.getLoginInfo = async(req, res) => {
+    const loggedInUser = await User.findOne({ emailId: req.user.userId });
+
+    if (loggedInUser) {
+        res.send({message: 'Login Info', success: true, response: loggedInUser});
     } else
         res.send(null)
 };

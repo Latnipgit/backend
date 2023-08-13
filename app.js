@@ -2,7 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const sessions = require('express-session');
-require("dotenv").config();
+
+const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
+
+dotenv.config();
 
 const app = express();
 var allowedDomains = ['http://localhost:3000', 'https://lively-dune-09208c210.3.azurestaticapps.net', 'https://kind-mushroom-0cae51e10.3.azurestaticapps.net/'];

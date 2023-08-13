@@ -1,5 +1,6 @@
 module.exports = app => {
     const companies = require("../../controllers/user/companies.controller.js");
+    const auth = require("../../middleware/auth.js");
 
     var router = require("express").Router();
 
@@ -7,9 +8,10 @@ module.exports = app => {
     // router.post("/", tutorials.create);
 
     // Retrieve all companies
-    router.post("/", companies.findAll);
+    router.post("/",auth, companies.findAll);
+    router.post("/add",auth, companies.addCompany);
 
-    router.post("/search", companies.findOne);
+    router.post("/search",auth, companies.findOne);
 
     // // Retrieve all published Tutorials
     // router.get("/published", tutorials.findAllPublished);
