@@ -5,9 +5,19 @@ const sessions = require('express-session');
 require("dotenv").config();
 
 const app = express();
+var allowedDomains = ['http://localhost:3000', 'https://lively-dune-09208c210.3.azurestaticapps.net', 'https://kind-mushroom-0cae51e10.3.azurestaticapps.net/'];
 
 var corsOptions = {
-    origin: "http://localhost:3000"
+    origin: function (origin, callback) {
+        // bypass the requests with no origin (like curl requests, mobile apps, etc )
+        if (!origin) return callback(null, true);
+     
+        if (allowedDomains.indexOf(origin) === -1) {
+          var msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`;
+          return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+      }
 };
 
 app.use(cors(corsOptions));
