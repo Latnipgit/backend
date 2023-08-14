@@ -56,7 +56,7 @@ exports.authenticateAdmin = async(req, res) => {
         } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
 
             // save user token
-            user.token = jwtUtil.generateAdminToken(admin);
+            user.token = jwtUtil.generateAdminToken(user);
 
             res.status(200).json(user);
         } else {

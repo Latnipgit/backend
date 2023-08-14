@@ -11,6 +11,7 @@ module.exports = app => {
     router.post("/logout", auth, user.logout);
     router.get("/getLoginInfo",auth, user.getLoginInfo);
     router.get("/getAllUsers",auth, user.getAllUsers);
+    router.get("/changePassword",auth, user.changePassword);
 
     app.use("/api/user", router);
 };

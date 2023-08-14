@@ -6,11 +6,7 @@ const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
 
 exports.signup = async(req, res) => {
-    // Validate request
-    // if (!req.body.title) {
-    //   res.status(400).send({ message: "Content can not be empty!" });
-    //   return;
-    // }
+
     try {
         const oldUser = await User.findOne({ emailId: req.body.emailId });
         if (oldUser) {
@@ -49,6 +45,29 @@ exports.signup = async(req, res) => {
 
 };
 
+
+exports.changePassword = async(req, res) => {
+
+    try {
+        var myquery = { emailId: req.body.emailId};
+
+        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) }};
+        let update = await User.updateOne(myquery, newvalues, function(err, res) {
+            if (err) throw err;
+            console.log("1 document updated");
+            db.close();
+          });
+
+        res.status(201).json(user);
+
+    }catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+
+};
 
 // Find a single Tutorial with an id
 exports.authenticateUser = async(req, res) => {
