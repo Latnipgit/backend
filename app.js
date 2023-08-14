@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 dotenv.config();
 
 const app = express();
-var allowedDomains = ['http://localhost:3000', 'https://lively-dune-09208c210.3.azurestaticapps.net', 'https://kind-mushroom-0cae51e10.3.azurestaticapps.net'];
+var allowedDomains = ['http://localhost:3000', 'https://lively-dune-09208c210.3.azurestaticapps.net', 'https://kind-mushroom-0cae51e10.3.azurestaticapps.net', "https://wonderful-glacier-0f15f7b10.3.azurestaticapps.net"];
 
 var corsOptions = {
     origin: function (origin, callback) {
