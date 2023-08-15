@@ -4,6 +4,9 @@ const Companies = db.companies;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
+const mailUtility = require('../../util/mailUtility')
+const commonUtil = require('../../util/commonUtil')
+const mailController=  require('../../controllers/common/mailTemplates.controller')
 
 exports.signup = async(req, res) => {
 
@@ -13,7 +16,8 @@ exports.signup = async(req, res) => {
             return res.status(409).send({ message: "User Already Exist.", success: false });
         }
         console.log(req.body.email, oldUser)
-        let encryptedPassword = await bcrypt.hash(req.body.password, 10);
+        password = commonUtil.generateRandomPassword()
+        let encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create a Tutorial
         const user = await User.create({
@@ -31,10 +35,16 @@ exports.signup = async(req, res) => {
             user: user
         }); 
         
-        user.token = jwtUtil.generateUserToken(user);
+        // user.token = jwtUtil.generateUserToken(user);
        // Save Tutorial in the database
-                
-        res.status(201).json(user);
+       let replacements = [];
+       replacements.push({target: "password", value: password })
+       mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
+
+       mailObj.to = req.body.emailId
+       mailUtility.sendMail(mailObj)
+
+       res.status(201).json({ message: "success", success: false, response: user });
 
     }catch (err) {
         console.log(err)
@@ -49,16 +59,13 @@ exports.signup = async(req, res) => {
 exports.changePassword = async(req, res) => {
 
     try {
-        var myquery = { emailId: req.body.emailId};
-
+        var id = req.token.userDetails.id;
         var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) }};
-        let update = await User.updateOne(myquery, newvalues, function(err, res) {
-            if (err) throw err;
-            console.log("1 document updated");
-            db.close();
-          });
-
-        res.status(201).json(user);
+        console.log( await User.findById(id))
+        let out =await User.findByIdAndUpdate(id, newvalues, { useFindAndModify: true })
+          
+      
+        res.status(200).json({"message": "Password changed successfully.",  "success": true});
 
     }catch (err) {
         console.log(err)
@@ -80,7 +87,8 @@ exports.authenticateUser = async(req, res) => {
         } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
             // Create token
             user.token = jwtUtil.generateUserToken(user);
-            res.status(200).json(user);
+            mailUtility.sendMail();
+            res.send({message: 'Login successfull.', success: true, response: user});
         } else {
             res.status(400).send({ message: "Invalid Credentials", success: false });
         }
@@ -100,131 +108,23 @@ exports.logout = (req, res) => {
     req.session.destroy();
 };
 exports.getLoginInfo = async(req, res) => {
-    const loggedInUser = await User.findOne({ emailId: req.user.userId });
+    const loggedInUser = await User.findOne({ _id: req.token.userDetails.id });
 
     if (loggedInUser) {
         res.send({message: 'Login Info', success: true, response: loggedInUser});
     } else
-        res.send(null)
+        res.status(403).send({ message: "Unauthorised", success: false });
 };
 
 exports.getAllUsers = async(req, res) => {
     try {
         let users = await User.find();
         // return all members
-        res.status(200).json(users);
+        res.send({message: 'Users list fetched.', success: true, response: users});
     } catch (err) {
         console.log(err)
         res
             .status(500)
             .send({ message: "Something went wrong", success: false, response: null });
     }
-};
-
-// Retrieve all Tutorials from the database.
-exports.findAll = (req, res) => {
-    const title = req.query.title;
-    var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
-
-    Tutorial.find(condition)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
-            });
-        });
-};
-// Find a single Tutorial with an id
-exports.findOne = (req, res) => {
-    const id = req.params.id;
-
-    Tutorial.findById(id)
-        .then(data => {
-            if (!data)
-                res.status(404).send({ message: "Not found Tutorial with id " + id });
-            else res.send(data);
-        })
-        .catch(err => {
-            res
-                .status(500)
-                .send({ message: "Error retrieving Tutorial with id=" + id });
-        });
-};
-
-// Update a Tutorial by the id in the request
-exports.update = (req, res) => {
-    if (!req.body) {
-        return res.status(400).send({
-            message: "Data to update can not be empty!"
-        });
-    }
-
-    const id = req.params.id;
-
-    Tutorial.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-        .then(data => {
-            if (!data) {
-                res.status(404).send({
-                    message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`
-                });
-            } else res.send({ message: "Tutorial was updated successfully." });
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: "Error updating Tutorial with id=" + id
-            });
-        });
-};
-
-// Delete a Tutorial with the specified id in the request
-exports.delete = (req, res) => {
-    const id = req.params.id;
-
-    Tutorial.findByIdAndRemove(id, { useFindAndModify: false })
-        .then(data => {
-            if (!data) {
-                res.status(404).send({
-                    message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`
-                });
-            } else {
-                res.send({
-                    message: "Tutorial was deleted successfully!"
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: "Could not delete Tutorial with id=" + id
-            });
-        });
-};
-
-// Delete all Tutorials from the database.
-exports.deleteAll = (req, res) => {
-    Tutorial.deleteMany({})
-        .then(data => {
-            res.send({
-                message: `${data.deletedCount} Tutorials were deleted successfully!`
-            });
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while removing all tutorials."
-            });
-        });
-};
-
-// Find all published Tutorials
-exports.findAllPublished = (req, res) => {
-    Tutorial.find({ published: true })
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
-            });
-        });
 };

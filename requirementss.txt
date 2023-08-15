@@ -1,0 +1,31 @@
+Total members
+
+
+latest transaction table fields:
+invoice nu 
+buyer name 
+seller name
+date of invoice
+amount
+payment status(disputed , paid)
+view details
+admin actions( approve, in process, referred to senior team)
+
+in members page: 
+show users list who have signed up in user portal
+show all company list page -- it should have option to activate/deactivate a  company
+
+one time password feature for admins and users
+show employees(admin) list with fields:
+
+it should also has option to send a reset password mail 
+
+
+user panel
+
+in company search has all companies of all users
+
+company name
+total amount due
+due from (maximise last bill due since)
+company credti rating

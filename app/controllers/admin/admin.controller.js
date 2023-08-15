@@ -3,6 +3,9 @@ const Admin = db.admin;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
+const commonUtil = require('../../util/commonUtil')
+const mailController=  require('../../controllers/common/mailTemplates.controller')
+const mailUtility = require('../../util/mailUtility')
 
 exports.addAdmin = async(req, res) => {
     // Validate request
@@ -15,11 +18,10 @@ exports.addAdmin = async(req, res) => {
     try {
         const oldUser = await Admin.findOne({ emailId: req.body.emailId });
         if (oldUser) {
-            return res.status(409).send({ message: "User Already Exist.", success: false });
+            return res.status(409).send({ message: "User Already Exists.", success: false });
         }
-        console.log(req.body.email, oldUser)
-
-        let encryptedPassword = await bcrypt.hash(req.body.password, 10);
+        password = commonUtil.generateRandomPassword()
+        let encryptedPassword = await bcrypt.hash(password, 10);
 
 
         const admin = await Admin.create({
@@ -29,13 +31,20 @@ exports.addAdmin = async(req, res) => {
                 password: encryptedPassword,
                 phoneNumber: req.body.phoneNumber,
                 joinedOn: new Date(0),
-                adminRole: "user"
+                adminRole: "admin"
             })
+        
             // Create token
-        admin.token = jwtUtil.generateAdminToken(admin);
+        // admin.token = jwtUtil.generateAdminToken(admin);
+        let replacements = [];
+        replacements.push({target: "password", value: password })
+        mailObj = await mailController.getMailTemplate("ADMIN_SIGNUP", replacements)
+
+        mailObj.to = req.body.emailId
+        mailUtility.sendMail(mailObj)
 
         // return new user
-        res.status(201).json(admin);
+        res.status(201).json({ message: "User added successfully.", success: true, response: this.admin });
     } catch (err) {
         console.log(err)
         res
@@ -58,7 +67,7 @@ exports.authenticateAdmin = async(req, res) => {
             // save user token
             user.token = jwtUtil.generateAdminToken(user);
 
-            res.status(200).json(user);
+            res.status(200).json({ message: "Logged in Successfully.", success: true, response: user });
         } else {
             res.status(400).send({ message: "Invalid Credentials", success: false });
         }
@@ -76,131 +85,24 @@ exports.authenticateAdmin = async(req, res) => {
 exports.logout = (req, res) => {
     req.session.destroy();
 };
-exports.getLoginInfo = (req, res) => {
-    res.send(req.user);
+exports.getLoginInfo = async(req, res) => {
+    const loggedInUser = await Admin.findOne({ _id: req.token.adminDetails.id });
+
+    if (loggedInUser) {
+        res.send({message: 'Login Info', success: true, response: loggedInUser});
+    } else {
+        res.status(403).send({ message: "Unauthorised", success: false });
+    }
 };
 exports.getAllAdmins = async(req, res) => {
     try {
         let members = await Admin.find();
         // return all members
-        res.status(200).json(members);
+        res.status(200).json({ message: "Employee list fetched successfully.", success: true, response: members });
     } catch (err) {
         console.log(err)
         res
             .status(500)
             .send({ message: "Something went wrong", success: false });
     }
-};
-    
-// Retrieve all Tutorials from the database.
-exports.findAll = (req, res) => {
-    const title = req.query.title;
-    var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
-
-    Tutorial.find(condition)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials.", success: false
-            });
-        });
-};
-// Find a single Tutorial with an id
-exports.findOne = (req, res) => {
-    const id = req.params.id;
-
-    Tutorial.findById(id)
-        .then(data => {
-            if (!data)
-                res.status(404).send({ message: "Not found Tutorial with id " + id, success: false });
-            else res.send(data);
-        })
-        .catch(err => {
-            res
-                .status(500)
-                .send({ message: "Error retrieving Tutorial with id=" + id, success: false });
-        });
-};
-
-// Update a Tutorial by the id in the request
-exports.update = (req, res) => {
-    if (!req.body) {
-        return res.status(400).send({
-            message: "Data to update can not be empty!",
-            success: false
-        });
-    }
-
-    const id = req.params.id;
-
-    Tutorial.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-        .then(data => {
-            if (!data) {
-                res.status(404).send({
-                    message: `Cannot update Tutorial with id=${id}. Maybe Tutorial was not found!`,
-                    success: false
-                });
-            } else res.send({ message: "Tutorial was updated successfully." });
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: "Error updating Tutorial with id=" + id
-            });
-        });
-};
-
-// Delete a Tutorial with the specified id in the request
-exports.delete = (req, res) => {
-    const id = req.params.id;
-
-    Tutorial.findByIdAndRemove(id, { useFindAndModify: false })
-        .then(data => {
-            if (!data) {
-                res.status(404).send({
-                    message: `Cannot delete Tutorial with id=${id}. Maybe Tutorial was not found!`,
-                    success: false
-                });
-            } else {
-                res.send({
-                    message: "Tutorial was deleted successfully!",
-                    success: false
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: "Could not delete Tutorial with id=" + id,
-                success: false
-            });
-        });
-};
-
-// Delete all Tutorials from the database.
-exports.deleteAll = (req, res) => {
-    Tutorial.deleteMany({})
-        .then(data => {
-            res.send({
-                message: `${data.deletedCount} Tutorials were deleted successfully!`
-            });
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while removing all tutorials."
-            });
-        });
-};
-
-// Find all published Tutorials
-exports.findAllPublished = (req, res) => {
-    Tutorial.find({ published: true })
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials."
-            });
-        });
 };

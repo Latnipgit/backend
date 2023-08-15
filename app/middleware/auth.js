@@ -11,7 +11,7 @@ const verifyToken = (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, config.TOKEN_KEY);
-        req.user = decoded;
+        req.token = decoded;
     } catch (err) {
         return res.status(401).send({ success: false, message: 'Failed to authenticate token.' });
     }

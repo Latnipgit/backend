@@ -1,9 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 exports.generateUserToken = (user) => {
-    
-            
-    const token = jwt.sign({"userDetails" : { userId: user._id, emailId: user.emailId}},
+    const token = jwt.sign({"userDetails" : { id: user._id, emailId: user.emailId}},
         process.env.TOKEN_KEY, {
         expiresIn: "2h",
     });
@@ -13,7 +11,7 @@ exports.generateUserToken = (user) => {
 exports.generateAdminToken = (admin) => {
     
             
-    const token = jwt.sign({"adminDetails" : { adminId: admin._id, emailId: admin.emailId }},
+    const token = jwt.sign({"adminDetails" : { id: admin._id, emailId: admin.emailId }},
         process.env.TOKEN_KEY, {
             expiresIn: "2h",
         }

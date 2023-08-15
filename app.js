@@ -68,6 +68,7 @@ require("./app/routes/user/sendBillTransactions.routes")(app);
 require("./app/routes/user/creditors.routes")(app);
 require("./app/routes/user/dashboard.routes")(app);
 require("./app/routes/admin/admin.routes")(app);
+require("./app/routes/common/mailTemplates.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || process.env.API_PORT;
