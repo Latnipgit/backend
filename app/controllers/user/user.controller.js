@@ -7,6 +7,7 @@ const jwtUtil = require('../../util/jwtUtil')
 const mailUtility = require('../../util/mailUtility')
 const commonUtil = require('../../util/commonUtil')
 const mailController=  require('../../controllers/common/mailTemplates.controller')
+const config = process.env;
 
 exports.signup = async(req, res) => {
 
@@ -26,7 +27,8 @@ exports.signup = async(req, res) => {
             companyPan: req.body.companyPan,
             mobile: req.body.mobile,
             password: encryptedPassword,
-            emailId: req.body.emailId
+            emailId: req.body.emailId,
+            passwordChangeNeeded: true
         });
         const company = await Companies.create({
             companyName: req.body.companyName,
@@ -55,26 +57,50 @@ exports.signup = async(req, res) => {
 
 };
 
-
-exports.changePassword = async(req, res) => {
-
+exports.changePasswordUsingToken = async(req, res) => {
     try {
-        var id = req.token.userDetails.id;
-        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) }};
-        console.log( await User.findById(id))
-        let out =await User.findByIdAndUpdate(id, newvalues, { useFindAndModify: true })
-          
-      
-        res.status(200).json({"message": "Password changed successfully.",  "success": true});
-
+        var decodedToken = jwt.verify(req.body.passwordChangeToken, config.TOKEN_KEY)
+        var query = {_id: decodedToken.userDetails.id, password: decodedToken.userDetails.password};
+        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) ,passwordChangeNeeded: false}};
+        console.log( await User.findOne(query))
+        let out =await User.findOneAndUpdate(query, newvalues)
+        
+        if(out) {
+            res.status(200).json({message: "Password changed successfully.",  success: true});
+        } else {
+            res.status(200).json({message: "Invalid details provided.",  success: false});
+        }
     }catch (err) {
         console.log(err)
         res
             .status(500)
             .send({ message: "Something went wrong", success: false });
     }
-
 };
+
+
+exports.changePasswordUsingOldPass = async(req, res) => {
+    try {
+        var query = {_id: req.token.userDetails.id};
+        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) }};
+        let user =  await User.findOne(query)
+        
+        if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
+            user.password = await bcrypt.hash(req.body.password, 10);
+            user.save()
+            res.status(200).json({message: "Password changed successfully.",  success: true});
+        } else {
+            res.status(200).json({message: "Invalid details provided.",  success: false});
+        }
+    }catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
+
 
 // Find a single Tutorial with an id
 exports.authenticateUser = async(req, res) => {
@@ -86,9 +112,13 @@ exports.authenticateUser = async(req, res) => {
             res.status(200).send({ message: "user not found, Please signup", success: false });
         } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
             // Create token
-            user.token = jwtUtil.generateUserToken(user);
-            mailUtility.sendMail();
-            res.send({message: 'Login successfull.', success: true, response: user});
+            if(!user.passwordChangeNeeded){
+                user.token = jwtUtil.generateUserToken(user);
+                res.status(200).json({ message: "Logged in Successfully.", success: true, response: user });
+            } else {
+                let passwordChangeToken = jwtUtil.generateUserToken(user);
+                res.status(200).json({ message: "Please change your password to continue.", success: false , passwordChangeNeeded: true, passwordChangeToken: passwordChangeToken});
+            }
         } else {
             res.status(400).send({ message: "Invalid Credentials", success: false });
         }

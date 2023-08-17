@@ -9,6 +9,7 @@ module.exports = mongoose => {
         phoneNumber: String,
         joinedOn: Date,
         password: String,
+        passwordChangeNeeded: Boolean,
         status: Boolean,
         token: { type: String }
     }, { timestamps: true });

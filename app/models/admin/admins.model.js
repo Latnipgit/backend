@@ -8,6 +8,7 @@ module.exports = mongoose => {
         joinedOn: Date,
         password: String,
         adminRole: String,
+        passwordChangeNeeded: Boolean,
         token: { type: String }
     }, { timestamps: true });
 
