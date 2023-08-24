@@ -14,6 +14,8 @@ module.exports = app => {
     router.post("/login", admin.authenticateAdmin);
     router.post("/changePasswordUsingToken", admin.changePasswordUsingToken);
     router.post("/changePasswordUsingOldPass",auth, admin.changePasswordUsingOldPass);
+    router.post("/forgetPassword", admin.forgetPassword);
+    router.post("/password-reset/:userId/:token", admin.forgetPasswordLink);
 
     app.use("/api/admin", router);
 };

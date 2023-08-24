@@ -7,5 +7,6 @@ const db = {};
 db.mongoose = mongoose;
 db.url = dbConfig.url;
 db.mailTemplates = require("./mailTemplates.model.js")(mongoose);
+db.token = require("./token.model.js")(mongoose);
 
 module.exports = db;

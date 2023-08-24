@@ -14,6 +14,8 @@ module.exports = app => {
     // router.post("/changePassword",auth, user.changePassword);
     router.post("/changePasswordUsingToken", user.changePasswordUsingToken);
     router.post("/changePasswordUsingOldPass", auth, user.changePasswordUsingOldPass);
+    router.post("/forgetPassword", user.forgetPassword);
+    router.post("/password-reset/:userId/:token", user.forgetPasswordLink);
 
     app.use("/api/user", router);
 };

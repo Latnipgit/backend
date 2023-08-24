@@ -1,5 +1,8 @@
 const db = require("../../models/admin/");
+const commondb = require("../../models/common/");
+
 const Admin = db.admin;
+const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
@@ -7,6 +10,8 @@ const commonUtil = require('../../util/commonUtil')
 const mailController=  require('../../controllers/common/mailTemplates.controller')
 const mailUtility = require('../../util/mailUtility')
 const config = process.env;
+const Joi = require("joi");
+const crypto = require("crypto");
 
 exports.addAdmin = async(req, res) => {
     // Validate request
@@ -76,6 +81,71 @@ exports.changePasswordUsingToken = async(req, res) => {
     }
 };
 
+
+exports.forgetPassword = async(req, res) => {
+    try {
+        const schema = Joi.object({ emailId: Joi.string().email().required() });
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
+
+        const user = await Admin.findOne({ emailId: req.body.emailId });
+        if (!user)
+            return res.status(400).send({message: "user with given email doesn't exist.",  success: false});
+
+        let token = await Token.findOne({ userId: user._id });
+        if (!token) {
+            token = await new Token({
+                userId: user._id,
+                token: crypto.randomBytes(32).toString("hex"),
+            }).save();
+        }
+
+        const link = `${process.env.ADMIN_FRONTEND_BASE_URL}/password-reset/${user._id}/${token.token}`;
+        let replacements = [];
+        replacements.push({target: "PASSWORD_RESET_LINK", value: link })
+        mailObj = await mailController.getMailTemplate("FORGET_PASSWORD", replacements)
+ 
+        mailObj.to = req.body.emailId
+        mailUtility.sendMail(mailObj)
+ 
+        res.status(200).json({message: "password reset link sent to your email account.",  success: true});
+
+    } catch (error) {
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
+exports.forgetPasswordLink = async(req, res) => {
+    try {
+        const schema = Joi.object({ password: Joi.string().required() });
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
+
+        const user = await Admin.findById(req.params.userId);
+        if (!user) return res.status(400).send({message: "invalid link or expired.",  success: false});
+
+        const token = await Token.findOne({
+            userId: user._id,
+            token: req.params.token,
+        });
+        if (!token) return res.status(400).send({message: "Invalid link or expired.",  success: false});
+
+        user.password = await bcrypt.hash(req.body.password, 10);
+        await user.save();
+        await token.delete();
+
+        res.status(200).json({message: "password reset sucessfully.",  success: true});
+
+    } catch (error) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
 
 exports.changePasswordUsingOldPass = async(req, res) => {
     try {
