@@ -9,10 +9,10 @@ module.exports = app => {
 
     // Retrieve all companies
     router.post("/",auth, companies.findAll);
-    router.post("/user",auth, companies.findAllByUserId);
+    router.post("/basedOnUserId",auth, companies.findAllByUserId);
     router.post("/add",auth, companies.addCompany);
 
-    router.post("/selectcompany",auth, companies.selectCompanyByCompanyId);
+    router.post("/selectCompany",auth, companies.selectCompanyByCompanyId);
     router.post("/search",auth, companies.findOne);
 
     // // Retrieve all published Tutorials

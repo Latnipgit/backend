@@ -51,7 +51,7 @@ exports.findAll = (req, res) => {
 exports.findAllByUserId = (req, res) => {
 
     // const condition = req.token.userDetails.id;
-    Companies.findOne({user:req.token.userDetails.id})
+    Companies.find({user:req.token.userDetails.id})
         .then(data => {
             res.status(200).json({message: 'Companies list fetched for user.', success: true, response: data});
         })
@@ -76,7 +76,7 @@ exports.selectCompanyByCompanyId = (req, res) => {
 
                 // console.log({userToken, companyDetails});
                 const newToken = jwtUtil.generateUserTokenWithCmpDetails(userToken, companyDetails);
-                res.status(200).json({ success: true, response: newToken});
+                res.status(200).json({ success: true, response: {"token": newToken}});
             }
         })
         .catch(err => {
