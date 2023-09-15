@@ -1,10 +1,11 @@
 module.exports = app => {
     const sendBillTransactions = require("../../controllers/user/sendBillTransactions.controller.js");
-
-    var router = require("express").Router();
+    const router = require("express").Router();
+    const jwt = require('jsonwebtoken');
+    const auth = require("../../middleware/auth.js");
 
     // send bill
-    router.post("/create", sendBillTransactions.create);
+    router.post("/create",auth, sendBillTransactions.create);
 
     // // Retrieve all Tutorials
     // router.get("/", tutorials.findAll);

@@ -1,7 +1,9 @@
 const db = require("../../models/admin/");
+const user_db = require("../../models/user");
 const commondb = require("../../models/common/");
 
 const Admin = db.admin;
+const SendBillTrans = user_db.sendBillTransactions
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -223,3 +225,15 @@ exports.getAllAdmins = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 };
+exports.getAllTransactions = async(req, res) => {
+    try {
+        let transactions = await SendBillTrans.find();
+        // return all transactions
+        res.status(200).json({ message: "Transaction list fetched successfully.", success: true, response: transactions });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}

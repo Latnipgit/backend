@@ -10,6 +10,7 @@ module.exports = app => {
     router.post("/logout", auth, admin.logout);
     router.get("/getLoginInfo", auth, admin.getLoginInfo);
     router.get("/getAllAdmins",auth,admin.getAllAdmins);
+    router.post("/getalltransactions",auth,admin.getAllTransactions);
 
     router.post("/login", admin.authenticateAdmin);
     router.post("/changePasswordUsingToken", admin.changePasswordUsingToken);

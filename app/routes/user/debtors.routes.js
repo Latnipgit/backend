@@ -1,10 +1,12 @@
 module.exports = app => {
     const debtors = require("../../controllers/user/debtors.controller.js");
 
-    var router = require("express").Router();
+    const router = require("express").Router();
+    const jwt = require('jsonwebtoken');
+    const auth = require("../../middleware/auth.js");
 
     // Add a debtor
-    router.post("/add", debtors.add);
+    router.post("/add",auth,debtors.add);
 
     // get debtors of current company
     router.post("/", debtors.getDebtors);

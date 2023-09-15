@@ -1,12 +1,19 @@
 const db = require("../../models/user");
+const commondb = require("../../models/common/");
 const Debtors = db.debtors;
 const Companies = db.companies;
+const Token = commondb.token;
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
+const commonUtil = require('../../util/commonUtil')
 
 // Create and Save a new Tutorial
 exports.add = (req, res) => {
-    // Validate request
-    // Create a Tutorial
-    const id = req.body.session.companyDetails.id;
+
+    // const id = req.body.session.companyDetails.id;
+    console.log(req.token)
+    const id = req.token.companyDetails.id
     console.log("logged in company details", req.body.companyDetails)
     const debtor = new Debtors({
         ownerName: req.body.ownerName,

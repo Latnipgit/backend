@@ -10,7 +10,7 @@ exports.create = (req, res) => {
         .then(debtor => {
             debtor = debtor ? debtor[0] : null
             console.log("debtor in send bill transaction", debtor)
-            const id = req.body.session.companyDetails.id;
+            const id = req.token.companyDetails.id;
 
             // Create a Tutorial
             const bill = new SendBillTransactions({

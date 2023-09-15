@@ -1,6 +1,11 @@
 const db = require("../../models/user");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
+const { ObjectId } = require('mongodb');
 const Companies = db.companies;
 const User = db.user;
+const config = process.env;
 
 // Create and Save a new Tutorial
 exports.addCompany = async(req, res) => {
@@ -27,12 +32,11 @@ exports.addCompany = async(req, res) => {
     }
 };
 
-// Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {
     const title = req.query.title;
-    var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
+    // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
 
-    Companies.find(condition)
+    Companies.find()
         .then(data => {
             res.status(200).json({message: 'Companies list fetched.', success: true, response: data});
         })
@@ -43,6 +47,46 @@ exports.findAll = (req, res) => {
             });
         });
 };
+
+exports.findAllByUserId = (req, res) => {
+
+    // const condition = req.token.userDetails.id;
+    Companies.findOne({user:req.token.userDetails.id})
+        .then(data => {
+            res.status(200).json({message: 'Companies list fetched for user.', success: true, response: data});
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving tutorials.",
+                success: false
+            });
+        });
+};
+
+exports.selectCompanyByCompanyId = (req, res) => {
+    const userToken = req.token.userDetails;
+    Companies.findOne({_id: req.body.companyId})
+        .then(data => {
+            if (!data)
+                res.status(404).send({ message: "Not found company ", success: false });
+            else{
+                const companyDetails = data.toJSON();
+                companyDetails.id = companyDetails.id.toString();
+                companyDetails.user = companyDetails.user.toString();
+
+                // console.log({userToken, companyDetails});
+                const newToken = jwtUtil.generateUserTokenWithCmpDetails(userToken, companyDetails);
+                res.status(200).json({ success: true, response: newToken});
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res
+                .status(500)
+                .send({ message: "Error retrieving company", success: false });
+        });
+
+}
 
 // Find a single Company with an id
 exports.findOne = (req, res) => {
