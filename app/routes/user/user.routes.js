@@ -10,7 +10,7 @@ module.exports = app => {
     router.post("/login", user.authenticateUser);
     router.post("/logout", auth, user.logout);
     router.get("/getLoginInfo",auth, user.getLoginInfo);
-    router.get("/getAllUsers",auth, user.getAllUsers);
+
     // router.post("/changePassword",auth, user.changePassword);
     router.post("/changePasswordUsingToken", user.changePasswordUsingToken);
     router.post("/changePasswordUsingOldPass", auth, user.changePasswordUsingOldPass);

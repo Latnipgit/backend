@@ -32,77 +32,72 @@ exports.addCompany = async(req, res) => {
     }
 };
 
-exports.findAll = (req, res) => {
-    const title = req.query.title;
-    // var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
-
-    Companies.find()
-        .then(data => {
-            res.status(200).json({message: 'Companies list fetched.', success: true, response: data});
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials.",
-                success: false
-            });
-        });
+exports.findAll = async(req, res) => {
+    try{
+        const title = req.query.title;
+        data = await Companies.find();
+        res.status(200).json({message: 'Companies list fetched.', success: true, response: data});
+    } catch (error) {
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
 };
 
-exports.findAllByUserId = (req, res) => {
+exports.findAllByUserId = async(req, res) => {
 
-    // const condition = req.token.userDetails.id;
-    Companies.find({user:req.token.userDetails.id})
-        .then(data => {
-            res.status(200).json({message: 'Companies list fetched for user.', success: true, response: data});
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials.",
-                success: false
-            });
-        });
+    try{
+        const companies = await Companies.find({user:req.token.userDetails.id});
+        res.status(200).json({message: 'Companies list fetched for user.', success: true, response: companies});
+    } catch (error) {
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+        
 };
 
-exports.selectCompanyByCompanyId = (req, res) => {
-    const userToken = req.token.userDetails;
-    Companies.findOne({_id: req.body.companyId})
-        .then(data => {
-            if (!data)
-                res.status(404).send({ message: "Not found company ", success: false });
-            else{
-                const companyDetails = data.toJSON();
-                companyDetails.id = companyDetails.id.toString();
-                companyDetails.user = companyDetails.user.toString();
+exports.selectCompanyByCompanyId = async(req, res) => {
+    try{
+        const userToken = req.token.userDetails;
+        company = await Companies.findOne({_id: req.body.companyId});
+        if (!company){
+            res.status(404).send({ message: "Not found company ", success: false });
+        }
+        const companyDetails = company.toJSON();
+        companyDetails.id = companyDetails.id.toString();
+        companyDetails.user = companyDetails.user.toString();
 
-                // console.log({userToken, companyDetails});
-                const newToken = jwtUtil.generateUserTokenWithCmpDetails(userToken, companyDetails);
-                res.status(200).json({ success: true, response: {"token": newToken}});
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            res
-                .status(500)
-                .send({ message: "Error retrieving company", success: false });
-        });
+        // console.log({userToken, companyDetails});
+        const newToken = jwtUtil.generateUserTokenWithCmpDetails(userToken, companyDetails);
+        res.status(200).json({  message: "Selected a company", success: true, response: {"token": newToken}});
+            
+    }catch(error){
+        console.log(error);
+        res
+            .status(500)
+            .send({ message: "Error retrieving company", success: false });
+    }
 
 }
 
 // Find a single Company with an id
-exports.findOne = (req, res) => {
-    const id = req.params.id;
-    condition = { $or: [{ companyPan: req.body.companyPan }, { gstin: req.body.gstin }, {aadharCardNo: req.body.aadharCardNo}] }
-    Companies.find(condition)
-        .then(data => {
-            if (!data)
-                res.status(404).send({ message: "Not found company ", success: false });
-            else{
-                res.status(200).json({ success: true, response: data});
-            }
-        })
-        .catch(err => {
-            res
-                .status(500)
-                .send({ message: "Error retrieving company", success: false });
-        });
+exports.findOne = async(req, res) => {
+    try{
+        const id = req.params.id;
+        condition = { $or: [{ companyPan: req.body.companyPan }, { gstin: req.body.gstin }, {aadharCardNo: req.body.aadharCardNo}] };
+        data = await Companies.find(condition);
+        if (!data){
+            res.status(404).send({ message: "Not found company ", success: false });
+        }else{
+            res.status(200).json({ success: true, response: data});
+        }
+    } catch (error) {
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Error retrieving company", success: false });
+    }
 };

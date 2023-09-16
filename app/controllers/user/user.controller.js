@@ -211,16 +211,3 @@ exports.getLoginInfo = async(req, res) => {
     } else
         res.status(403).send({ message: "Unauthorised", success: false });
 };
-
-exports.getAllUsers = async(req, res) => {
-    try {
-        let users = await User.find();
-        // return all members
-        res.send({message: 'Users list fetched.', success: true, response: users});
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false, response: null });
-    }
-};
