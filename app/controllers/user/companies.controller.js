@@ -62,7 +62,7 @@ exports.findAllByUserId = async(req, res) => {
 exports.selectCompanyByCompanyId = async(req, res) => {
     try{
         const userToken = req.token.userDetails;
-        company = await Companies.findOne({_id: req.body.companyId});
+        company = await Companies.findOne({_id: req.body.companyId, user: req.token.userDetails.id});
         if (!company){
             res.status(404).send({ message: "Not found company ", success: false });
         }

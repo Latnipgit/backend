@@ -77,6 +77,37 @@ exports.getCreditors = (req, res) => {
         });
 };
 
+exports.getAllDebtorsByCompanyId = async(req, res) => {
+    try{
+        const dbtrs = await Debtors.find({creditorCompanyId:req.token.companyDetails.id});
+        res.status(200).json({message: 'Debtors list fetched for company.', success: true, response: dbtrs});
+    } catch (error) {
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+exports.getAllCreditorsByCompanyId = async(req, res) => {
+    try{
+        const dbtrs = await Debtors.find({gstin:req.token.companyDetails.gstin});
+        //console.log(dbtrs);
+        let crdtrs = [];
+        for(let i = 0; i < dbtrs.length; i++){
+            console.log(dbtrs[i]);
+            crdtrs[i] = await Companies.findOne({_id:dbtrs[i].creditorCompanyId});
+            //console.log(crdtrs[i]);
+        }
+        res.status(200).json({message: 'Creditors list fetched for company.', success: true, response: crdtrs});
+    } catch (error) {
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
 // Find a single Tutorial with an id
 exports.findOne = (req, res) => {
     const id = req.params.id;

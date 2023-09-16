@@ -1,5 +1,6 @@
 module.exports = app => {
     const user = require("../../controllers/user/user.controller.js");
+    const debtor = require("../../controllers/user/debtors.controller.js");
 
     var router = require("express").Router();
     const jwt = require('jsonwebtoken');
@@ -10,6 +11,8 @@ module.exports = app => {
     router.post("/login", user.authenticateUser);
     router.post("/logout", auth, user.logout);
     router.get("/getLoginInfo",auth, user.getLoginInfo);
+    router.get("/getAllDebtorsByCompanyId", auth, debtor.getAllDebtorsByCompanyId);
+    router.get("/getAllCreditorsByCompanyId", auth, debtor.getAllCreditorsByCompanyId);
 
     // router.post("/changePassword",auth, user.changePassword);
     router.post("/changePasswordUsingToken", user.changePasswordUsingToken);
