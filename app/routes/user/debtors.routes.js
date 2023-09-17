@@ -7,6 +7,10 @@ module.exports = app => {
 
     // Add a debtor
     router.post("/add",auth,debtors.add);
+    router.get("/getAllDebtorsByCompanyId", auth, debtors.getAllDebtorsByCompanyId);
+    router.get("/getAllCreditorsByCompanyId", auth, debtors.getAllCreditorsByCompanyId);
+    router.get("/getAllInvoicesSentToMe", auth, debtors.getAllInvoicesSentToMe);
+    router.get("/getAllInvoicesRaisedByMe", auth, debtors.getAllInvoicesRaisedByMe);
 
     // get debtors of current company
     router.post("/", debtors.getDebtors);

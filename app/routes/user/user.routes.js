@@ -11,8 +11,6 @@ module.exports = app => {
     router.post("/login", user.authenticateUser);
     router.post("/logout", auth, user.logout);
     router.get("/getLoginInfo",auth, user.getLoginInfo);
-    router.get("/getAllDebtorsByCompanyId", auth, debtor.getAllDebtorsByCompanyId);
-    router.get("/getAllCreditorsByCompanyId", auth, debtor.getAllCreditorsByCompanyId);
 
     // router.post("/changePassword",auth, user.changePassword);
     router.post("/changePasswordUsingToken", user.changePasswordUsingToken);
