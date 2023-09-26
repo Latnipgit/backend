@@ -13,6 +13,9 @@ const mailController=  require('../../controllers/common/mailTemplates.controlle
 const config = process.env;
 const Joi = require("joi");
 const crypto = require("crypto");
+const service = require("../../service/user/");
+const userService = service.user;
+const companyService = service.company;
 
 exports.signup = async(req, res) => {
 
@@ -25,22 +28,18 @@ exports.signup = async(req, res) => {
         let encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create a Tutorial
-        const user = await User.create({
-            name: req.body.name,
-            userName: req.body.emailId,
-            companyPan: req.body.companyPan,
-            mobile: req.body.mobile,
-            password: encryptedPassword,
-            emailId: req.body.emailId,
-            passwordChangeNeeded: true
-        });
-        const company = await Companies.create({
+        req.body.role="OWNER";
+        req.body.password= encryptedPassword;
+        let user = await userService.addUser( req.body );
+        let companyDetails = {
             companyName: req.body.companyName,
             gstin: req.body.gstin,
-            companyPan: req.body.companyPan,
-            user: user
-        }); 
+            companyPan: req.body.companyPan
+        }
+        const company = await companyService.addCompany(companyDetails)
+        await userService.addCompanyToUser(user._id, company)
         
+        user =  await userService.getUserById( user._id ).populate("companies");
         // user.token = jwtUtil.generateUserToken(user);
        // Save Tutorial in the database
        let replacements = [];
@@ -50,9 +49,47 @@ exports.signup = async(req, res) => {
        mailObj.to = req.body.emailId
        mailUtility.sendMail(mailObj)
 
-       res.status(201).json({ message: "success", success: true, response: user });
+       res.status(201).json({success: true, response: user });
 
-    }catch (err) {
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+};
+
+
+exports.addEmployee = async(req, res) => {
+
+    try {
+        const oldUser = await User.findOne({ emailId: req.body.emailId });
+        if (oldUser) {
+            return res.status(409).send({ message: "User Already Exist.", success: false });
+        }
+        password = commonUtil.generateRandomPassword()
+        let encryptedPassword = await bcrypt.hash(password, 10);
+
+        // Create a Tutorial
+        req.body.role="EMPLOYEE";
+        req.body.password= encryptedPassword;
+        req.body._id = undefined;
+        let user = await userService.addUser( req.body );
+
+        await userService.addCompanyToUser(user._id, req.token.companyDetails)
+        user =  await userService.getUserById( user._id ).populate("companies");
+        // user.token = jwtUtil.generateUserToken(user);
+       // Save Tutorial in the database
+       let replacements = [];
+       replacements.push({target: "password", value: password })
+       mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
+
+       mailObj.to = req.body.emailId
+       mailUtility.sendMail(mailObj)
+
+       res.status(201).json({success: true, response: user });
+
+    } catch (err) {
         console.log(err)
         res
             .status(500)
@@ -211,3 +248,4 @@ exports.getLoginInfo = async(req, res) => {
     } else
         res.status(403).send({ message: "Unauthorised", success: false });
 };
+

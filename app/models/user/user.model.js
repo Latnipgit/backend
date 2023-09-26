@@ -9,9 +9,14 @@ module.exports = mongoose => {
         phoneNumber: String,
         joinedOn: Date,
         password: String,
+        role: String,
         passwordChangeNeeded: Boolean,
         status: Boolean,
-        token: { type: String }
+        token: { type: String },
+        companies: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'company'
+        }]
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

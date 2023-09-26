@@ -4,10 +4,12 @@ module.exports = app => {
 
     var router = require("express").Router();
     const jwt = require('jsonwebtoken');
-    const auth = require("../../middleware/auth.js");
+    const auth = require("../../middleware/authentication.js");
+    const Authorization = require("../../middleware/userAuthorizations.js");
 
     // Create a new Tutorial
     router.post("/signup", user.signup);
+    router.post("/addEmployee",auth,Authorization.AuthorizeOwner,  user.addEmployee);
     router.post("/login", user.authenticateUser);
     router.post("/logout", auth, user.logout);
     router.get("/getLoginInfo",auth, user.getLoginInfo);

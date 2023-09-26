@@ -4,10 +4,6 @@ module.exports = mongoose => {
         companyName: String,
         gstin: String,
         companyPan: String,
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'user'
-        }
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

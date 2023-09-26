@@ -3,7 +3,7 @@ module.exports = app => {
 
     const router = require("express").Router();
     const jwt = require('jsonwebtoken');
-    const auth = require("../../middleware/auth.js");
+    const auth = require("../../middleware/authentication.js");
 
     // Add a debtor
     router.post("/add",auth,debtors.add);

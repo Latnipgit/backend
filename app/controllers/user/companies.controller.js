@@ -6,6 +6,7 @@ const { ObjectId } = require('mongodb');
 const Companies = db.companies;
 const User = db.user;
 const config = process.env;
+const companyService = require("../../service/user/company.service");
 
 // Create and Save a new Tutorial
 exports.addCompany = async(req, res) => {
@@ -13,15 +14,10 @@ exports.addCompany = async(req, res) => {
     // Create a Tutorial
     try {
 
-        const loggedInUser = await User.findOne({ emailId: req.user.userId });
+        const loggedInUser = await User.findOne({ emailId: req.token.userDetails.emailId });
 
-        const company = await Companies.create({
-            companyName: req.body.companyName,
-            gstin: req.body.gstin,
-            companyPan: req.body.companyPan,
-            user: loggedInUser
-        }); 
-
+        const company = await companyService.addCompany(req.body);
+        // await userService.addUserToCompany(company._id, loggedInUser);
         // return new user
         res.status(200).json({message: 'Users list fetched.', success: true, response: company});
     } catch (err) {
@@ -31,6 +27,7 @@ exports.addCompany = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 };
+
 
 exports.findAll = async(req, res) => {
     try{
@@ -48,8 +45,8 @@ exports.findAll = async(req, res) => {
 exports.findAllByUserId = async(req, res) => {
 
     try{
-        const companies = await Companies.find({user:req.token.userDetails.id});
-        res.status(200).json({message: 'Companies list fetched for user.', success: true, response: companies});
+        const user = await User.findById(req.token.userDetails.id).populate("companies");
+        res.status(200).json({message: 'Companies list fetched for user.', success: true, response: user.companies});
     } catch (error) {
         console.log(error)
         res
@@ -62,13 +59,12 @@ exports.findAllByUserId = async(req, res) => {
 exports.selectCompanyByCompanyId = async(req, res) => {
     try{
         const userToken = req.token.userDetails;
-        company = await Companies.findOne({_id: req.body.companyId, user: req.token.userDetails.id});
+        company = await Companies.findOne({_id: req.body.companyId});
         if (!company){
             res.status(404).send({ message: "Not found company ", success: false });
         }
         const companyDetails = company.toJSON();
         companyDetails.id = companyDetails.id.toString();
-        companyDetails.user = companyDetails.user.toString();
 
         // console.log({userToken, companyDetails});
         const newToken = jwtUtil.generateUserTokenWithCmpDetails(userToken, companyDetails);
