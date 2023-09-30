@@ -11,5 +11,6 @@ db.adminNotifications = require("./adminNotifications.model.js")(mongoose);
 db.email = require("./email.model.js")(mongoose);
 db.manualTransactions = require("./manualTransactions.model.js")(mongoose);
 db.notification = require("./notification.model.js")(mongoose);
+db.subscriptionPkg = require("./subscriptionPkg.model.js")(mongoose);
 
 module.exports = db;

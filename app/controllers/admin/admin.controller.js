@@ -1,10 +1,12 @@
 const db = require("../../models/admin/");
 const user_db = require("../../models/user");
 const User = user_db.user;
+const SubscriptionPkg = db.subscriptionPkg;
+
 const commondb = require("../../models/common/");
 
 const Admin = db.admin;
-const SendBillTrans = user_db.sendBillTransactions
+const SendBillTrans = user_db.sendBillTransactions;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -17,21 +19,14 @@ const Joi = require("joi");
 const crypto = require("crypto");
 
 exports.addAdmin = async(req, res) => {
-    // Validate request
-    // if (!req.body.title) {
-    //   res.status(400).send({ message: "Content can not be empty!" });
-    //   return;
-    // }
 
-    // Create a Tutorial
     try {
         const oldUser = await Admin.findOne({ emailId: req.body.emailId });
         if (oldUser) {
-            return res.status(409).send({ message: "User Already Exists.", success: false });
+            return res.status(409).send({ message: "User Already Exists.", success: false, response: "" });
         }
         password = commonUtil.generateRandomPassword()
         let encryptedPassword = await bcrypt.hash(password, 10);
-
 
         const admin = await Admin.create({
                 name: req.body.name,
@@ -248,5 +243,89 @@ exports.getAllUsers = async(req, res) => {
         res
             .status(500)
             .send({ message: "Something went wrong", success: false, response: null });
+    }
+};
+
+exports.addSubscriptionPkg = async(req, res) => {
+    try {
+        const subPkg = await SubscriptionPkg.findOne({ subscriptionPkgName: req.body.subscriptionPkgName });
+        if (subPkg) {
+            return res.status(409).send({ message: "Package Already Exists.", success: false });
+        }
+
+        const subscriptionPkg = await SubscriptionPkg.create({
+                subscriptionPkgName: req.body.subscriptionPkgName,
+                monthlyAmt: req.body.monthlyAmt,
+                yearlyAmt: req.body.yearlyAmt,
+                monthlyDiscount: req.body.monthlyDiscount,
+                yearlylyDiscount: req.body.yearlylyDiscount
+            })
+
+        res.status(201).json({ message: "Subscription Package added successfully.", success: true, response: subscriptionPkg });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false, reponse: "" });
+    }
+};
+
+exports.getAllSubscriptionPkg = async(req, res) => {
+    try {
+        let subscriptionPkgs = await SubscriptionPkg.find();
+        res.status(201).json({ message: "Subscription Packages found.", success: true, response: subscriptionPkgs });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
+exports.getSubscriptionPkgById = async(req, res) => {
+    try {
+        const subPkg = await SubscriptionPkg.findOne({ _id: req.body.subscriptionPkgId });
+        if (subPkg) {
+            res.status(201).json({ message: "Subscription Package found.", success: true, response: subPkg });
+        }else{
+            res.status(409).send({ message: "Package Does Not Exists.", success: false });
+        }
+        
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
+exports.updateSubscriptionPkgById = async(req, res) => {
+    try {
+        let subscriptionPkg = {
+            subscriptionPkgName: req.body.subscriptionPkgName,
+            monthlyAmt: req.body.monthlyAmt,
+            yearlyAmt: req.body.yearlyAmt,
+            monthlyDiscount: req.body.monthlyDiscount,
+            yearlylyDiscount: req.body.yearlylyDiscount
+        }
+        const updatedSubPkg = await SubscriptionPkg.findByIdAndUpdate({ _id: req.body.subscriptionPkgId, subscriptionPkg });
+        res.status(201).json({ message: "Subscription Package updated.", success: true, response: updatedSubPkg});
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
+exports.deleteSubscriptionPkg = async(req, res) => {
+    try {
+        const subPkg = await SubscriptionPkg.findByIdAndRemove({ _id: req.body.subscriptionPkgId });
+        res.status(201).json({ message: "Subscription Package deleted.", success: true, response: subPkg });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
     }
 };

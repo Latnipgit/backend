@@ -12,6 +12,11 @@ module.exports = app => {
     router.get("/getAllAdmins",auth,admin.getAllAdmins);
     router.post("/getalltransactions",auth,admin.getAllTransactions);
     router.get("/getAllUsers",auth, admin.getAllUsers);
+    router.post("/addSubscriptionPkg",auth, admin.addSubscriptionPkg);
+    router.get("/getAllSubscriptionPkg",auth, admin.getAllSubscriptionPkg);
+    router.post("/getSubscriptionPkgById",auth, admin.getSubscriptionPkgById);
+    router.post("/updateSubscriptionPkgById",auth, admin.updateSubscriptionPkgById);
+    router.post("/deleteSubscriptionPkg",auth, admin.deleteSubscriptionPkg);
 
     router.post("/login", admin.authenticateAdmin);
     router.post("/changePasswordUsingToken", admin.changePasswordUsingToken);
