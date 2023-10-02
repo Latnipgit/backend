@@ -82,18 +82,16 @@ exports.selectCompanyByCompanyId = async(req, res) => {
 // Find a single Company with an id
 exports.findOne = async(req, res) => {
     try{
-        const id = req.params.id;
-        condition = { $or: [{ companyPan: req.body.companyPan }, { gstin: req.body.gstin }, {aadharCardNo: req.body.aadharCardNo}] };
-        data = await Companies.find(condition);
+        data = await companyService.findCompany(req.body);
         if (!data){
-            res.status(404).send({ message: "Not found company ", success: false });
+            res.status(404).send({ message: "Not found company ", success: false, response: ""});
         }else{
-            res.status(200).json({ success: true, response: data});
+            res.status(200).json({ message: "Search successful", success: true, response: data});
         }
     } catch (error) {
         console.log(error)
         res
             .status(500)
-            .send({ message: "Error retrieving company", success: false });
+            .send({ message: "Error retrieving company", success: false, response: ""});
     }
 };

@@ -14,12 +14,9 @@ exports.addCompany = function(companyDetails) {
         companyPan: companyDetails.companyPan,
     });
 };
-  
-// exports.addUserToCompany = function(companyId, user) {
-//     return db.companies.findByIdAndUpdate(
-//         companyId,
-//       { $push: { users: user._id } },
-//       { new: true, useFindAndModify: false }
-//     );
-// };
+
+exports.findCompany = function(companyDetails) {
+    condition = {$and: [{$or: [{ companyPan: companyDetails.companyPan }, { gstin: companyDetails.gstin }]}, {"$regex": companyDetails.companyName,"$options":"i"} ]};
+    return Companies.findOne(condition);
+};
   
