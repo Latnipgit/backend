@@ -2,6 +2,7 @@ const db = require("../../models/admin/");
 const user_db = require("../../models/user");
 const User = user_db.user;
 const SubscriptionPkg = db.subscriptionPkg;
+const SubscriptionPkgAPIQuotaMapping = db.subscriptionPkgAPIQuotaMapping;
 
 const commondb = require("../../models/common/");
 
@@ -246,6 +247,7 @@ exports.getAllUsers = async(req, res) => {
     }
 };
 
+// subscription pkg methods -----------------------------------------------------------------------------
 exports.addSubscriptionPkg = async(req, res) => {
     try {
         const subPkg = await SubscriptionPkg.findOne({ subscriptionPkgName: req.body.subscriptionPkgName });
@@ -327,5 +329,88 @@ exports.deleteSubscriptionPkg = async(req, res) => {
         res
             .status(500)
             .send({ message: "Something went wrong", success: false });
+    }
+};
+
+// subscription pkg quota mapping methods -----------------------------------------------------------------------------
+exports.addSubPkgAPIQtMapping = async(req, res) => {
+    try {
+        const mapping = await SubscriptionPkgAPIQuotaMapping.findOne({ subscriptionPkgId: req.body.subscriptionPkgId, apiName: req.body.apiName});
+        if (mapping) {
+            return res.status(409).send({ message: "Mapping Already Exists.", success: false });
+        }
+
+        const subscriptionPkgAPIQuotaMapping = await SubscriptionPkgAPIQuotaMapping.create({
+                subscriptionPkgId: req.body.subscriptionPkgId,
+                apiName: req.body.apiName,
+                monthlyQuotaLimit: req.body.monthlyQuotaLimit,
+                yearlyQuotaLimit: req.body.yearlyQuotaLimit
+            })
+
+        res.status(201).json({ message: "Mapping added successfully.", success: true, response: subscriptionPkgAPIQuotaMapping });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false, reponse: "" });
+    }
+};
+
+exports.getAllSubPkgAPIQtMapping = async(req, res) => {
+    try {
+        let mappings = await SubscriptionPkgAPIQuotaMapping.find();
+        res.status(201).json({ message: "Mappings found.", success: true, response: mappings });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false, reponse: "" });
+    }
+};
+
+exports.getSubPkgAPIQtMappingById = async(req, res) => {
+    try {
+        const subPkg = await SubscriptionPkgAPIQuotaMapping.findOne({ _id: req.body.quotaId});
+        if (subPkg) {
+            res.status(201).json({ message: "Mapping found.", success: true, response: subPkg });
+        }else{
+            res.status(409).send({ message: "Mapping Does Not Exists.", success: false, reponse: "" });
+        }
+        
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false, reponse: "" });
+    }
+};
+
+exports.updateSubPkgAPIQtMappingById = async(req, res) => {
+    try {
+        let updateMapping = {
+            subscriptionPkgId: req.body.subscriptionPkgId,
+            apiName: req.body.apiName,
+            monthlyQuotaLimit: req.body.monthlyQuotaLimit,
+            yearlyQuotaLimit: req.body.yearlyQuotaLimit
+        }
+        const updatedMapp = await SubscriptionPkgAPIQuotaMapping.findByIdAndUpdate({ _id: req.body.quotaId, updateMapping });
+        res.status(201).json({ message: "Mapping updated.", success: true, response: updatedMapp});
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false, reponse: "" });
+    }
+};
+
+exports.deleteSubPkgAPIQtMappingById = async(req, res) => {
+    try {
+        const remMapping = await SubscriptionPkgAPIQuotaMapping.findByIdAndRemove({ _id: req.body.quotaId });
+        res.status(201).json({ message: "Mapping deleted.", success: true, response: remMapping });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false, reponse: "" });
     }
 };

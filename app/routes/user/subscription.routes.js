@@ -5,13 +5,6 @@ module.exports = app => {
     const jwt = require('jsonwebtoken');
     const auth = require("../../middleware/authentication.js");
 
-    // subscription pkg quota mapping routes
-    router.post("/addSubPkgAPIQtMapping", auth, subscription.addSubPkgAPIQtMapping);
-    router.get("/getAllSubPkgAPIQtMapping", auth, subscription.getAllSubPkgAPIQtMapping);
-    router.post("/getSubPkgAPIQtMappingById", auth, subscription.getSubPkgAPIQtMappingById);
-    router.post("/updateSubPkgAPIQtMappingById", auth, subscription.updateSubPkgAPIQtMappingById);
-    router.post("/deleteSubPkgAPIQtMappingById", auth, subscription.deleteSubPkgAPIQtMappingById);
-
     // subscription Id remaining Quota Mapping routes
     router.post("/addSubIdRemQtMapping", auth, subscription.addSubIdRemQtMapping);
     router.get("/getAllSubIdRemQtMapping", auth, subscription.getAllSubIdRemQtMapping);

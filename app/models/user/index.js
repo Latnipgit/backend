@@ -11,7 +11,6 @@ db.user = require("./user.model.js")(mongoose);
 db.companies = require("./companies.model.js")(mongoose);
 db.sendBillTransactions = require("./sendBillTransactions.model.js")(mongoose);
 db.debtors = require("./debtors.model.js")(mongoose);
-db.subscriptionPkgAPIQuotaMapping = require("./subscriptionPkgAPIQuotaMapping.model.js")(mongoose);
 db.subscriptionIdRemQuotaMapping = require("./subscriptionIdRemQuotaMapping.model.js")(mongoose);
 db.subscription = require("./subscription.model.js")(mongoose);
 

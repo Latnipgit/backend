@@ -2,8 +2,8 @@ module.exports = mongoose => {
     var schema = mongoose.Schema({
         subscriptionPkgId: String,
         apiName: String,
-        quotaLimit: String,
-        amtPurchase: String
+        monthlyQuotaLimit: String,
+        yearlyQuotaLimit: String,
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

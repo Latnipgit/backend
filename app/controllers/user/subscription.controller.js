@@ -1,6 +1,5 @@
 const db = require("../../models/user");
 const commondb = require("../../models/common");
-const SubscriptionPkgAPIQuotaMapping = db.subscriptionPkgAPIQuotaMapping;
 const Subscription = db.subscription;
 const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
 const Token = commondb.token;
@@ -8,94 +7,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
 const commonUtil = require('../../util/commonUtil')
-
-// subscription pkg quota mapping methods -----------------------------------------------------------------------------
-
-exports.addSubPkgAPIQtMapping = async(req, res) => {
-    try {
-        const mapping = await SubscriptionPkgAPIQuotaMapping.findOne({ subscriptionPkgId: req.body.subscriptionPkgId, apiName: req.body.apiName});
-        if (mapping) {
-            return res.status(409).send({ message: "Mapping Already Exists.", success: false });
-        }
-
-        const subscriptionPkgAPIQuotaMapping = await SubscriptionPkgAPIQuotaMapping.create({
-                subscriptionPkgId: req.body.subscriptionPkgId,
-                apiName: req.body.apiName,
-                quotaLimit: req.body.quotaLimit,
-                amtPurchase: req.body.amtPurchase
-            })
-
-        res.status(201).json({ message: "Mapping added successfully.", success: true, response: subscriptionPkgAPIQuotaMapping });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false, reponse: "" });
-    }
-};
-
-exports.getAllSubPkgAPIQtMapping = async(req, res) => {
-    try {
-        let mappings = await SubscriptionPkgAPIQuotaMapping.find();
-        res.status(201).json({ message: "Mappings found.", success: true, response: mappings });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false, reponse: "" });
-    }
-};
-
-exports.getSubPkgAPIQtMappingById = async(req, res) => {
-    try {
-        const subPkg = await SubscriptionPkgAPIQuotaMapping.findOne({ _id: req.body.quotaId});
-        if (subPkg) {
-            res.status(201).json({ message: "Mapping found.", success: true, response: subPkg });
-        }else{
-            res.status(409).send({ message: "Mapping Does Not Exists.", success: false, reponse: "" });
-        }
-        
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false, reponse: "" });
-    }
-};
-
-exports.updateSubPkgAPIQtMappingById = async(req, res) => {
-    try {
-        let updateMapping = {
-            subscriptionPkgId: req.body.subscriptionPkgId,
-            apiName: req.body.apiName,
-            quotaLimit: req.body.quotaLimit,
-            amtPurchase: req.body.amtPurchase
-        }
-        const updatedMapp = await SubscriptionPkgAPIQuotaMapping.findByIdAndUpdate({ _id: req.body.quotaId, updateMapping });
-        res.status(201).json({ message: "Mapping updated.", success: true, response: updatedMapp});
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false, reponse: "" });
-    }
-};
-
-exports.deleteSubPkgAPIQtMappingById = async(req, res) => {
-    try {
-        const remMapping = await SubscriptionPkgAPIQuotaMapping.findByIdAndRemove({ _id: req.body.quotaId });
-        res.status(201).json({ message: "Mapping deleted.", success: true, response: remMapping });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false, reponse: "" });
-    }
-};
-
-
-
-
+const { addMonths, format } = require('date-fns');
 
 // subscription Id remaining Quota Mapping methods -----------------------------------------------------------------------------
 exports.addSubIdRemQtMapping = async(req, res) => {
@@ -180,26 +92,39 @@ exports.deleteSubIdRemQtMappingById = async(req, res) => {
 
 
 
-
-
 // subscription methods --------------------------------------------------------------------------------------------------------
 exports.addSubscription = async(req, res) => {
     try {
-        const mapping = await Subscription.findOne({ userId: req.token.userDetails.id, subscriptionPkgId: req.body.subscriptionPkgId});
-        if (mapping) {
-            return res.status(409).send({ message: "Subscription Already Exists.", success: false });
+        const sub = await Subscription.findOne({ userId: req.token.userDetails.id});
+        let endDate = null;
+        let startDate = new Date();
+        if (sub) {
+            if(req.body.isForce == false){
+                return res.status(409).send({ message: "Subscription Already Exists.", success: false });
+            }
+            // found subscription and force is true here, disable previous subscription here
+            
         }
 
-        const Subscription = await Subscription.create({
+        if(req.body.tenure == "Monthly"){
+            let updatedDate= addMonths(startDate, 1);
+            endDate = format(updatedDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')
+        }else if(req.body.tenure == "Yearly"){
+            let currentDate = null;
+            currentDate.setFullYear(startDate.getFullYear() + 1);
+            endDate = currentDate.toISOString();
+        }
+
+        const RSubscription = await Subscription.create({
                 userId: req.token.userDetails.id,
                 subscriptionPkgId: req.token.subscriptionPkgId,
-                remQuotaId: req.body.remQuotaId,
-                startDate: req.body.startDate,
-                endDate: req.body.endDate,
-                amtPurchase: req.body.amtPurchase
+                startDate: startDate,
+                endDate: endDate,
+                tenure: req.body.tenure,
+                isActive: req.body.isActive
             })
 
-        res.status(201).json({ message: "Subscription added successfully.", success: true, response: Subscription });
+        res.status(201).json({ message: "Subscription added successfully.", success: true, response: RSubscription });
     } catch (err) {
         console.log(err)
         res
@@ -222,7 +147,7 @@ exports.getAllSubscription = async(req, res) => {
 
 exports.getSubscriptionById = async(req, res) => {
     try {
-        const subPkg = await Subscription.findOne({ _id: req.body.quotaId});
+        const subPkg = await Subscription.findOne({ _id: req.body.subscriptionId});
         if (subPkg) {
             res.status(201).json({ message: "Subscription found.", success: true, response: subPkg });
         }else{
@@ -237,29 +162,10 @@ exports.getSubscriptionById = async(req, res) => {
     }
 };
 
-exports.updateSubscriptionById = async(req, res) => {
-    try {
-        let updateMapping = {
-            subscriptionPkgId: req.token.subscriptionPkgId,
-            remQuotaId: req.body.remQuotaId,
-            startDate: req.body.startDate,
-            endDate: req.body.endDate,
-            amtPurchase: req.body.amtPurchase
-        }
-        const updatedMapp = await Subscription.findByIdAndUpdate({ _id: req.body.quotaId, updateMapping });
-        res.status(201).json({ message: "Subscription updated.", success: true, response: updatedMapp});
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false, reponse: "" });
-    }
-};
-
 exports.deleteSubscriptionById = async(req, res) => {
     try {
-        const remMapping = await Subscription.findByIdAndRemove({ _id: req.body.quotaId });
-        res.status(201).json({ message: "Subscription deleted.", success: true, response: remMapping });
+        const sub = await Subscription.findByIdAndRemove({ _id: req.body.subscriptionId });
+        res.status(201).json({ message: "Subscription deleted.", success: true, response: sub });
     } catch (err) {
         console.log(err)
         res
