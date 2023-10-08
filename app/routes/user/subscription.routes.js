@@ -16,7 +16,6 @@ module.exports = app => {
     router.post("/addSubscription", auth, subscription.addSubscription);
     router.get("/getAllSubscription", auth, subscription.getAllSubscription);
     router.post("/getSubscriptionById", auth, subscription.getSubscriptionById);
-    router.post("/updateSubscriptionById", auth, subscription.updateSubscriptionById);
     router.post("/deleteSubscriptionById", auth, subscription.deleteSubscriptionById);
 
     app.use("/api/subscription", router);

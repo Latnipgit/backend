@@ -5,7 +5,7 @@ module.exports = mongoose => {
         startDate: String,
         endDate: String,
         tenure: String,
-        isActive: String
+        isActive: Boolean
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

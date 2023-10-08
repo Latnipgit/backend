@@ -95,33 +95,37 @@ exports.deleteSubIdRemQtMappingById = async(req, res) => {
 // subscription methods --------------------------------------------------------------------------------------------------------
 exports.addSubscription = async(req, res) => {
     try {
-        const sub = await Subscription.findOne({ userId: req.token.userDetails.id});
+        const sub = await Subscription.findOne({ userId: req.token.userDetails.id, isActive: true});
         let endDate = null;
         let startDate = new Date();
         if (sub) {
             if(req.body.isForce == false){
                 return res.status(409).send({ message: "Subscription Already Exists.", success: false });
+            }else if(req.body.isForce == true){
+                // found subscription and force is true here, disable previous subscription here
+                let updateData = {
+                    isActive: false
+                }
+                const updatedMapp = await Subscription.findByIdAndUpdate({ _id: sub._id}, updateData );
             }
-            // found subscription and force is true here, disable previous subscription here
-            
         }
 
         if(req.body.tenure == "Monthly"){
             let updatedDate= addMonths(startDate, 1);
             endDate = format(updatedDate, 'yyyy-MM-dd\'T\'HH:mm:ss.SSSxxx')
         }else if(req.body.tenure == "Yearly"){
-            let currentDate = null;
-            currentDate.setFullYear(startDate.getFullYear() + 1);
+            let currentDate = new Date();
+            currentDate.setFullYear(currentDate.getFullYear() + 1);
             endDate = currentDate.toISOString();
         }
 
         const RSubscription = await Subscription.create({
                 userId: req.token.userDetails.id,
                 subscriptionPkgId: req.token.subscriptionPkgId,
-                startDate: startDate,
+                startDate: startDate.toISOString(),
                 endDate: endDate,
                 tenure: req.body.tenure,
-                isActive: req.body.isActive
+                isActive: true
             })
 
         res.status(201).json({ message: "Subscription added successfully.", success: true, response: RSubscription });
