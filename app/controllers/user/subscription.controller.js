@@ -127,6 +127,19 @@ exports.addSubscription = async(req, res) => {
                 tenure: req.body.tenure,
                 isActive: true
             })
+        
+        const mapping = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId: req.body.subscriptionId, apiName: req.body.apiName});
+        if (mapping) {
+            // if already present, remove that mapping
+            const sub = await Subscription.findByIdAndRemove({ _id: req.body.subscriptionId });
+        }
+        // bring subscription package from pkg id and check with tenure and amount from package, assign limit on that basis
+        // create new mapping 
+        const SubscriptionIdRemQuotaMapping = await SubscriptionIdRemQuotaMapping.create({
+                subscriptionId: req.body.subscriptionId,
+                apiName: req.body.apiName,
+                limitRemaining: req.body.limitRemaining
+            })
 
         res.status(201).json({ message: "Subscription added successfully.", success: true, response: RSubscription });
     } catch (err) {
