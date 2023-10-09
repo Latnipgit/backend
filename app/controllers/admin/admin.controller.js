@@ -310,7 +310,7 @@ exports.updateSubscriptionPkgById = async(req, res) => {
             monthlyDiscount: req.body.monthlyDiscount,
             yearlylyDiscount: req.body.yearlylyDiscount
         }
-        const updatedSubPkg = await SubscriptionPkg.findByIdAndUpdate({ _id: req.body.subscriptionPkgId, subscriptionPkg });
+        const updatedSubPkg = await SubscriptionPkg.findByIdAndUpdate({ _id: req.body.subscriptionPkgId}, subscriptionPkg );
         res.status(201).json({ message: "Subscription Package updated.", success: true, response: updatedSubPkg});
     } catch (err) {
         console.log(err)
@@ -393,7 +393,7 @@ exports.updateSubPkgAPIQtMappingById = async(req, res) => {
             monthlyQuotaLimit: req.body.monthlyQuotaLimit,
             yearlyQuotaLimit: req.body.yearlyQuotaLimit
         }
-        const updatedMapp = await SubscriptionPkgAPIQuotaMapping.findByIdAndUpdate({ _id: req.body.quotaId, updateMapping });
+        const updatedMapp = await SubscriptionPkgAPIQuotaMapping.findByIdAndUpdate({ _id: req.body.quotaId}, updateMapping );
         res.status(201).json({ message: "Mapping updated.", success: true, response: updatedMapp});
     } catch (err) {
         console.log(err)

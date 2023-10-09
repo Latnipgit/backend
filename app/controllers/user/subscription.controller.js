@@ -68,7 +68,7 @@ exports.updateSubIdRemQtMappingById = async(req, res) => {
             apiName: req.body.apiName,
             limitRemaining: req.body.limitRemaining
         }
-        const updatedMapp = await SubscriptionIdRemQuotaMapping.findByIdAndUpdate({ _id: req.body.remQuotaId, updateMapping });
+        const updatedMapp = await SubscriptionIdRemQuotaMapping.findByIdAndUpdate({ _id: req.body.remQuotaId}, updateMapping);
         res.status(201).json({ message: "Mapping updated.", success: true, response: updatedMapp});
     } catch (err) {
         console.log(err)
