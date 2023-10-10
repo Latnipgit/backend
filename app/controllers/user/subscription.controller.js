@@ -1,7 +1,9 @@
 const db = require("../../models/user");
+const admin_db = require("../../models/admin");
 const commondb = require("../../models/common");
 const Subscription = db.subscription;
 const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
+const SubscriptionPkgAPIQuotaMapping = admin_db.subscriptionPkgAPIQuotaMapping;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -130,15 +132,24 @@ exports.addSubscription = async(req, res) => {
         
         const mapping = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId: req.body.subscriptionId, apiName: req.body.apiName});
         if (mapping) {
-            // if already present, remove that mapping
-            const sub = await Subscription.findByIdAndRemove({ _id: req.body.subscriptionId });
+            // after creating new subscription, if already mapping for that subscriber is present, remove that mapping, make new below
+            const sub = await SubscriptionIdRemQuotaMapping.findByIdAndRemove({ subscriptionId: req.body.subscriptionId });
         }
-        // bring subscription package from pkg id and check with tenure and amount from package, assign limit on that basis
-        // create new mapping 
+
+        // bring subscription package api quota from pkg id and check with tenure, assign limit on that basis
+        const tempObj = await SubscriptionPkgAPIQuotaMapping.findOne({subscriptionPkgId: req.body.subscriptionPkgId});
+        let limit = null;
+        if(req.body.tenure == "Monthly"){
+            limit = tempObj.monthlyQuotaLimit
+        }else if(req.body.tenure == "Yearly"){
+            limit = tempObj.yearlyQuotaLimit
+        }
+
+        // create new mapping for remaining quota
         const SubscriptionIdRemQuotaMapping = await SubscriptionIdRemQuotaMapping.create({
                 subscriptionId: req.body.subscriptionId,
                 apiName: req.body.apiName,
-                limitRemaining: req.body.limitRemaining
+                limitRemaining: limit
             })
 
         res.status(201).json({ message: "Subscription added successfully.", success: true, response: RSubscription });

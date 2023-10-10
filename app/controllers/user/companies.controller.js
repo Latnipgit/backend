@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
 const { ObjectId } = require('mongodb');
 const Companies = db.companies;
+const Subscription = db.subscription;
+const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
 const User = db.user;
 const config = process.env;
 const companyService = require("../../service/user/company.service");
@@ -82,6 +84,14 @@ exports.selectCompanyByCompanyId = async(req, res) => {
 // Find a single Company with an id
 exports.findOne = async(req, res) => {
     try{
+        // find in subscription by userId and isActive  => get subscription Id
+        // find Rem Quota mapp . limit remaining using sId
+        const sub = await Subscription.findOne({ userId: req.token.userDetails.id, isActive: true});
+        let updateData = {
+            limitRemaining: limitRemaining-1
+        }
+        const rem = await SubscriptionIdRemQuotaMapping.findByIdAndUpdate({_id : sub._id, apiName: "search"}, updateData);
+
         data = await companyService.findCompany(req.body);
         if (!data){
             res.status(404).send({ message: "Not found company ", success: false, response: ""});
