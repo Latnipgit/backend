@@ -8,16 +8,21 @@ const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
 const User = db.user;
 const config = process.env;
 
-// exports.addCompany = function(companyDetails) {
-//     return Companies.create({
-//         companyName: companyDetails.companyName,
-//         gstin: companyDetails.gstin,
-//         companyPan: companyDetails.companyPan,
-//     });
-// };
+exports.updateRemQuota = async function(userDetails) {
+    // find in subscription by userId and isActive  => get subscription Id
+    // find Rem Quota mapp . limit remaining using sId
 
-// exports.findCompany = function(companyDetails) {
-//     condition = {$and: [{$or: [{ companyPan: companyDetails.companyPan }, { gstin: companyDetails.gstin }]}, {"$regex": companyDetails.companyName,"$options":"i"} ]};
-//     return Companies.findOne(condition);
-// };
+    const sub = await Subscription.findOne({ userId: userDetails.id, isActive: true});
+        const subRemMapp = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId : sub._id, apiName: "search" });
+        let limitRemaining = subRemMapp.limitRemaining;
+        let updateData = {
+            limitRemaining: ((limitRemaining*1)-1).toString()
+        }
+        const filter = { subscriptionId: sub._id, apiName: "search" };
+        const update = { $set: updateData };
+
+        const result = await SubscriptionIdRemQuotaMapping.updateMany(filter, update);
+
+        return result;
+};
   

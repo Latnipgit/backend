@@ -129,28 +129,34 @@ exports.addSubscription = async(req, res) => {
                 tenure: req.body.tenure,
                 isActive: true
             })
-        
-        const mapping = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId: req.body.subscriptionId, apiName: req.body.apiName});
-        if (mapping) {
+
+        if (sub) {
             // after creating new subscription, if already mapping for that subscriber is present, remove that mapping, make new below
-            const sub = await SubscriptionIdRemQuotaMapping.findByIdAndRemove({ subscriptionId: req.body.subscriptionId });
+            const varx = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId: sub._id });
+            await SubscriptionIdRemQuotaMapping.findByIdAndRemove({ _id: varx._id });
         }
 
-        // bring subscription package api quota from pkg id and check with tenure, assign limit on that basis
-        const tempObj = await SubscriptionPkgAPIQuotaMapping.findOne({subscriptionPkgId: req.body.subscriptionPkgId});
-        let limit = null;
-        if(req.body.tenure == "Monthly"){
-            limit = tempObj.monthlyQuotaLimit
-        }else if(req.body.tenure == "Yearly"){
-            limit = tempObj.yearlyQuotaLimit
-        }
+        // bring subscription package api quota from pkg id and check with tenure, assign limit and apiName on that basis
+        let tempObj = await SubscriptionPkgAPIQuotaMapping.find({subscriptionPkgId: req.body.subscriptionPkgId});
+        for(let i = 0; i < tempObj.length; i++){
+            let limit = null;
+            let api = tempObj[i].apiName;
 
-        // create new mapping for remaining quota
-        const SubscriptionIdRemQuotaMapping = await SubscriptionIdRemQuotaMapping.create({
-                subscriptionId: req.body.subscriptionId,
-                apiName: req.body.apiName,
-                limitRemaining: limit
+            if(req.body.tenure == "Monthly"){
+                limit = tempObj[i].monthlyQuotaLimit;
+            }else if(req.body.tenure == "Yearly"){
+                limit = tempObj[i].yearlyQuotaLimit;
+            }
+
+            // create new mapping for remaining quota
+            await SubscriptionIdRemQuotaMapping.create({
+                    subscriptionId: RSubscription._id,
+                    apiName: api,
+                    limitRemaining: limit
             })
+        }
+        
+        
 
         res.status(201).json({ message: "Subscription added successfully.", success: true, response: RSubscription });
     } catch (err) {
