@@ -20,6 +20,8 @@ exports.create = (req, res) => {
                 billDescription: req.body.billDescription,
                 billNumber: req.body.billNumber,
                 creditAmount: req.body.creditAmount,
+                remainingAmount: req.body.creditAmount, 
+                status: "OPEN",
                 interestRate: req.body.interestRate,
                 creditorCompanyId: id,
                 creditLimitDays: req.body.creditLimitDays,

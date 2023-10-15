@@ -1,5 +1,6 @@
 module.exports = app => {
     const admin = require("../../controllers/admin/admin.controller.js");
+    const paymentHistory = require("../../controllers/admin/paymentHistory.controller.js");
 
     const router = require("express").Router();
     const jwt = require('jsonwebtoken');
@@ -10,7 +11,7 @@ module.exports = app => {
     router.post("/logout", auth, admin.logout);
     router.get("/getLoginInfo", auth, admin.getLoginInfo);
     router.get("/getAllAdmins",auth,admin.getAllAdmins);
-    router.post("/getalltransactions",auth,admin.getAllTransactions);
+    router.post("/getalltransactions",auth,paymentHistory.getAllTransactions);
     router.get("/getAllUsers",auth, admin.getAllUsers);
 
     // subscription pkg routes

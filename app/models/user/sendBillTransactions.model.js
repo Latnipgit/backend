@@ -11,6 +11,8 @@ module.exports = mongoose => {
         billDescription: String,
         billNumber: Number,
         creditAmount: Number,
+        remainingAmount: Number, 
+        status: String,
         interestRate: Number,
         creditLimitDays: Number,
         creditorCompanyId: String,

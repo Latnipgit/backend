@@ -20,7 +20,7 @@ exports.generateUserTokenWithCmpDetails = (user, cmp) => {
 exports.generateAdminToken = (admin) => {
     
             
-    const token = jwt.sign({"adminDetails" : { id: admin._id, emailId: admin.emailId, password: admin.password}},
+    const token = jwt.sign({"adminDetails" : { id: admin._id, emailId: admin.emailId, password: admin.password, adminRole: admin.adminRole}},
         process.env.TOKEN_KEY, {
             expiresIn: "2h",
         }

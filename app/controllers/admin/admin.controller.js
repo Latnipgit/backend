@@ -7,6 +7,7 @@ const SubscriptionPkgAPIQuotaMapping = db.subscriptionPkgAPIQuotaMapping;
 const commondb = require("../../models/common/");
 
 const Admin = db.admin;
+const PaymentHistory = db.paymentHistory;
 const SendBillTrans = user_db.sendBillTransactions;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
@@ -37,7 +38,7 @@ exports.addAdmin = async(req, res) => {
                 passwordChangeNeeded: true,
                 phoneNumber: req.body.phoneNumber,
                 joinedOn: new Date(0),
-                adminRole: "admin"
+                adminRole: req.body.adminRole
             })
         
             // Create token
@@ -224,7 +225,7 @@ exports.getAllAdmins = async(req, res) => {
 };
 exports.getAllTransactions = async(req, res) => {
     try {
-        let transactions = await SendBillTrans.find();
+        let transactions = await PaymentHistory.find();
         // return all transactions
         res.status(200).json({ message: "Transaction list fetched successfully.", success: true, response: transactions });
     } catch (err) {
