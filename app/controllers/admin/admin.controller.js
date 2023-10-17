@@ -5,6 +5,7 @@ const SubscriptionPkg = db.subscriptionPkg;
 const SubscriptionPkgAPIQuotaMapping = db.subscriptionPkgAPIQuotaMapping;
 
 const commondb = require("../../models/common/");
+const paymentHistory = require("../../service/admin/paymentHistory.service");
 
 const Admin = db.admin;
 const PaymentHistory = db.paymentHistory;
@@ -226,6 +227,14 @@ exports.getAllAdmins = async(req, res) => {
 exports.getAllTransactions = async(req, res) => {
     try {
         let transactions = await PaymentHistory.find();
+        let sendBill = null;
+        let detailed = [];
+        for(i=0; i<transactions.length; i++){
+            sendBill = await SendBillTrans.findOne({_id: transactions[i].invoiceId});
+            detailed[i] =  await sendBill.populate("debtor");
+        }
+        console.log(detailed);
+        //user =  await userService.getUserById( user._id ).populate("companies");
         // return all transactions
         res.status(200).json({ message: "Transaction list fetched successfully.", success: true, response: transactions });
     } catch (err) {
@@ -413,5 +422,39 @@ exports.deleteSubPkgAPIQtMappingById = async(req, res) => {
         res
             .status(500)
             .send({ message: "Something went wrong", success: false, reponse: "" });
+    }
+};
+
+exports.escalateRequest = async(req, res) => {
+    try {
+        // will receive paymentId and escalate in the body
+        const escObj = {
+            escalate: (req.body.escalate).toUpperCase(),
+            paymentId: req.body.paymentId
+        }
+        const result = null;
+        if(req.token.adminDetails.adminRole == "L1"){
+            result = await paymentHistory.updatePaymentHistoryForEscalate(escObj.pendingWith="L2");
+        }if(req.token.adminDetails.adminRole == "L2"){
+            result = await paymentHistory.updatePaymentHistoryForEscalate(escObj.pendingWith="L3");
+        }
+        return res.status(200).send({ message: "Issue Escalated", success: true, response: result });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", reponse: "", success: false });
+    }
+};
+
+exports.approveOrRejectPayment = async(req, res) => {
+    try {
+        
+        return res.status(200).send({ message: "Not Implemented", success: true, response: result });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", reponse: "", success: false });
     }
 };

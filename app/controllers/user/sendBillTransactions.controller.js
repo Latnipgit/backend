@@ -1,21 +1,28 @@
 const db = require("../../models/user");
+const admin_db = require("../../models/admin");
 const SendBillTransactions = db.sendBillTransactions;
 const Debtors = db.debtors;
+const PaymentHistory = admin_db.paymentHistory;
 
 // Create and Save a new Tutorial
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
+    try{
     // Validate request
-    var condition = { _id: req.body.debtorId };
-    Debtors.find(condition)
-        .then(debtor => {
-            debtor = debtor ? debtor[0] : null
-            console.log("debtor in send bill transaction", debtor)
-            const id = req.token.companyDetails.id;
+        const debtor = await Debtors.findOne({ _id: req.body.debtorId });
+            if (debtor) {
+                console.log("debtor in send bill transaction", debtor)
+                return res.status(409).send({ message: "debtor in send bill transaction", success: false, response: "" });
+            }
+        // Debtors.find(condition)
+        //     .then(debtor => {
+        //         debtor = debtor ? debtor[0] : null
+        //         console.log("debtor in send bill transaction", debtor)
+        //         const id = req.token.companyDetails.id;
 
-            // Create a Tutorial
-            const bill = new SendBillTransactions({
+            // Create a SendBillTransactions
+            const bill = await SendBillTransactions.create({
                 debtor: debtor,
-                debtorId: id,
+                debtorId: req.body.debtorId,
                 billDate: req.body.billDate,
                 billDescription: req.body.billDescription,
                 billNumber: req.body.billNumber,
@@ -23,30 +30,24 @@ exports.create = (req, res) => {
                 remainingAmount: req.body.creditAmount, 
                 status: "OPEN",
                 interestRate: req.body.interestRate,
-                creditorCompanyId: id,
+                creditorCompanyId: req.token.companyDetails.id,
                 creditLimitDays: req.body.creditLimitDays,
                 Remark: req.body.Remark
             });
 
-            // Save Tutorial in the database
-            bill
-                .save(bill)
-                .then(data => {
-                    res.send({message: data, success: true});
-                })
-                .catch(err => {
-                    res.status(500).send({
-                        message: err.message || "Some error occurred while creating the Tutorial.",
-                        success: false
-                    });
-                });
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while retrieving tutorials.",
-                success: false
+            const pmtHistory = await PaymentHistory.create({
+                invoiceId: bill.id,
+                status: "PENDING",
+                pendingWith: "L1"
             });
-        });
+
+        res.status(201).json({ message: "sendbill added successfully.", success: true, response: this.bill });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
 
 };
 
