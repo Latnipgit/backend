@@ -1,5 +1,8 @@
 const db = require("../../models/user");
 const commondb = require("../../models/common/");
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const User = db.user;
 const Companies = db.companies;
@@ -24,7 +27,12 @@ exports.signup = async(req, res) => {
         if (oldUser) {
             return res.status(409).send({ message: "User Already Exist.", success: false });
         }
-        password = commonUtil.generateRandomPassword()
+
+        if(process.env.ENV == "LOCAL"){
+            password = "password";
+        } else{
+            password = commonUtil.generateRandomPassword()
+        }
         let encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create a Tutorial
