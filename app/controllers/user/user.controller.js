@@ -115,6 +115,19 @@ exports.addEmployee = async(req, res) => {
     }
 };
 
+exports.getAllEmployees = async(req, res) => {
+    try {
+        let condition = { 'companies': { $in: [req.token.companyDetails.id] } };
+        let emmployees = await User.find(condition);
+        // return all members
+        res.status(200).json({ message: "Employee list fetched successfully.", success: true, response: emmployees });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
 exports.changePasswordUsingToken = async(req, res) => {
     try {
         var decodedToken = jwt.verify(req.body.passwordChangeToken, config.TOKEN_KEY)
