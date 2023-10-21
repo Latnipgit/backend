@@ -16,7 +16,7 @@ const crypto = require("crypto");
 
 
 exports.addUser = function(user) {
-        let passwordChangeNeeded = process.env.ENV == "LOCAL" ? false : true;
+    let passwordChangeNeeded = process.env.ENV == "LOCAL" ? false : true;
 
     return User.create({
         name: user.name,
@@ -26,22 +26,25 @@ exports.addUser = function(user) {
         password: user.password,
         emailId: user.emailId,
         role: user.role,
-        passwordChangeNeeded: passwordChangeNeeded
+        passwordChangeNeeded: passwordChangeNeeded,
+        permissions:  user.permissions
     });
 };
 
+
 exports.getUserById = function(userId) {
-    return User.findById(userId);
+    return  User.findById(userId);
 };
+
 
 exports.updateUser = function(userId) {
     //incomeplete method
-    return User.findByIdAndUpdate(userId);
+    return  User.findByIdAndUpdate(userId);
 };
 
 
 exports.addCompanyToUser = function(userId, company) {
-    return User.findByIdAndUpdate(
+    return  User.findByIdAndUpdate(
         userId,
       { $push: { companies: company._id } },
       { new: true, useFindAndModify: false }

@@ -13,11 +13,24 @@ module.exports = mongoose => {
         passwordChangeNeeded: Boolean,
         status: Boolean,
         token: { type: String },
+        permissions: [{ type: String}],
         companies: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'company'
+            ref: 'company',
+            options: { toJSON: { transform: true } } // This option will invoke toJSON on the populated documents
         }]
-    }, { timestamps: true });
+    },
+    {
+        timestamps: true,
+        toJSON: {
+            transform: function (doc, ret) {
+                const { __v, _id, ...object } = ret.toObject();
+                object.id = _id;
+                return object;
+            }
+        }    
+    }
+    );
 
     schema.method("toJSON", function() {
         const { __v, _id, ...object } = this.toObject();

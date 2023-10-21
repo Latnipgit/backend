@@ -13,6 +13,7 @@ exports.updateRemQuota = async function(userDetails) {
     // find Rem Quota mapp . limit remaining using sId
 
     const sub = await Subscription.findOne({ userId: userDetails.id, isActive: true});
+    if(sub){
         const subRemMapp = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId : sub._id, apiName: "search" });
         let limitRemaining = subRemMapp.limitRemaining;
         let updateData = {
@@ -24,5 +25,7 @@ exports.updateRemQuota = async function(userDetails) {
         const result = await SubscriptionIdRemQuotaMapping.updateMany(filter, update);
 
         return result;
+    } 
+    return null;
 };
   

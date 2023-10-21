@@ -19,6 +19,8 @@ const crypto = require("crypto");
 const service = require("../../service/user/");
 const userService = service.user;
 const companyService = service.company;
+var constants = require('../../constants/userConstants');
+
 
 exports.signup = async(req, res) => {
 
@@ -27,18 +29,17 @@ exports.signup = async(req, res) => {
         if (oldUser) {
             return res.status(409).send({ message: "User Already Exist.", success: false });
         }
-
+        let password = commonUtil.generateRandomPassword()
         if(process.env.ENV == "LOCAL"){
             password = "password";
-        } else{
-            password = commonUtil.generateRandomPassword()
         }
+
         let encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create a Tutorial
         req.body.role="OWNER";
         req.body.password= encryptedPassword;
-        let user = await userService.addUser( req.body );
+        let user =await userService.addUser( req.body );
         let companyDetails = {
             companyName: req.body.companyName,
             gstin: req.body.gstin,
@@ -47,7 +48,7 @@ exports.signup = async(req, res) => {
         const company = await companyService.addCompany(companyDetails)
         await userService.addCompanyToUser(user._id, company)
         
-        user =  await userService.getUserById( user._id ).populate("companies");
+        user = await userService.getUserById( user._id ).populate("companies");
         // user.token = jwtUtil.generateUserToken(user);
        // Save Tutorial in the database
        let replacements = [];
@@ -75,19 +76,28 @@ exports.addEmployee = async(req, res) => {
         if (oldUser) {
             return res.status(409).send({ message: "User Already Exist.", success: false });
         }
-        password = commonUtil.generateRandomPassword()
+        let password = commonUtil.generateRandomPassword()
+        if(process.env.ENV == "LOCAL"){
+            password = "password";
+        }
         let encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create a Tutorial
         req.body.role="EMPLOYEE";
         req.body.password= encryptedPassword;
         req.body._id = undefined;
+        let permissions = [];
+        req.body.permissions.forEach(row => {
+            if(row.allowed)
+                permissions.push(row.apiName);
+        })
+        req.body.permissions = permissions;
+        
         let user = await userService.addUser( req.body );
 
         await userService.addCompanyToUser(user._id, req.token.companyDetails)
-        user =  await userService.getUserById( user._id ).populate("companies");
+        user =await  userService.getUserById( user._id ).populate("companies");
         // user.token = jwtUtil.generateUserToken(user);
-       // Save Tutorial in the database
        let replacements = [];
        replacements.push({target: "password", value: password })
        mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)

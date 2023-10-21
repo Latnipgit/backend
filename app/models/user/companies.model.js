@@ -4,7 +4,18 @@ module.exports = mongoose => {
         companyName: String,
         gstin: String,
         companyPan: String,
-    }, { timestamps: true });
+    },
+    {
+        timestamps: true,
+        toJSON: {
+            transform: function (doc, ret) {
+                const { __v, _id, ...object } = ret.toObject();
+                object.id = _id;
+                return object;
+            }
+        }    
+    }
+    );
 
     schema.method("toJSON", function() {
         const { __v, _id, ...object } = this.toObject();

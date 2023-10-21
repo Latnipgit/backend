@@ -89,12 +89,15 @@ exports.findOne = async(req, res) => {
         // find Rem Quota mapp . limit remaining using sId
         const updateRemQuota = await subscriptionService.updateRemQuota(req.token.userDetails);
 
-
-        data = await companyService.findCompany(req.body);
-        if (!data){
-            res.status(404).send({ message: "Not found company ", success: false, response: ""});
-        }else{
-            res.status(200).json({ message: "Search successful", success: true, response: data});
+        if(updateRemQuota){
+            data = await companyService.findCompany(req.body);
+            if (!data){
+                res.status(404).send({ message: "Not found company ", success: false, response: ""});
+            }else{
+                res.status(200).json({ message: "Search successful", success: true, response: data});
+            }
+        } else{
+            res.status(200).send({ message: "you don't have an active subscription. Please purchase one suubscription to continue.", success: false, response: ""});
         }
     } catch (error) {
         console.log(error)
