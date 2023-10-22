@@ -226,7 +226,7 @@ exports.getAllAdmins = async(req, res) => {
 };
 exports.getAllTransactions = async(req, res) => {
     try {
-        let transactions = await PaymentHistory.find();
+        let transactions = await PaymentHistory.find({ pendingWith: req.token.adminDetails.adminRole });
         let sendBill = null;
         let detailed = [];
         for(i=0; i<transactions.length; i++){
