@@ -9,6 +9,7 @@ const User = user_db.user;
 const config = process.env;
 
 exports.updatePaymentHistoryForEscalate = function(escObj) {
+    console.log(escObj);
     return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {pendingWith: escObj.pendingWith});
 };
   

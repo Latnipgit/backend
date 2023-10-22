@@ -433,15 +433,16 @@ exports.deleteSubPkgAPIQtMappingById = async(req, res) => {
 exports.escalateRequest = async(req, res) => {
     try {
         // will receive paymentId and escalate in the body
-        const escObj = {
-            escalate: (req.body.escalate).toUpperCase(),
-            paymentId: req.body.paymentId
-        }
-        const result = null;
+        let pendingWith= "";
+        let paymentId= req.body.paymentId;
+        
+        let result = null;
         if(req.token.adminDetails.adminRole == "L1"){
-            result = await paymentHistory.updatePaymentHistoryForEscalate(escObj.pendingWith="L2");
+            pendingWith="L2";
+            result = await paymentHistory.updatePaymentHistoryForEscalate({pendingWith, paymentId});
         }if(req.token.adminDetails.adminRole == "L2"){
-            result = await paymentHistory.updatePaymentHistoryForEscalate(escObj.pendingWith="L3");
+            pendingWith="L2";
+            result = await paymentHistory.updatePaymentHistoryForEscalate({pendingWith, paymentId});
         }
         return res.status(200).send({ message: "Issue Escalated", success: true, response: result });
     } catch (err) {

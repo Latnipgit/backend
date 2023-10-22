@@ -12,8 +12,8 @@ module.exports = app => {
     router.get("/getAllAdmins",auth,admin.getAllAdmins);
     router.post("/getalltransactions",auth,admin.getAllTransactions);
     router.get("/getAllUsers",auth, admin.getAllUsers);
-    router.get("/escalateRequest",auth, admin.escalateRequest);
-    router.get("/approveOrRejectPayment",auth, admin.approveOrRejectPayment);
+    router.post("/escalateRequest",auth, admin.escalateRequest);
+    router.post("/approveOrRejectPayment",auth, admin.approveOrRejectPayment);
 
     // subscription pkg routes
     router.post("/addSubscriptionPkg",auth, admin.addSubscriptionPkg);
