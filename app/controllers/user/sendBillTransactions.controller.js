@@ -9,9 +9,9 @@ exports.create = async(req, res) => {
     try{
     // Validate request
         const debtor = await Debtors.findOne({ _id: req.body.debtorId });
-            if (debtor) {
-                console.log("debtor in send bill transaction", debtor)
-                return res.status(409).send({ message: "debtor in send bill transaction", success: false, response: "" });
+            if (!debtor) {
+                console.log("debtor not found", req.body.debtorId)
+                return res.status(409).send({ message: "debtor not found", success: false, response: "" });
             }
         // Debtors.find(condition)
         //     .then(debtor => {

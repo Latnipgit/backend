@@ -231,12 +231,17 @@ exports.getAllTransactions = async(req, res) => {
         let detailed = [];
         for(i=0; i<transactions.length; i++){
             sendBill = await SendBillTrans.findOne({_id: transactions[i].invoiceId});
-            detailed[i] =  await sendBill.populate("debtor");
+
+            let deb =  await sendBill.populate("debtor");
+            let paymentHistory = transactions[i];
+
+            detailed[i] = { paymentHistory, Invoice: sendBill, debtor: deb.debtor };
+            // detailed[i] =  await sendBill.populate("debtor");
         }
-        console.log(detailed);
+        // console.log(detailed);
         //user =  await userService.getUserById( user._id ).populate("companies");
         // return all transactions
-        res.status(200).json({ message: "Transaction list fetched successfully.", success: true, response: transactions });
+        res.status(200).json({ message: "Transaction list fetched successfully.", success: true, response: detailed });
     } catch (err) {
         console.log(err)
         res
