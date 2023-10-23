@@ -23,6 +23,7 @@ exports.addCompany = async(req, res) => {
 
         const company = await companyService.addCompany(req.body);
         await userService.addCompanyToUser(req.token.userDetails.id, company);
+        const user = await userService.getUserById( req.token.userDetails.id ).populate("companies");
         // await userService.addUserToCompany(company._id, loggedInUser);
         // return new user
         res.status(200).json({message: 'Users list fetched.', success: true, response: company});
