@@ -9,6 +9,8 @@ const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
 const User = db.user;
 const config = process.env;
 const companyService = require("../../service/user/company.service");
+const service = require("../../service/user/");
+const userService = service.user;
 const subscriptionService = require("../../service/user/subscription.service");
 
 // Create and Save a new Tutorial
@@ -20,6 +22,7 @@ exports.addCompany = async(req, res) => {
         const loggedInUser = await User.findOne({ emailId: req.token.userDetails.emailId });
 
         const company = await companyService.addCompany(req.body);
+        await userService.addCompanyToUser(req.token.userDetails.id, company);
         // await userService.addUserToCompany(company._id, loggedInUser);
         // return new user
         res.status(200).json({message: 'Users list fetched.', success: true, response: company});
