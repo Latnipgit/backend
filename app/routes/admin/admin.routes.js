@@ -13,6 +13,7 @@ module.exports = app => {
     router.post("/getalltransactions",auth,admin.getAllTransactions);
     router.get("/getAllUsers",auth, admin.getAllUsers);
     router.post("/escalateRequest",auth, admin.escalateRequest);
+    router.post("/initiatePaymentVerification",auth, admin.initiatePaymentVerification);
     router.post("/approveOrRejectPayment",auth, admin.approveOrRejectPayment);
 
     // subscription pkg routes

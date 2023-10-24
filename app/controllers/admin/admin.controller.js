@@ -453,10 +453,49 @@ exports.escalateRequest = async(req, res) => {
     }
 };
 
+exports.initiatePaymentVerification = async(req, res) => {
+    try {
+        const pmtHistory = await PaymentHistory.create({
+            invoiceId: req.body.invoiceId,
+            amtPaid: req.body.amtPaid,
+            proofFiles: "",
+            status: "PENDING",
+            pendingWith: "L1"
+        });
+
+        return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", reponse: "", success: false });
+    }
+};
+
 exports.approveOrRejectPayment = async(req, res) => {
     try {
-        
-        return res.status(200).send({ message: "Not Implemented", success: true, response: result });
+        let status = null;
+        let paymentId= req.body.paymentId;
+        let amtPaid = req.body.amtPaid;
+
+        if(req.body.approve == true){
+            status = "APPROVED";
+            result = await paymentHistory.updatePaymentHistoryStatus({status, paymentId});
+            let invoice = await SendBillTrans.findOne({_id: result.invoiceId});
+            //let paymentHistoryAndInvoice =  await result.populate("invoice");
+
+            let newRemainingAmount = invoice.remainingAmount - amtPaid;
+
+            let updatedSendBill = await SendBillTrans.findByIdAndUpdate({_id: result.invoiceId}, {remainingAmount: newRemainingAmount});
+
+            return res.status(200).send({ message: "Payment Approved!", success: true, response: {invoice, updatedSendBill} });
+
+        }else if(req.body.approve == false){
+            status = "REJECTED";
+            result = await paymentHistory.updatePaymentHistoryStatus({status, paymentId});
+            return res.status(200).send({ message: "Payment Rejected", success: true, response: result });
+        }
+        // return res.status(409).send({ message: "Not Implemented", success: true, response: result });
     } catch (err) {
         console.log(err)
         res

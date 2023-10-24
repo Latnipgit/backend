@@ -12,4 +12,9 @@ exports.updatePaymentHistoryForEscalate = function(escObj) {
     console.log(escObj);
     return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {pendingWith: escObj.pendingWith});
 };
+
+exports.updatePaymentHistoryStatus = function(escObj) {
+    console.log(escObj);
+    return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {status: escObj.status});
+};
   

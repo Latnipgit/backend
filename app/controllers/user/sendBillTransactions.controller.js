@@ -35,12 +35,6 @@ exports.create = async(req, res) => {
                 Remark: req.body.Remark
             });
 
-            const pmtHistory = await PaymentHistory.create({
-                invoiceId: bill.id,
-                status: "PENDING",
-                pendingWith: "L1"
-            });
-
         res.status(201).json({ message: "sendbill added successfully.", success: true, response: this.bill });
     } catch (err) {
         console.log(err)
