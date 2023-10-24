@@ -238,7 +238,6 @@ exports.changePasswordUsingOldPass = async(req, res) => {
 
 
 
-// Find a single Tutorial with an id
 exports.authenticateUser = async(req, res) => {
     try {
         const id = req.body.userName;

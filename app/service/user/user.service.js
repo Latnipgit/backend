@@ -21,8 +21,8 @@ exports.addUser = function(user) {
     return User.create({
         name: user.name,
         userName: user.emailId,
-        companyPan: user.companyPan,
-        mobile: user.mobile,
+        phoneNumber: user.mobile,
+        aadharCardNo: user.aadharCardNo,
         password: user.password,
         emailId: user.emailId,
         role: user.role,
