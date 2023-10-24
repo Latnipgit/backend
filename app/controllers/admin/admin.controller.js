@@ -488,7 +488,7 @@ exports.approveOrRejectPayment = async(req, res) => {
 
             let updatedSendBill = await SendBillTrans.findByIdAndUpdate({_id: result.invoiceId}, {remainingAmount: newRemainingAmount});
 
-            return res.status(200).send({ message: "Payment Approved!", success: true, response: {invoice, updatedSendBill} });
+            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, updatedSendBill} });
 
         }else if(req.body.approve == false){
             status = "REJECTED";
