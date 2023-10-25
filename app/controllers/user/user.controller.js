@@ -69,6 +69,31 @@ exports.signup = async(req, res) => {
 };
 
 
+exports.updateUserData = async(req, res) => {
+
+    try {
+        const oldUser = await User.findOne({ emailId: req.token.userDetails.emailId });
+        if (!oldUser) {
+            return res.status(409).send({ message: "User does not exist.", success: false });
+        }
+        let password = commonUtil.generateRandomPassword()
+        let encryptedPassword = await bcrypt.hash(password, 10);
+        req.body.password= encryptedPassword;
+        let user =await userService.updateUser(req.token.userDetails.id, req.body);        
+        user = await userService.getUserById( user._id ).populate("companies");
+        user.token = jwtUtil.generateUserToken(user);
+
+       res.status(200).json({success: true, response: user });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+};
+
+
 exports.addEmployee = async(req, res) => {
 
     try {

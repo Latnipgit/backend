@@ -37,9 +37,14 @@ exports.getUserById = function(userId) {
 };
 
 
-exports.updateUser = function(userId) {
-    //incomeplete method
-    return  User.findByIdAndUpdate(userId);
+exports.updateUser = function(userId, user) {
+    let updates= {
+        name: user.name,
+        phoneNumber: user.mobile,
+        aadharCardNo: user.aadharCardNo,
+        password: user.password,
+    }
+    return  User.findByIdAndUpdate(userId, updates);
 };
 
 

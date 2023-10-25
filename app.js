@@ -60,7 +60,6 @@ app.get("/", (req, res) => {
     res.json({ message: "Welcome to bezkoder application." });
 });
 
-require("./app/routes/user/turorial.routes")(app);
 require("./app/routes/user/user.routes")(app);
 require("./app/routes/user/debtors.routes")(app);
 require("./app/routes/user/companies.routes")(app);
@@ -70,6 +69,7 @@ require("./app/routes/user/dashboard.routes")(app);
 require("./app/routes/user/subscription.routes")(app);
 require("./app/routes/admin/admin.routes")(app);
 require("./app/routes/common/mailTemplates.routes")(app);
+require("./app/routes/admin/paymentHistory.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || process.env.API_PORT;
