@@ -8,7 +8,7 @@ exports.getAllApprovedTransactions = async(req, res) => {
             status: "APPROVED",
         });
 
-        return res.status(409).send({ message: "", success: true, response: approvedTransactions });
+        return res.status(200).send({ message: "", success: true, response: approvedTransactions });
     } catch (err) {
         console.log(err)
         res
@@ -24,7 +24,7 @@ exports.getAllDisputedTransactions = async(req, res) => {
             status: "REJECTED",
         });
 
-        return res.status(409).send({ message: "", success: true, response: disputedTransactions });
+        return res.status(200).send({ message: "", success: true, response: disputedTransactions });
     } catch (err) {
         console.log(err)
         res
