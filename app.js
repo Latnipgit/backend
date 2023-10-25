@@ -75,4 +75,5 @@ require("./app/routes/admin/paymentHistory.routes")(app);
 const PORT = process.env.PORT || process.env.API_PORT;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
+    console.log("started in "+ process.env.ENV+" mode")
 });

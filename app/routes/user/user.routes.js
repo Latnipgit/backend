@@ -9,6 +9,7 @@ module.exports = app => {
 
     // Create a new Tutorial
     router.post("/signup", user.signup);
+
     router.post("/addEmployee",auth,Authorization.AuthorizeOwner,  user.addEmployee);
     router.post("/getAllEmployee",auth,Authorization.AuthorizeOwner,  user.getAllEmployees);
     router.post("/login", user.authenticateUser);
@@ -21,6 +22,11 @@ module.exports = app => {
     router.post("/changePasswordUsingOldPass", auth, user.changePasswordUsingOldPass);
     router.post("/forgetPassword", user.forgetPassword);
     router.post("/password-reset/:userId/:token", user.forgetPasswordLink);
+
+
+    //Temporary APis
+    router.post("/delete", user.deleteUser);
+    router.post("/changePasswordForce", user.changePasswordForce);
 
     app.use("/api/user", router);
 };

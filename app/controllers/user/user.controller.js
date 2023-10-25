@@ -140,6 +140,7 @@ exports.addEmployee = async(req, res) => {
     }
 };
 
+
 exports.getAllEmployees = async(req, res) => {
     try {
         let condition = { 'companies': { $in: [req.token.companyDetails.id] } };
@@ -173,6 +174,8 @@ exports.changePasswordUsingToken = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 };
+
+
 
 
 exports.forgetPassword = async(req, res) => {
@@ -304,3 +307,38 @@ exports.getLoginInfo = async(req, res) => {
         res.status(403).send({ message: "Unauthorised", success: false });
 };
 
+
+//Temporary APIs
+exports.changePasswordForce = async(req, res) => {
+    try {
+        var query = {emailId: req.body.emailId};
+        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) ,passwordChangeNeeded: false}};
+        let out =await User.findOneAndUpdate(query, newvalues)
+        
+        if(out) {
+            res.status(200).json({message: "Password changed successfully.",  success: true});
+        } else {
+            res.status(200).json({message: "User does not exists.",  success: false});
+        }
+    }catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
+
+exports.deleteUser = async(req, res) => {
+
+    try {
+        await User.deleteOne({ emailId: req.body.emailId});
+        res.status(201).json({success: true, message: "User deleted successfully." });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+};
