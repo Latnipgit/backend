@@ -16,7 +16,13 @@ module.exports = mongoose => {
         interestRate: Number,
         creditLimitDays: Number,
         creditorCompanyId: String,
-        Remark: String
+        remark: String,
+
+        referenceNumber: String,
+        invoiceNumber: String,
+        dueDate: String,
+        percentage: String,
+        
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

@@ -1,12 +1,22 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema({
         debtorId: String,
-        ownerName: String,
-        ownerMobile: String,
         companyName: String,
         gstin: String,
         companyPan: String,
-        creditorCompanyId: String
+        creditorCompanyId: String,
+
+        debtorType: String,
+        salutation: String,
+        firstname: String,
+        lastname: String,
+        customerEmail: String,
+        customerMobile: String,
+        address1:String,
+        address2: String,
+        city: String,
+        state: String,
+        zipcode: String
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

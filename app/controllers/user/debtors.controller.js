@@ -17,11 +17,22 @@ exports.add = async(req, res) => {
         const id = req.token.companyDetails.id
         //console.log("logged in company details", req.body.companyDetails)
         const debtor = new Debtors({
-            ownerName: req.body.ownerName,
-            ownerMobile: req.body.ownerMobile,
             companyName: req.body.companyName,
             gstin: req.body.gstin,
             companyPan: req.body.companyPan,
+
+            debtorType: req.body.debtorType,
+            salutation: req.body.salutation,
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            customerEmail: req.body.customerEmail,
+            customerMobile: req.body.customerMobile,
+            address1: req.body.address1,
+            address2: req.body.address2,
+            city: req.body.city,
+            state: req.body.state,
+            zipcode: req.body.zipcode,
+
             creditorCompanyId: id
         });
         const data = await debtor.save(debtor);
@@ -42,7 +53,7 @@ exports.getDebtors = async(req, res) => {
     try{
 
         const id = req.token.companyDetails.id;
-        var condition = { creditorCompanyId: id };
+        let condition = { creditorCompanyId: id };
         const data = await Debtors.find(condition)
         res.send({message: 'found', success: true, response: data});
 
@@ -62,7 +73,7 @@ exports.getCreditors = async(req, res) => {
     try{
 
         const pancard = req.body.session.companyDetails.companyPan;
-        var condition = { companyPan: pancard };
+        let condition = { companyPan: pancard };
 
         const data = await Debtors.find(condition)
         res.send({message: 'found creditors', success: true, response: data});
