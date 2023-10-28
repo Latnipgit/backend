@@ -13,7 +13,7 @@ module.exports = app => {
     router.get("/getAllInvoicesRaisedByMe", auth, debtors.getAllInvoicesRaisedByMe);
 
     // get debtors of current company
-    router.post("/", debtors.getDebtors);
+    router.post("/", auth, debtors.getDebtors);
 
 
     // // Retrieve all Tutorials
