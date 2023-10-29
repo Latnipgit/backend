@@ -1,10 +1,12 @@
 module.exports = app => {
     const dashboard = require("../../controllers/user/dashboard.controller.js");
+    const auth = require("../../middleware/authentication.js");
 
     var router = require("express").Router();
 
     // send bill
-    router.post("/getData", dashboard.getData);
+    // router.post("/getData", auth, dashboard.getData);
+    router.post("/getAdminData", auth, dashboard.getAdminData);
 
     // // Retrieve all Tutorials
     // router.get("/", tutorials.findAll);
