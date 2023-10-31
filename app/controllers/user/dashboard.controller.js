@@ -87,7 +87,7 @@ exports.getAdminData = async(req, res) => {
             //         console.log("debtor in send bill transaction", debtor)
             //         const id = req.token.companyDetails.id;
     
-            res.status(201).json({ message: "sendbill added successfully.", success: true, response: response });
+            res.status(200).json({ message: "", success: true, response: response });
         } catch (err) {
             console.log(err)
             res
