@@ -6,19 +6,14 @@ const PaymentHistory = admin_db.paymentHistory;
 
 exports.create = async(req, res) => {
     try{
-    // Validate request
+        // Validate request
         const debtor = await Debtors.findOne({ _id: req.body.debtorId });
         if (!debtor) {
             console.log("debtor not found", req.body.debtorId)
             return res.status(409).send({ message: "debtor not found", success: false, response: "" });
-        }
-        // Debtors.find(condition)
-        //     .then(debtor => {
-        //         debtor = debtor ? debtor[0] : null
-        //         console.log("debtor in send bill transaction", debtor)
-        //         const id = req.token.companyDetails.id;
+        };
 
-            // Create a SendBillTransactions
+        // Create a SendBillTransactions
         const bill = await SendBillTransactions.create({
             debtor: debtor,
             debtorId: req.body.debtorId,
@@ -32,6 +27,9 @@ exports.create = async(req, res) => {
             creditorCompanyId: req.token.companyDetails.id,
             creditLimitDays: req.body.creditLimitDays,
             remark: req.body.remark,
+            items: req.body.items,
+            subTotal: req.body.subTotal,
+            tax: req.body.tax,
 
             referenceNumber: req.body.referenceNumber,
             invoiceNumber: req.body.invoiceNumber,

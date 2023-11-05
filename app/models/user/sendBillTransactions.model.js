@@ -17,6 +17,9 @@ module.exports = mongoose => {
         creditLimitDays: Number,
         creditorCompanyId: String,
         remark: String,
+        items: [{ type: Object}],
+        subTotal: Number,
+        tax: Number,
 
         referenceNumber: String,
         invoiceNumber: String,
