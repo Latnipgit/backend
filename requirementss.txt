@@ -35,3 +35,7 @@ queries:
  - in debtor do we need to display all the companies list ?
 because if we don't give this option same debtor will be added by multiple creditors and duplicate comapnies we will see in our database
 
+invoice status :
+pending
+paid
+partially paid

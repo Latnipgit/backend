@@ -6,6 +6,11 @@ module.exports = app => {
 
     // send bill
     router.post("/create",auth, sendBillTransactions.create);
+    router.get("/getAllInvoicesSentToMe", auth, sendBillTransactions.getAllInvoicesSentToMe);
+    router.get("/getAllInvoicesRaisedByMe", auth, sendBillTransactions.getAllInvoicesRaisedByMe);
+    router.get("/getInvoicesForDefaulting", auth, sendBillTransactions.getInvoicesForDefaulting);
+    router.post("/proceedToDefault", auth, sendBillTransactions.proceedToDefault);
+
 
     app.use("/api/transactions", router);
 };

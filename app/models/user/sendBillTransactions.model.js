@@ -23,7 +23,7 @@ module.exports = mongoose => {
 
         referenceNumber: String,
         invoiceNumber: String,
-        dueDate: String,
+        dueDate: Date,
         percentage: String,
         
     }, { timestamps: true });

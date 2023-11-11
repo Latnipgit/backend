@@ -118,34 +118,3 @@ exports.getAllCreditorsByCompanyId = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 }
-
-exports.getAllInvoicesSentToMe = async(req, res) => {
-    try{
-        const dbtrs = await Debtors.find({gstin:req.token.companyDetails.gstin});
-        //console.log(dbtrs);
-        let crdtrs = [];
-        for(let i = 0; i < dbtrs.length; i++){
-            //console.log(dbtrs[i]);
-            crdtrs[i] = await SendBillTrans.findOne({creditorCompanyId:dbtrs[i].creditorCompanyId});
-            //console.log(crdtrs[i]);
-        }
-        res.status(200).json({message: 'Invoices sent for you are fetched', success: true, response: crdtrs});
-    }catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-exports.getAllInvoicesRaisedByMe = async(req, res) => {
-    try{
-        const invoices = await SendBillTrans.find({creditorCompanyId:req.token.companyDetails.id});
-        res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
-    }catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}

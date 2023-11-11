@@ -22,7 +22,7 @@ exports.create = async(req, res) => {
             billNumber: req.body.billNumber,
             creditAmount: req.body.creditAmount,
             remainingAmount: req.body.creditAmount, 
-            status: "OPEN",
+            status: "PENDING",
             interestRate: req.body.interestRate,
             creditorCompanyId: req.token.companyDetails.id,
             creditLimitDays: req.body.creditLimitDays,
@@ -47,4 +47,68 @@ exports.create = async(req, res) => {
     }
 
 };
+
+
+exports.getAllInvoicesSentToMe = async(req, res) => {
+    try{
+        const dbtrs = await Debtors.find({gstin:req.token.companyDetails.gstin});
+        //console.log(dbtrs);
+        let crdtrs = [];
+        for(const element of dbtrs){
+            //console.log(dbtrs[i]);
+            crdtrs.push(...( await SendBillTransactions.find({creditorCompanyId:element.creditorCompanyId})));
+            //console.log(crdtrs[i]);
+        }
+        res.status(200).json({message: 'Invoices sent for you are fetched', success: true, response: crdtrs});
+    }catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+exports.getAllInvoicesRaisedByMe = async(req, res) => {
+    try{
+        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id});
+        res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
+    }catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+
+exports.getInvoicesForDefaulting = async(req, res) => {
+    try{
+        const currentDate = new Date();
+        const invoices = await SendBillTransactions.find({status : { $ne: 'PAID'}, dueDate: { $lt: currentDate }});
+        res.status(200).json({message: '', success: true, response: invoices});
+    } catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+
+exports.proceedToDefault = async(req, res) => {
+    try{
+        const invoice = await SendBillTransactions.findByIdAndUpdate(
+            req.body.invoiceId
+            ,
+            { status: 'DEFAULTED' },
+            { new: true }
+          );
+        res.status(200).json({message: '', success: true, response: invoice});
+    } catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
 
