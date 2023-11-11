@@ -3,6 +3,7 @@ module.exports = app => {
     const router = require("express").Router();
     const jwt = require('jsonwebtoken');
     const auth = require("../../middleware/authentication.js");
+    const Authorization = require("../../middleware/userAuthorizations.js");
 
     // send bill
     router.post("/create",auth, sendBillTransactions.create);
@@ -10,7 +11,9 @@ module.exports = app => {
     router.get("/getAllInvoicesRaisedByMe", auth, sendBillTransactions.getAllInvoicesRaisedByMe);
     router.get("/getInvoicesForDefaulting", auth, sendBillTransactions.getInvoicesForDefaulting);
     router.post("/proceedToDefault", auth, sendBillTransactions.proceedToDefault);
+    router.post("/initiatePaymentVerification",auth, sendBillTransactions.initiatePaymentVerification);
 
+    router.use(Authorization.commpanyLoginValidation);
 
     app.use("/api/transactions", router);
 };

@@ -12,6 +12,16 @@ module.exports.AuthorizeOwner = (req, res, next) => {
     }
 }
 
+// Authorization Middleware
+module.exports.commpanyLoginValidation = (req, res, next) => {
+  // Check if the user has the required role or permission
+    if (req.token && req.token.companyDetails.id) {
+      next(); // Allow access to the protected route
+    } else {
+      res.status(403).json({ message: 'Company Login is mandatory for accessing this route.', success: false});
+    }
+}
+
 module.exports.CheckAccessForEmployee = async (req, res, next) => {
   // Check if the user has the required role or permission
     if (req.token && req.token.userDetails.role =='OWNER') {

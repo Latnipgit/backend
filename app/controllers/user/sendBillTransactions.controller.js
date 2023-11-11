@@ -1,4 +1,6 @@
 const db = require("../../models/user");
+const commondb = require("../../models/common/");
+const Documents = commondb.documents;
 const admin_db = require("../../models/admin");
 const SendBillTransactions = db.sendBillTransactions;
 const Debtors = db.debtors;
@@ -13,6 +15,11 @@ exports.create = async(req, res) => {
             return res.status(409).send({ message: "debtor not found", success: false, response: "" });
         };
 
+        let purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
+        let challanDocument = await Documents.findById(req.body.challanDocument);
+        let invoiceDocument = await Documents.findById(req.body.invoiceDocument);
+        let transportationDocument = await Documents.findById(req.body.transportationDocument);
+        
         // Create a SendBillTransactions
         const bill = await SendBillTransactions.create({
             debtor: debtor,
@@ -34,11 +41,15 @@ exports.create = async(req, res) => {
             referenceNumber: req.body.referenceNumber,
             invoiceNumber: req.body.invoiceNumber,
             dueDate: req.body.dueDate,
-            percentage: req.body.percentage
+            percentage: req.body.percentage,
 
+            purchaseOrderDocument: purchaseOrderDocument,
+            challanDocument: challanDocument,
+            invoiceDocument: invoiceDocument,
+            transportationDocument: transportationDocument
         });
 
-        res.status(201).json({ message: "sendbill added successfully.", success: true, response: this.bill });
+        res.status(201).json({ message: "sendbill added successfully.", success: true, response: bill });
     } catch (err) {
         console.log(err)
         res
@@ -112,3 +123,24 @@ exports.proceedToDefault = async(req, res) => {
     }
 }
 
+
+//payment history
+
+exports.initiatePaymentVerification = async(req, res) => {
+    try {
+        const pmtHistory = await PaymentHistory.create({
+            invoiceId: req.body.invoiceId,
+            amtPaid: req.body.amtPaid,
+            proofFiles: "",
+            status: "PENDING",
+            pendingWith: "L1"
+        });
+
+        return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", reponse: "", success: false });
+    }
+};

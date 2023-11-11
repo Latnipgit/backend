@@ -1,5 +1,5 @@
 const db = require("../../models/common/");
-const MailTemplates = require("../../models/common").mailTemplates;
+const MailTemplates = db.mailTemplates;
 
 exports.getMailTemplate = async(mailType, replacements) => {
     var template;

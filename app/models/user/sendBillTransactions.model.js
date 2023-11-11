@@ -26,6 +26,22 @@ module.exports = mongoose => {
         dueDate: Date,
         percentage: String,
         
+        purchaseOrderDocument: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        },
+        challanDocument: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        },
+        invoiceDocument: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        },
+        transportationDocument: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        },
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

@@ -232,7 +232,7 @@ exports.getAllTransactions = async(req, res) => {
         for(i=0; i<transactions.length; i++){
             sendBill = await SendBillTrans.findOne({_id: transactions[i].invoiceId});
 
-            let deb =  await sendBill.populate("debtor");
+            let deb =  await sendBill.populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
             let paymentHistory = transactions[i];
 
             detailed[i] = { paymentHistory, Invoice: sendBill, debtor: deb.debtor };
@@ -445,25 +445,6 @@ exports.escalateRequest = async(req, res) => {
             result = await paymentHistory.updatePaymentHistoryForEscalate({pendingWith, paymentId});
         }
         return res.status(200).send({ message: "Issue Escalated", success: true, response: result });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", reponse: "", success: false });
-    }
-};
-
-exports.initiatePaymentVerification = async(req, res) => {
-    try {
-        const pmtHistory = await PaymentHistory.create({
-            invoiceId: req.body.invoiceId,
-            amtPaid: req.body.amtPaid,
-            proofFiles: "",
-            status: "PENDING",
-            pendingWith: "L1"
-        });
-
-        return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
     } catch (err) {
         console.log(err)
         res

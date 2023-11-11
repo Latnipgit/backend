@@ -99,6 +99,7 @@ require("./app/routes/user/subscription.routes")(app);
 require("./app/routes/admin/admin.routes")(app);
 require("./app/routes/common/mailTemplates.routes")(app);
 require("./app/routes/admin/paymentHistory.routes")(app);
+require("./app/routes/common/fileUpload.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || process.env.API_PORT;
