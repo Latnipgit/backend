@@ -5,7 +5,6 @@ module.exports = app => {
     const jwt = require('jsonwebtoken');
     const auth = require("../../middleware/authentication.js");
     const Authorization = require("../../middleware/userAuthorizations.js");
-    router.use(Authorization.commpanyLoginValidation);
 
     // Add a debtor
     router.post("/add",auth,debtors.add);
@@ -29,6 +28,7 @@ module.exports = app => {
 
     // // Create a new Tutorial
     // router.delete("/", tutorials.deleteAll);
+    router.use(Authorization.commpanyLoginValidation);
 
     app.use("/api/debtors", router);
 };
