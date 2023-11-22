@@ -299,8 +299,9 @@ exports.logout = (req, res) => {
     req.session.destroy();
 };
 exports.getLoginInfo = async(req, res) => {
-    const loggedInUser = await User.findOne({ _id: req.token.userDetails.id });
-
+    let loggedInUser = await User.findOne({ _id: req.token.userDetails.id });
+    let company = await Companies.findOne({_id: req.token.companyDetails.id});
+    loggedInUser = {...loggedInUser.toJSON(),loggedInCompany : company};
     if (loggedInUser) {
         res.send({message: 'Login Info', success: true, response: loggedInUser});
     } else

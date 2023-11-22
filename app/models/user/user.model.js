@@ -16,18 +16,7 @@ module.exports = mongoose => {
         companies: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'company',
-            options: { toJSON: { transform: true } } // This option will invoke toJSON on the populated documents
         }]
-    },
-    {
-        timestamps: true,
-        toJSON: {
-            transform: function (doc, ret) {
-                const { __v, _id, ...object } = ret.toObject();
-                object.id = _id;
-                return object;
-            }
-        }    
     }
     );
 
