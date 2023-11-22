@@ -15,10 +15,14 @@ exports.create = async(req, res) => {
             return res.status(409).send({ message: "debtor not found", success: false, response: "" });
         };
 
-        let purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
-        let challanDocument = await Documents.findById(req.body.challanDocument);
-        let invoiceDocument = await Documents.findById(req.body.invoiceDocument);
-        let transportationDocument = await Documents.findById(req.body.transportationDocument);
+        let purchaseOrderDocument = null;
+        let challanDocument= null;
+        let invoiceDocument= null;
+        let transportationDocument=null;
+        if(req.body.purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
+        if(req.body.purchaseOrderDocument) challanDocument = await Documents.findById(req.body.challanDocument);
+        if(req.body.purchaseOrderDocument) invoiceDocument = await Documents.findById(req.body.invoiceDocument);
+        if(req.body.purchaseOrderDocument) transportationDocument = await Documents.findById(req.body.transportationDocument);
         
         // Create a SendBillTransactions
         const bill = await SendBillTransactions.create({
