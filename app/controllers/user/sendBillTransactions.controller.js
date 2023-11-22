@@ -70,9 +70,8 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
         //console.log(dbtrs);
         let crdtrs = [];
         for(const element of dbtrs){
-            //console.log(dbtrs[i]);
-            crdtrs.push(...( await SendBillTransactions.find({creditorCompanyId:element.creditorCompanyId})));
-            //console.log(crdtrs[i]);
+            let invoices = await SendBillTransactions.find({creditorCompanyId:element.creditorCompanyId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+            crdtrs.push(...( invoices));
         }
         res.status(200).json({message: 'Invoices sent for you are fetched', success: true, response: crdtrs});
     }catch(error){
@@ -85,7 +84,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
-        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id});
+        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)
