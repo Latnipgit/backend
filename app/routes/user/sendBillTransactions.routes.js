@@ -12,6 +12,8 @@ module.exports = app => {
     router.get("/getInvoicesForDefaulting", auth, sendBillTransactions.getInvoicesForDefaulting);
     router.post("/proceedToDefault", auth, sendBillTransactions.proceedToDefault);
     router.post("/initiatePaymentVerification",auth, sendBillTransactions.initiatePaymentVerification);
+    router.post("/updateInvoiceDocuments",auth, sendBillTransactions.updateInvoiceDocuments);
+    router.post("/updateInvoice",auth, sendBillTransactions.updateInvoice);
 
     router.use(Authorization.commpanyLoginValidation);
 

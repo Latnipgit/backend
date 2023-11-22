@@ -17,7 +17,10 @@ module.exports = mongoose => {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'company',
         }]
+    },{
+        timestamps: true
     }
+
     );
 
     schema.method("toJSON", function() {

@@ -11,14 +11,7 @@ module.exports = mongoose => {
         companyPan: String,
     },
     {
-        timestamps: true,
-        toJSON: {
-            transform: function (doc, ret) {
-                const { __v, _id, ...object } = ret.toObject();
-                object.id = _id;
-                return object;
-            }
-        }    
+        timestamps: true
     }
     );
 
