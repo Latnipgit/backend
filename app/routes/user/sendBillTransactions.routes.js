@@ -13,6 +13,8 @@ module.exports = app => {
     router.post("/proceedToDefault", auth, sendBillTransactions.proceedToDefault);
     router.post("/initiatePaymentVerification",auth, sendBillTransactions.initiatePaymentVerification);
     router.post("/updateInvoiceDocuments",auth, sendBillTransactions.updateInvoiceDocuments);
+    router.post("/updateInvoiceDocumentsCACertificate",auth, sendBillTransactions.updateInvoiceDocumentsCACertificate);
+
     router.post("/updateInvoice",auth, sendBillTransactions.updateInvoice);
 
     router.use(Authorization.commpanyLoginValidation);

@@ -143,6 +143,24 @@ exports.updateInvoiceDocuments = async(req, res) => {
     }
 };
 
+exports.updateInvoiceDocumentsCACertificate = async(req, res)=> {
+    try{
+        // Validate request
+        let updates={};
+        updates.caCertificateDocument = await Documents.findById(req.body.caCertificateDocument);
+        
+        // Create a SendBillTransactions
+        const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId, updates, {new: true});
+
+        res.json({ message: "Documents Updated Successfully for CA certificate.", success: true, response: bill });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
 
 exports.getAllInvoicesSentToMe = async(req, res) => {
     try{
