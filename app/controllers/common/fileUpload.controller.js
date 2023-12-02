@@ -17,7 +17,7 @@ exports.uploadFile = async (req, res) => {
             url: fileUrl,
             uniqueName: uniqueName
         }); 
-        res.json({message: 'File Uploaded successfully.', success: true, response: { documentId: savedFile._id , fieldName: req.body.fieldName}});
+        res.json({message: 'File Uploaded successfully.', success: true, response: { documentId: savedFile._id , fieldName: req.body.fieldName , fileUrl: savedFile.url}});
 
     } catch (error) {
         console.log(error);
