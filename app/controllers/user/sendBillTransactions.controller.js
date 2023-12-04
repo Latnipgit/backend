@@ -5,6 +5,101 @@ const admin_db = require("../../models/admin");
 const SendBillTransactions = db.sendBillTransactions;
 const Debtors = db.debtors;
 const PaymentHistory = admin_db.paymentHistory;
+const fs = require('fs');
+const PDFDocument = require('pdfkit');
+
+var a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
+var b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
+
+function inWords (num) {
+    if ((num = num.toString()).length > 9) return 'overflow';
+    n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return; var str = '';
+    str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'crore ' : '';
+    str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'lakh ' : '';
+    str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
+    str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
+    str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'only ' : '';
+    return str;
+}
+
+function createInvoicePDF(pdfInvObj, path) {
+    let doc = new PDFDocument({ size: 'A4', margin: 50 });
+
+    // Add metadata and styles here, like fonts or images
+    generateInformation(doc, pdfInvObj);
+    // Add other sections like items, totals, etc.
+
+    doc.end();
+    doc.pipe(fs.createWriteStream(path));
+}
+
+function generateInformation(doc, pdfInvObj) {
+    doc
+        .fontSize(15)
+        .text('INVOICE', { align: 'right' })
+        .fontSize(10)
+        .text(`Invoice Number: ${pdfInvObj.invoiceNumber}`, { align: 'right' })
+        .text(`Invoice Date: ${new Date(pdfInvObj.billDate).toLocaleDateString()}`, { align: 'right' })
+        .text(`Due Date: ${new Date(pdfInvObj.dueDate).toLocaleDateString()}`, { align: 'right' })
+        .moveDown();
+
+    // Debtor Information
+    doc
+        .fontSize(12)
+        .text('Bill To:')
+        .fontSize(10)
+        .text(pdfInvObj.debtor._doc.ownerName)
+        .text(pdfInvObj.debtor._doc.ownerMobile)
+        .text(pdfInvObj.debtor._doc.companyName)
+        .text(`GSTIN: ${pdfInvObj.debtor._doc.gstin}`)
+        .text(`Company PAN: ${pdfInvObj.debtor._doc.companyPan}`)
+        .moveDown();
+
+    // Invoice Details Table
+    doc
+        .moveDown()
+        .fontSize(10)
+        .text('Items & Description', { continued: true, width: 250 })
+        .text('Qty', { continued: true, width: 50 })
+        .text('Cost', { width: 70 })
+        .moveDown();
+
+    for (let i = 0; i < pdfInvObj.items.length; i++) {
+            // Example Item
+            doc
+                .fontSize(10)
+                .text(`${pdfInvObj.items[i].name}`, { continued: true, width: 250 })
+                .text(`${pdfInvObj.items[i].quantity}`, { continued: true, width: 50 }) // Quantity
+                .text(`${pdfInvObj.items[i].cost}`, { width: 70 }) // Amount
+                .moveDown();
+    }
+
+    // Total
+    doc
+        .fontSize(10)
+        .text('Sub Total', { continued: true })
+        .text(`${pdfInvObj.subTotal}`, { align: 'right' })
+        .text('Tax', { continued: true })
+        .text(`${pdfInvObj.tax}`, { align: 'right' })
+        .text('Total', { continued: true })
+        .text(`${pdfInvObj.creditAmount+pdfInvObj.remainingAmount}`, { align: 'right' })
+        .text('Payment Made', { continued: true })
+        .text(`(${pdfInvObj.creditAmount})`, { align: 'right' })
+        .text('Balance Due', { continued: true })
+        .text(`(${pdfInvObj.remainingAmount})`, { align: 'right' })
+        .text(`Total: ${inWords(pdfInvObj.creditAmount)}`, { align: 'right' })
+        .moveDown();
+
+    // Footer
+    doc
+        .fontSize(10)
+        .text('Notes:')
+        .fontSize(9)
+        .text('Thank you for your business.')
+        .text('Authorized Signature: ______________________', { align: 'right' })
+        .moveDown();
+}
 
 exports.create = async(req, res) => {
     try{
@@ -32,7 +127,7 @@ exports.create = async(req, res) => {
             billDescription: req.body.billDescription,
             billNumber: req.body.billNumber,
             creditAmount: req.body.creditAmount,
-            remainingAmount: req.body.creditAmount, 
+            remainingAmount: req.body.remainingAmount, 
             status: "PENDING",
             interestRate: req.body.interestRate,
             creditorCompanyId: req.token.companyDetails.id,
@@ -52,6 +147,9 @@ exports.create = async(req, res) => {
             invoiceDocument: invoiceDocument,
             transportationDocument: transportationDocument
         });
+
+        //create pdf here
+        createInvoicePDF(bill, 'E:/Rohan-Bafna/invoice.pdf');
 
         res.status(201).json({ message: "sendbill added successfully.", success: true, response: bill });
     } catch (err) {
