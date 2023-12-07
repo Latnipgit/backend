@@ -332,7 +332,8 @@ exports.initiatePaymentVerification = async(req, res) => {
             amtPaid: req.body.amtPaid,
             proofFiles: "",
             status: "PENDING",
-            pendingWith: "L1"
+            pendingWith: "L1",
+            approvedByCreditor: "false"
         });
 
         return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });

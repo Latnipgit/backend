@@ -9,7 +9,8 @@ module.exports = mongoose => {
         amtPaid: String,
         proofFiles: String,
         status: String,
-        pendingWith: String
+        pendingWith: String,
+        approvedByCreditor: String
     }, { timestamps: true });
 
     schema.method("toJSON", function() {
