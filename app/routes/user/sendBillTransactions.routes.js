@@ -16,6 +16,7 @@ module.exports = app => {
     router.post("/updateInvoiceDocumentsCACertificate",auth, sendBillTransactions.updateInvoiceDocumentsCACertificate);
 
     router.post("/updateInvoice",auth, sendBillTransactions.updateInvoice);
+    router.get("/getAllInvoicesSentToDebtor", auth, sendBillTransactions.getAllInvoicesSentToDebtor);
 
     router.use(Authorization.commpanyLoginValidation);
 

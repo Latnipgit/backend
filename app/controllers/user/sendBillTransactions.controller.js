@@ -322,6 +322,22 @@ exports.proceedToDefault = async(req, res) => {
     }
 }
 
+exports.getAllInvoicesSentToDebtor = async(req, res) => {
+    try{
+        let crdtrs = [];
+        // for(const element of dbtrs){
+        let invoices = await SendBillTransactions.find({debtorId: req.body.debtorId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        crdtrs.push(...( invoices));
+        
+        res.status(200).json({message: 'Invoices sent for debtor are fetched', success: true, response: crdtrs});
+    }catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
 
 //payment history
 
