@@ -5,5 +5,9 @@ module.exports = Object.freeze({
         "/api/companies/search": "companySearch",
         "/api/transactions/create": "invoicingLedger",
         // "/api/companies/search": "recordPayment"
+    },
+    INVOICE_STATUS: {
+        PAID: 'PAID',
+        DEFAULTED: 'DEFAULTED'
     }
 });

@@ -7,6 +7,9 @@ const Debtors = db.debtors;
 const PaymentHistory = admin_db.paymentHistory;
 const fs = require('fs');
 const PDFDocument = require('pdfkit');
+const constants = require('../../constants/userConstants');
+const service = require("../../service/user/");
+const sendBillTransactionsService = service.sendBillTransactions;
 
 var a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
 var b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
@@ -294,7 +297,7 @@ exports.getAllInvoicesRaisedByMe = async(req, res) => {
 exports.getInvoicesForDefaulting = async(req, res) => {
     try{
         const currentDate = new Date();
-        const invoices = await SendBillTransactions.find({status : { $ne: 'PAID'}, dueDate: { $lt: currentDate }});
+        const invoices = await SendBillTransactions.find({status : { $ne: constants.INVOICE_STATUS.PAID}, dueDate: { $lt: currentDate }});
         res.status(200).json({message: '', success: true, response: invoices});
     } catch(error){
         console.log(error)
@@ -307,13 +310,47 @@ exports.getInvoicesForDefaulting = async(req, res) => {
 
 exports.proceedToDefault = async(req, res) => {
     try{
-        const invoice = await SendBillTransactions.findByIdAndUpdate(
-            req.body.invoiceId
-            ,
-            { status: 'DEFAULTED' },
-            { new: true }
-          );
+        const invoice = await sendBillTransactionsService.defaultInvoiceById(req.body.invoiceId)
         res.status(200).json({message: '', success: true, response: invoice});
+    } catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+exports.defaultInvoicesById = async(req, res) => {
+    try{
+        for(let invoice of req.body.invoices){
+            await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)
+        }
+        res.status(200).json({message: 'Given invoices has been defaulted', success: true});
+    } catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+exports.requestDefaultInvoiceEdit = async(req, res) => {
+    try{
+        let invoice=   await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)
+        res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: invoice});
+    } catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+
+exports.removeDefultingByInvoiceId = async(req, res) => {
+    try{
+        let invoice=   await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)
+        res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: invoice});
     } catch(error){
         console.log(error)
         res
