@@ -1,7 +1,9 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema({
-        debtorId: String,
         questionId: String,
+        questionDesc: String,
+        questionType: String,
+        values: [],
         response: String
     }, { timestamps: true });
 
@@ -11,6 +13,6 @@ module.exports = mongoose => {
         return object;
     });
 
-    const Debtor = mongoose.model("debtorRating", schema);
-    return Debtor;
+    const Questions = mongoose.model("questions", schema);
+    return Questions;
 };
