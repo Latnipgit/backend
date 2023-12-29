@@ -300,6 +300,23 @@ exports.getAllInvoicesRaisedByMe = async(req, res) => {
     }
 }
 
+exports.getAllInvoicesForIds = async(req, res) => {
+    try{
+        let invoices = [];
+        let invoiceIds = [...req.body];
+        for(const element of invoiceIds){
+            let inv = await SendBillTransactions.findById({_id:element.invoiceId}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+            invoices.push(...(inv));
+        }
+        res.status(200).json({message: 'Invoices raised by provided ids are fetched', success: true, response: invoices});
+    }catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
 
 exports.getInvoicesForDefaulting = async(req, res) => {
     try{

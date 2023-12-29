@@ -11,6 +11,7 @@ module.exports = app => {
     router.post("/create", sendBillTransactions.create);
     router.get("/getAllInvoicesSentToMe", sendBillTransactions.getAllInvoicesSentToMe);
     router.get("/getAllInvoicesRaisedByMe", sendBillTransactions.getAllInvoicesRaisedByMe);
+    router.get("/getAllInvoicesForIds", sendBillTransactions.getAllInvoicesForIds);
     router.get("/getInvoicesForDefaulting", sendBillTransactions.getInvoicesForDefaulting);
     router.post("/proceedToDefault", sendBillTransactions.proceedToDefault);
     router.post("/initiatePaymentVerification", sendBillTransactions.initiatePaymentVerification);
