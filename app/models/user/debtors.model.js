@@ -16,7 +16,12 @@ module.exports = mongoose => {
         address2: String,
         city: String,
         state: String,
-        zipcode: String
+        zipcode: String,
+        ratings: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'debtorRating',
+        }]
+
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

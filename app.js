@@ -91,6 +91,7 @@ app.get("/", (req, res) => {
 
 require("./app/routes/user/user.routes")(app);
 require("./app/routes/user/debtors.routes")(app);
+require("./app/routes/user/debtorsRatings.routes")(app);
 require("./app/routes/user/companies.routes")(app);
 require("./app/routes/user/sendBillTransactions.routes")(app);
 require("./app/routes/user/creditors.routes")(app);

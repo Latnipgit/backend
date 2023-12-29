@@ -90,7 +90,7 @@ exports.getCreditors = async(req, res) => {
 
 exports.getAllDebtorsByCompanyId = async(req, res) => {
     try{
-        const dbtrs = await Debtors.find({creditorCompanyId:req.token.companyDetails.id});
+        const dbtrs = await Debtors.find({creditorCompanyId:req.token.companyDetails.id}).populate("ratings");
         res.status(200).json({message: 'Debtors list fetched for company.', success: true, response: dbtrs});
     } catch (error) {
         console.log(error)

@@ -12,6 +12,7 @@ db.sendBillTransactions = require("./sendBillTransactions.model.js")(mongoose);
 db.debtors = require("./debtors.model.js")(mongoose);
 db.subscriptionIdRemQuotaMapping = require("./subscriptionIdRemQuotaMapping.model.js")(mongoose);
 db.subscription = require("./subscription.model.js")(mongoose);
+db.debtorRating = require("./debtorRating.model.js")(mongoose);
 
 //db.admin = require("../admin/admins.model.js")(mongoose);
 

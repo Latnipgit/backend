@@ -10,6 +10,7 @@ const PDFDocument = require('pdfkit');
 const constants = require('../../constants/userConstants');
 const service = require("../../service/user/");
 const sendBillTransactionsService = service.sendBillTransactions;
+const path = require('path');
 
 var a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
 var b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
@@ -26,15 +27,21 @@ function inWords (num) {
     return str;
 }
 
-function createInvoicePDF(pdfInvObj, path) {
+function createInvoicePDF(pdfInvObj, outputPath) {
     let doc = new PDFDocument({ size: 'A4', margin: 50 });
 
     // Add metadata and styles here, like fonts or images
     generateInformation(doc, pdfInvObj);
     // Add other sections like items, totals, etc.
+    const outputDir = path.dirname(outputPath);
 
+    // Ensure the directory exists
+    if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
     doc.end();
-    doc.pipe(fs.createWriteStream(path));
+    doc.pipe(fs.createWriteStream(outputPath));
 }
 
 function generateInformation(doc, pdfInvObj) {
@@ -152,7 +159,7 @@ exports.create = async(req, res) => {
         });
 
         //create pdf here
-        createInvoicePDF(bill, 'E:/Rohan-Bafna/invoice.pdf');
+        createInvoicePDF(bill, './temp/invoices/'+bill._id+'.pdf');
 
         res.status(201).json({ message: "sendbill added successfully.", success: true, response: bill });
     } catch (err) {
@@ -283,7 +290,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
-        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)
