@@ -1,10 +1,8 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema({
-        questionId: String,
         questionDesc: String,
         questionType: String,
-        values: [],
-        response: String
+        values: []
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

@@ -98,6 +98,7 @@ require("./app/routes/user/creditors.routes")(app);
 require("./app/routes/user/dashboard.routes")(app);
 require("./app/routes/user/subscription.routes")(app);
 require("./app/routes/user/paymentHistoryUser.routes")(app);
+require("./app/routes/user/questions.routes")(app);
 require("./app/routes/admin/admin.routes")(app);
 require("./app/routes/common/mailTemplates.routes")(app);
 require("./app/routes/admin/paymentHistory.routes")(app);
