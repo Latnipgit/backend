@@ -14,6 +14,7 @@ db.subscriptionIdRemQuotaMapping = require("./subscriptionIdRemQuotaMapping.mode
 db.subscription = require("./subscription.model.js")(mongoose);
 db.debtorRating = require("./debtorRating.model.js")(mongoose);
 db.questions = require("./questions.model.js")(mongoose);
+db.defaulterEntry = require("./defaulterEntry.model.js")(mongoose);
 
 //db.admin = require("../admin/admins.model.js")(mongoose);
 

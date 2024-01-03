@@ -25,6 +25,7 @@ module.exports = mongoose => {
         invoiceNumber: String,
         dueDate: Date,
         percentage: String,
+        type: String,
         
         purchaseOrderDocument: {
             type: mongoose.Schema.Types.ObjectId,

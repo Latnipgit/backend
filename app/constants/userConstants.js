@@ -8,6 +8,7 @@ module.exports = Object.freeze({
     },
     INVOICE_STATUS: {
         PAID: 'PAID',
-        DEFAULTED: 'DEFAULTED'
+        DEFAULTED: 'DEFAULTED',
+        PENDING:"PENDING"
     }
 });

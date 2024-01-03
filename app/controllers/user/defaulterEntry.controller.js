@@ -1,5 +1,5 @@
 const db = require("../../models/user");
-const commondb = require("../../models/common/");
+const commondb = require("../../models/common");
 const Documents = commondb.documents;
 const admin_db = require("../../models/admin");
 const SendBillTransactions = db.sendBillTransactions;
@@ -8,7 +8,7 @@ const PaymentHistory = admin_db.paymentHistory;
 const fs = require('fs');
 const PDFDocument = require('pdfkit');
 const constants = require('../../constants/userConstants');
-const service = require("../../service/user/");
+const service = require("../../service/user");
 const sendBillTransactionsService = service.sendBillTransactions;
 const path = require('path');
 
