@@ -23,6 +23,7 @@ module.exports = app => {
     router.post("/defaultInvoicesById", sendBillTransactions.defaultInvoicesById);
     router.post("/requestDefaultInvoiceEdit", sendBillTransactions.requestDefaultInvoiceEdit);
     router.post("/removeDefultingByInvoiceId", sendBillTransactions.removeDefultingByInvoiceId);
+    router.post("/createDefaultedInvoice", sendBillTransactions.createDefaultedInvoice);
 
     app.use("/api/transactions", router);
 };

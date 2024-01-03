@@ -371,6 +371,66 @@ exports.requestDefaultInvoiceEdit = async(req, res) => {
 }
 
 
+exports.createDefaultedInvoice = async(req, res) => {
+    try{
+        // Validate request
+        const debtor = await Debtors.findOne({ _id: req.body.debtorId });
+        if (!debtor) {
+            console.log("debtor not found", req.body.debtorId)
+            return res.status(409).send({ message: "debtor not found", success: false, response: "" });
+        };
+
+        let purchaseOrderDocument = null;
+        let challanDocument= null;
+        let invoiceDocument= null;
+        let transportationDocument=null;
+        if(req.body.purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
+        if(req.body.purchaseOrderDocument) challanDocument = await Documents.findById(req.body.challanDocument);
+        if(req.body.purchaseOrderDocument) invoiceDocument = await Documents.findById(req.body.invoiceDocument);
+        if(req.body.purchaseOrderDocument) transportationDocument = await Documents.findById(req.body.transportationDocument);
+        
+        // Create a SendBillTransactions
+        
+        const bill = await SendBillTransactions.create({
+            debtor: debtor,
+            debtorId: req.body.debtorId,
+            billDate: req.body.billDate,
+            billDescription: req.body.billDescription,
+            billNumber: req.body.billNumber,
+            creditAmount: req.body.creditAmount,
+            remainingAmount: req.body.remainingAmount, 
+            status: "PENDING",
+            interestRate: req.body.interestRate,
+            creditorCompanyId: req.token.companyDetails.id,
+            creditLimitDays: req.body.creditLimitDays,
+            remark: req.body.remark,
+            items: req.body.items,
+            subTotal: req.body.subTotal,
+            tax: req.body.tax,
+
+            referenceNumber: req.body.referenceNumber,
+            invoiceNumber: req.body.invoiceNumber,
+            dueDate: req.body.dueDate,
+            percentage: req.body.percentage,
+
+            purchaseOrderDocument: purchaseOrderDocument,
+            challanDocument: challanDocument,
+            invoiceDocument: invoiceDocument,
+            transportationDocument: transportationDocument
+        });
+
+        //create pdf here
+        createInvoicePDF(bill, './temp/invoices/'+bill._id+'.pdf');
+
+        res.status(201).json({ message: "sendbill added successfully.", success: true, response: bill });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
 exports.removeDefultingByInvoiceId = async(req, res) => {
     try{
         let invoice=   await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)

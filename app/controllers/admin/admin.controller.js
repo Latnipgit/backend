@@ -230,12 +230,12 @@ exports.getAllTransactions = async(req, res) => {
         let sendBill = null;
         let detailed = [];
         for(i=0; i<transactions.length; i++){
-            sendBill = await SendBillTrans.findOne({_id: transactions[i].invoiceId});
-
-            let deb =  await sendBill.populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+            sendBill = await SendBillTrans.findOne({_id: transactions[i].invoiceId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
             let paymentHistory = transactions[i];
 
-            detailed[i] = { paymentHistory, Invoice: sendBill, debtor: deb.debtor };
+            detailed[i] = { paymentHistory, Invoice: sendBill
+                // , debtor: sendBill?.debtor
+             };
             // detailed[i] =  await sendBill.populate("debtor");
         }
         // console.log(detailed);

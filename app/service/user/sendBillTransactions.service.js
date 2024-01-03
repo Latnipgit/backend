@@ -26,6 +26,40 @@ exports.defaultInvoiceById = function(invoiceId) {
 };
 
 
+exports.createInvoice = function(invoice, debtor, companyDetails) {
+  return SendBillTransactions.create({
+      debtor: debtor,
+      debtorId: invoice.debtorId,
+      billDate: invoice.billDate,
+      billDescription: invoice.billDescription,
+      billNumber: invoice.billNumber,
+      creditAmount: invoice.creditAmount,
+      remainingAmount: invoice.remainingAmount, 
+      interestRate: invoice.interestRate,
+      creditorCompanyId: companyDetails.id, 
+      creditLimitDays: invoice.creditLimitDays,
+      remark: invoice.remark,
+      items: invoice.items,
+      subTotal: invoice.subTotal,
+      tax: invoice.tax,
+
+      referenceNumber: invoice.referenceNumber,
+      invoiceNumber: invoice.invoiceNumber,
+      dueDate: invoice.dueDate,
+      percentage: invoice.percentage,
+
+      status:  invoice.status,//"PENDING",
+      type: invoice.type,
+
+      purchaseOrderDocument: invoice.purchaseOrderDocument,
+      challanDocument: invoice.challanDocument,
+      invoiceDocument: invoice.invoiceDocument,
+      transportationDocument: invoice.transportationDocument
+  });
+};
+
+
+
 // exports.getUserById = function(userId) {
 //     return  User.findById(userId);
 // };
