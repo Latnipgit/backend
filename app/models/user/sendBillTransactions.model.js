@@ -2,17 +2,17 @@ module.exports = mongoose => {
 
     var schema = mongoose.Schema({
         invoiceId: String,
-        debtor: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'debtor'
-        },
-        debtorId: String,
+        // debtor: {
+        //     type: mongoose.Schema.Types.ObjectId,
+        //     ref: 'debtor'
+        // },
+        // debtorId: String,
         billDate: String,
         billDescription: String,
         billNumber: Number,
         creditAmount: Number,
         remainingAmount: Number, 
-        status: String,
+        // status: String,
         interestRate: Number,
         creditLimitDays: Number,
         creditorCompanyId: String,

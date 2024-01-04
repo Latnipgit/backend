@@ -129,7 +129,7 @@ exports.create = async(req, res) => {
         req.body.status= constants.INVOICE_STATUS.PENDING
         req.body.type="EXTERNAL"
         // Create a SendBillTransactions
-        const bill = await sendBillTransactionsService.createInvoice(req.body, debtor, req.token.companyDetails);
+        const bill = await sendBillTransactionsService.createInvoice(req.body, req.token.companyDetails);
 
         //create pdf here
         createInvoicePDF(bill, './temp/invoices/'+bill._id+'.pdf');
@@ -406,7 +406,7 @@ exports.createDefaultedInvoice = async(req, res) => {
 
 exports.removeDefultingByInvoiceId = async(req, res) => {
     try{
-        let invoice=   await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)
+        let invoice=   await sendBillTransactionsService.defaultInvoiceById(req.body.invoiceId)
         res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: invoice});
     } catch(error){
         console.log(error)

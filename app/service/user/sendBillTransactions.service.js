@@ -26,9 +26,9 @@ exports.defaultInvoiceById = function(invoiceId) {
 };
 
 
-exports.createInvoice = function(invoice, debtor, companyDetails) {
+exports.createInvoice = function(invoice, companyDetails) {
   return SendBillTransactions.create({
-      debtor: debtor,
+      // debtor: debtor,
       debtorId: invoice.debtorId,
       billDate: invoice.billDate,
       billDescription: invoice.billDescription,
@@ -48,7 +48,7 @@ exports.createInvoice = function(invoice, debtor, companyDetails) {
       dueDate: invoice.dueDate,
       percentage: invoice.percentage,
 
-      status:  invoice.status,//"PENDING",
+      // status:  invoice.status,//"PENDING",
       type: invoice.type,
 
       purchaseOrderDocument: invoice.purchaseOrderDocument,

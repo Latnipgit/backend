@@ -3,6 +3,7 @@ const commondb = require("../../models/common");
 const Documents = commondb.documents;
 const admin_db = require("../../models/admin");
 const SendBillTransactions = db.sendBillTransactions;
+const defaulterEntry = db.defaulterEntry; 
 const Debtors = db.debtors;
 const PaymentHistory = admin_db.paymentHistory;
 const fs = require('fs');
@@ -10,6 +11,7 @@ const PDFDocument = require('pdfkit');
 const constants = require('../../constants/userConstants');
 const service = require("../../service/user");
 const sendBillTransactionsService = service.sendBillTransactions;
+const defaulterEntryService = service.defaulterEntry; 
 const path = require('path');
 
 var a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
@@ -27,11 +29,11 @@ function inWords (num) {
     return str;
 }
 
-function createInvoicePDF(pdfInvObj, outputPath) {
+function createInvoicePDF(pdfInvObj, debtor, outputPath) {
     let doc = new PDFDocument({ size: 'A4', margin: 50 });
 
     // Add metadata and styles here, like fonts or images
-    generateInformation(doc, pdfInvObj);
+    generateInformation(doc, debtor, pdfInvObj);
     // Add other sections like items, totals, etc.
     const outputDir = path.dirname(outputPath);
 
@@ -44,7 +46,7 @@ function createInvoicePDF(pdfInvObj, outputPath) {
     doc.pipe(fs.createWriteStream(outputPath));
 }
 
-function generateInformation(doc, pdfInvObj) {
+function generateInformation(doc, debtor, pdfInvObj) {
     doc
         .fontSize(15)
         .text('INVOICE', { align: 'right' })
@@ -59,11 +61,11 @@ function generateInformation(doc, pdfInvObj) {
         .fontSize(12)
         .text('Bill To:')
         .fontSize(10)
-        .text(pdfInvObj.debtor._doc.ownerName)
-        .text(pdfInvObj.debtor._doc.ownerMobile)
-        .text(pdfInvObj.debtor._doc.companyName)
-        .text(`GSTIN: ${pdfInvObj.debtor._doc.gstin}`)
-        .text(`Company PAN: ${pdfInvObj.debtor._doc.companyPan}`)
+        .text(debtor.ownerName)
+        .text(debtor.ownerMobile)
+        .text(debtor.companyName)
+        .text(`GSTIN: ${debtor.gstin}`)
+        .text(`Company PAN: ${debtor.companyPan}`)
         .moveDown();
 
     // Invoice Details Table
@@ -113,28 +115,43 @@ function generateInformation(doc, pdfInvObj) {
 
 exports.create = async(req, res) => {
     try{
+
         // Validate request
-        const debtor = await Debtors.findOne({ _id: req.body.debtorId });
+        const debtor = await Debtors.findOne({ _id: req.body[0].debtorId });
         if (!debtor) {
-            console.log("debtor not found", req.body.debtorId)
+            console.log("debtor not found", req.body[0].debtorId)
             return res.status(409).send({ message: "debtor not found", success: false, response: "" });
         };
 
-        if(req.body.purchaseOrderDocument) 
-            req.body.purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
-        if(req.body.challanDocument) req.body.challanDocument = await Documents.findById(req.body.challanDocument);
-        if(req.body.invoiceDocument) req.body.invoiceDocument = await Documents.findById(req.body.invoiceDocument);
-        if(req.body.transportationDocument) req.body.transportationDocument = await Documents.findById(req.body.transportationDocument);
-        
-        req.body.status= constants.INVOICE_STATUS.PENDING
-        req.body.type="EXTERNAL"
-        // Create a SendBillTransactions
-        const bill = await sendBillTransactionsService.createInvoice(req.body, debtor, req.token.companyDetails);
+        let defaulterEntryList = [];
+        var totalAmount = 0;
+        console.log(totalAmount)
 
-        //create pdf here
-        createInvoicePDF(bill, './temp/invoices/'+bill._id+'.pdf');
+        for(let i = 0; i < req.body.length; i++){
 
-        res.status(201).json({ message: "sendbill added successfully.", success: true, response: bill });
+            if(req.body[i].purchaseOrderDocument) 
+                req.body[i].purchaseOrderDocument = await Documents.findById(req.body[i].purchaseOrderDocument);
+            if(req.body[i].challanDocument) req.body[i].challanDocument = await Documents.findById(req.body[i].challanDocument);
+            if(req.body[i].invoiceDocument) req.body[i].invoiceDocument = await Documents.findById(req.body[i].invoiceDocument);
+            if(req.body[i].transportationDocument) req.body[i].transportationDocument = await Documents.findById(req.body[i].transportationDocument);
+            
+            req.body[i].status= constants.INVOICE_STATUS.PENDING
+            req.body[i].type="EXTERNAL"
+            // Create a SendBillTransactions
+            const bill = await sendBillTransactionsService.createInvoice(req.body[i], req.token.companyDetails);
+
+            //append to store in defaultEntry and calculate totalAmount of invoices
+            defaulterEntryList.push(bill);
+            totalAmount += Number(req.body[i].remainingAmount);
+
+            //create pdf here
+            createInvoicePDF(bill, debtor, './temp/invoices/'+bill._id+'.pdf');
+
+        }
+        console.log(totalAmount);
+        const defEnt = await defaulterEntryService.createEntry(defaulterEntryList, debtor, totalAmount);
+
+        res.status(201).json({ message: "sendbill/s added successfully.", success: true, response: defEnt });
     } catch (err) {
         console.log(err)
         res
@@ -142,104 +159,6 @@ exports.create = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 
-};
-
-
-exports.updateInvoice = async(req, res) => {
-    try{
-        // Validate request
-        const debtor = await Debtors.findOne({ _id: req.body.debtorId });
-        if (!debtor) {
-            console.log("debtor not found", req.body.debtorId)
-            return res.status(409).send({ message: "debtor not found", success: false, response: "" });
-        };
-
-        let purchaseOrderDocument = null;
-        let challanDocument= null;
-        let invoiceDocument= null;
-        let transportationDocument=null;
-        if(req.body.purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
-        if(req.body.purchaseOrderDocument) challanDocument = await Documents.findById(req.body.challanDocument);
-        if(req.body.purchaseOrderDocument) invoiceDocument = await Documents.findById(req.body.invoiceDocument);
-        if(req.body.purchaseOrderDocument) transportationDocument = await Documents.findById(req.body.transportationDocument);
-        
-        // Create a SendBillTransactions
-        const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId,{
-            debtor: debtor,
-            debtorId: req.body.debtorId,
-            billDate: req.body.billDate,
-            billDescription: req.body.billDescription,
-            billNumber: req.body.billNumber,
-            creditAmount: req.body.creditAmount,
-            remainingAmount: req.body.creditAmount, 
-            status: "PENDING",
-            interestRate: req.body.interestRate,
-            creditorCompanyId: req.token.companyDetails.id,
-            creditLimitDays: req.body.creditLimitDays,
-            remark: req.body.remark,
-            items: req.body.items,
-            subTotal: req.body.subTotal,
-            tax: req.body.tax,
-
-            referenceNumber: req.body.referenceNumber,
-            invoiceNumber: req.body.invoiceNumber,
-            dueDate: req.body.dueDate,
-            percentage: req.body.percentage,
-
-            purchaseOrderDocument: purchaseOrderDocument,
-            challanDocument: challanDocument,
-            invoiceDocument: invoiceDocument,
-            transportationDocument: transportationDocument
-        }, {new: true});
-
-        resjson({ message: "sendbill added successfully.", success: true, response: bill });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-
-};
-
-
-exports.updateInvoiceDocuments = async(req, res) => {
-    try{
-        // Validate request
-        let updates={};
-        if(req.body.purchaseOrderDocument) updates.purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
-        if(req.body.purchaseOrderDocument) updates.challanDocument = await Documents.findById(req.body.challanDocument);
-        if(req.body.purchaseOrderDocument) updates.invoiceDocument = await Documents.findById(req.body.invoiceDocument);
-        if(req.body.purchaseOrderDocument) updates.transportationDocument = await Documents.findById(req.body.transportationDocument);
-        
-        // Create a SendBillTransactions
-        const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId, updates, {new: true});
-
-        res.json({ message: "Documents Updated Successfully.", success: true, response: bill });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-};
-
-exports.updateInvoiceDocumentsCACertificate = async(req, res)=> {
-    try{
-        // Validate request
-        let updates={};
-        updates.caCertificateDocument = await Documents.findById(req.body.caCertificateDocument);
-        
-        // Create a SendBillTransactions
-        const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId, updates, {new: true});
-
-        res.json({ message: "Documents Updated Successfully for CA certificate.", success: true, response: bill });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
 };
 
 
@@ -273,165 +192,6 @@ exports.getAllInvoicesRaisedByMe = async(req, res) => {
     }
 }
 
-exports.getAllInvoicesForIds = async(req, res) => {
-    try{
-        let invoices = [];
-        let invoiceIds = req.body;
-        for(const element of invoiceIds){
-            let inv = await SendBillTransactions.findById({_id:element.invoiceId}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
-            invoices.push(inv);
-        }
-        res.status(200).json({message: 'Invoices raised by provided ids are fetched', success: true, response: invoices});
-    }catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-
-exports.getInvoicesForDefaulting = async(req, res) => {
-    try{
-        const currentDate = new Date();
-        const invoices = await SendBillTransactions.find({status : { $ne: constants.INVOICE_STATUS.PAID}, dueDate: { $lt: currentDate }});
-        res.status(200).json({message: '', success: true, response: invoices});
-    } catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-
-exports.proceedToDefault = async(req, res) => {
-    try{
-        const invoice = await sendBillTransactionsService.defaultInvoiceById(req.body.invoiceId)
-        res.status(200).json({message: '', success: true, response: invoice});
-    } catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-exports.defaultInvoicesById = async(req, res) => {
-    try{
-        for(let invoice of req.body.invoices){
-            await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)
-        }
-        res.status(200).json({message: 'Given invoices has been defaulted', success: true});
-    } catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-exports.requestDefaultInvoiceEdit = async(req, res) => {
-    try{
-        let invoice=   await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)
-        res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: invoice});
-    } catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-
-exports.createDefaultedInvoice = async(req, res) => {
-    try{
-        // Validate request
-        const debtor = await Debtors.findOne({ _id: req.body.debtorId });
-        if (!debtor) {
-            console.log("debtor not found", req.body.debtorId)
-            return res.status(409).send({ message: "debtor not found", success: false, response: "" });
-        };
-
-        let purchaseOrderDocument = null;
-        let challanDocument= null;
-        let invoiceDocument= null;
-        let transportationDocument=null;
-        if(req.body.purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
-        if(req.body.purchaseOrderDocument) challanDocument = await Documents.findById(req.body.challanDocument);
-        if(req.body.purchaseOrderDocument) invoiceDocument = await Documents.findById(req.body.invoiceDocument);
-        if(req.body.purchaseOrderDocument) transportationDocument = await Documents.findById(req.body.transportationDocument);
-        
-        // Create a SendBillTransactions
-        
-        const bill = await SendBillTransactions.create({
-            debtor: debtor,
-            debtorId: req.body.debtorId,
-            billDate: req.body.billDate,
-            billDescription: req.body.billDescription,
-            billNumber: req.body.billNumber,
-            creditAmount: req.body.creditAmount,
-            remainingAmount: req.body.remainingAmount, 
-            status: "PENDING",
-            interestRate: req.body.interestRate,
-            creditorCompanyId: req.token.companyDetails.id,
-            creditLimitDays: req.body.creditLimitDays,
-            remark: req.body.remark,
-            items: req.body.items,
-            subTotal: req.body.subTotal,
-            tax: req.body.tax,
-
-            referenceNumber: req.body.referenceNumber,
-            invoiceNumber: req.body.invoiceNumber,
-            dueDate: req.body.dueDate,
-            percentage: req.body.percentage,
-
-            purchaseOrderDocument: purchaseOrderDocument,
-            challanDocument: challanDocument,
-            invoiceDocument: invoiceDocument,
-            transportationDocument: transportationDocument
-        });
-
-        //create pdf here
-        createInvoicePDF(bill, './temp/invoices/'+bill._id+'.pdf');
-
-        res.status(201).json({ message: "sendbill added successfully.", success: true, response: bill });
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-exports.removeDefultingByInvoiceId = async(req, res) => {
-    try{
-        let invoice=   await sendBillTransactionsService.defaultInvoiceById(invoice.invoiceId)
-        res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: invoice});
-    } catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
-exports.getAllInvoicesSentToDebtor = async(req, res) => {
-    try{
-        let crdtrs = [];
-        // for(const element of dbtrs){
-        let invoices = await SendBillTransactions.find({debtorId: req.body.debtorId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
-        crdtrs.push(...( invoices));
-        
-        res.status(200).json({message: 'Invoices sent for debtor are fetched', success: true, response: crdtrs});
-    }catch(error){
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Something went wrong", success: false });
-    }
-}
-
 
 //payment history
 
@@ -454,3 +214,32 @@ exports.initiatePaymentVerification = async(req, res) => {
             .send({ message: "Something went wrong", reponse: "", success: false });
     }
 };
+
+exports.getAllInvoicesSentToDebtor = async(req, res) => {
+    try{
+        let crdtrs = [];
+        // for(const element of dbtrs){
+        let invoices = await SendBillTransactions.find({debtorId: req.body.debtorId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        crdtrs.push(...( invoices));
+        
+        res.status(200).json({message: 'Invoices sent for debtor are fetched', success: true, response: crdtrs});
+    }catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
+exports.removeDefultingByInvoiceId = async(req, res) => {
+    try{
+        let DefaulterEntry=   await defaulterEntryService.defaultInvoiceById(req.body.defaulterEntryId)
+        res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: DefaulterEntry});
+    }catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+

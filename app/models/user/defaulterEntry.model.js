@@ -8,7 +8,9 @@ module.exports = mongoose => {
         invoices: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'sendBillTransactions'
-        }]
+        }],
+        status: String,
+        totalAmount: String
     },
     {
         timestamps: true
