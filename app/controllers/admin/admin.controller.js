@@ -10,6 +10,7 @@ const paymentHistory = require("../../service/admin/paymentHistory.service");
 const Admin = db.admin;
 const PaymentHistory = db.paymentHistory;
 const SendBillTrans = user_db.sendBillTransactions;
+const DefaulterEntry = user_db.defaulterEntry;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -462,14 +463,14 @@ exports.approveOrRejectPayment = async(req, res) => {
         if(req.body.approve == true){
             status = "APPROVED";
             result = await paymentHistory.updatePaymentHistoryStatus({status, paymentId});
-            let invoice = await SendBillTrans.findOne({_id: result.invoiceId});
+            let deftEntry = await DefaulterEntry.findOne({_id: result.defaulterEntryId});
             //let paymentHistoryAndInvoice =  await result.populate("invoice");
 
-            let newRemainingAmount = invoice.remainingAmount - amtPaid;
+            let newtotalAmount = deftEntry.totalAmount - amtPaid;
 
-            let updatedSendBill = await SendBillTrans.findByIdAndUpdate({_id: result.invoiceId}, {remainingAmount: newRemainingAmount});
+            let updatedDefaulterEntry = await SendBillTrans.findByIdAndUpdate({_id: result.defaulterEntryId}, {totalAmount: newtotalAmount});
 
-            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, updatedSendBill} });
+            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, updatedDefaulterEntry} });
 
         }else if(req.body.approve == false){
             status = "REJECTED";

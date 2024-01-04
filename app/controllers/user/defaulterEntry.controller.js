@@ -125,7 +125,6 @@ exports.create = async(req, res) => {
 
         let defaulterEntryList = [];
         var totalAmount = 0;
-        console.log(totalAmount)
 
         for(let i = 0; i < req.body.length; i++){
 
@@ -148,7 +147,6 @@ exports.create = async(req, res) => {
             createInvoicePDF(bill, debtor, './temp/invoices/'+bill._id+'.pdf');
 
         }
-        console.log(totalAmount);
         const defEnt = await defaulterEntryService.createEntry(defaulterEntryList, debtor, totalAmount);
 
         res.status(201).json({ message: "sendbill/s added successfully.", success: true, response: defEnt });
@@ -198,7 +196,7 @@ exports.getAllInvoicesRaisedByMe = async(req, res) => {
 exports.initiatePaymentVerification = async(req, res) => {
     try {
         const pmtHistory = await PaymentHistory.create({
-            invoiceId: req.body.invoiceId,
+            defaulterEntryId: req.body.defaulterEntryId,
             amtPaid: req.body.amtPaid,
             proofFiles: "",
             status: "PENDING",
