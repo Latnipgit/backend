@@ -1,10 +1,10 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema({
-        invoiceId: String,
         debtor: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'debtor'
         },
+        creditorCompanyId: String,
         invoices: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'sendBillTransactions'

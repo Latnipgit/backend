@@ -28,11 +28,17 @@ exports.defaultInvoiceById = function(defaulterEntryId) {
 };
 
 
-exports.createEntry = function(defaulterEntryList, debtor, totalAmount) {
+exports.createEntry = function(defaulterEntryList, debtor, totalAmount,companyDetails) {
   return defaulterEntry.create({
       debtor: debtor,
+      creditorCompanyId: companyDetails.id, 
       invoices: defaulterEntryList,
       totalAmount: totalAmount
   });
+};
+  
+
+exports.getCompleteDefaultEntryData = function(condition) {
+  return defaulterEntry.find(condition).populate("invoices debtor invoices.purchaseOrderDocument invoices.challanDocument invoices.invoiceDocument invoices.transportationDocument");
 };
   

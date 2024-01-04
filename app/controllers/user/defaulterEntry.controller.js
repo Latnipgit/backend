@@ -3,7 +3,7 @@ const commondb = require("../../models/common");
 const Documents = commondb.documents;
 const admin_db = require("../../models/admin");
 const SendBillTransactions = db.sendBillTransactions;
-const defaulterEntry = db.defaulterEntry; 
+const DefaulterEntry = db.defaulterEntry; 
 const Debtors = db.debtors;
 const PaymentHistory = admin_db.paymentHistory;
 const fs = require('fs');
@@ -12,6 +12,7 @@ const constants = require('../../constants/userConstants');
 const service = require("../../service/user");
 const sendBillTransactionsService = service.sendBillTransactions;
 const defaulterEntryService = service.defaulterEntry; 
+const paymentHistoryService = require("../../service/admin").paymentHistoryService; 
 const path = require('path');
 
 var a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
@@ -124,12 +125,11 @@ exports.create = async(req, res) => {
         };
 
         let defaulterEntryList = [];
-        var totalAmount = 0;
+        let totalAmount = 0;
 
         for(let i = 0; i < req.body.length; i++){
 
-            if(req.body[i].purchaseOrderDocument) 
-                req.body[i].purchaseOrderDocument = await Documents.findById(req.body[i].purchaseOrderDocument);
+            if(req.body[i].purchaseOrderDocument) req.body[i].purchaseOrderDocument = await Documents.findById(req.body[i].purchaseOrderDocument);
             if(req.body[i].challanDocument) req.body[i].challanDocument = await Documents.findById(req.body[i].challanDocument);
             if(req.body[i].invoiceDocument) req.body[i].invoiceDocument = await Documents.findById(req.body[i].invoiceDocument);
             if(req.body[i].transportationDocument) req.body[i].transportationDocument = await Documents.findById(req.body[i].transportationDocument);
@@ -144,10 +144,10 @@ exports.create = async(req, res) => {
             totalAmount += Number(req.body[i].remainingAmount);
 
             //create pdf here
-            createInvoicePDF(bill, debtor, './temp/invoices/'+bill._id+'.pdf');
+            // createInvoicePDF(bill, debtor, './temp/invoices/'+bill._id+'.pdf');
 
         }
-        const defEnt = await defaulterEntryService.createEntry(defaulterEntryList, debtor, totalAmount);
+        const defEnt = await defaulterEntryService.createEntry(defaulterEntryList, debtor, totalAmount, req.token.companyDetails);
 
         res.status(201).json({ message: "sendbill/s added successfully.", success: true, response: defEnt });
     } catch (err) {
@@ -164,12 +164,13 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
     try{
         const dbtrs = await Debtors.find({gstin:req.token.companyDetails.gstin});
         //console.log(dbtrs);
-        let crdtrs = [];
+        let defaulterEntries = [];
         for(const element of dbtrs){
-            let invoices = await SendBillTransactions.find({creditorCompanyId:element.creditorCompanyId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
-            crdtrs.push(...( invoices));
+
+            let entry = await defaulterEntryService.getCompleteDefaultEntryData({debtor:element});
+            defaulterEntries.push(...( entry));
         }
-        res.status(200).json({message: 'Invoices sent for you are fetched', success: true, response: crdtrs});
+        res.status(200).json({message: 'Invoices sent for you are fetched', success: true, response: defaulterEntries});
     }catch(error){
         console.log(error)
         res
@@ -180,7 +181,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
-        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id})//.populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)
@@ -213,6 +214,46 @@ exports.initiatePaymentVerification = async(req, res) => {
     }
 };
 
+exports.initiatePaymentVerificationGeneral = async(req, res) => {
+    try {
+        const dbtrs = await Debtors.findOne({gstin:req.token.companyDetails.gstin, creditorCompanyId:req.body.creditorId});
+        //console.log(dbtrs);
+        let defaulterEntries = [];
+        if(dbtrs){
+            let entry = await defaulterEntryService.getCompleteDefaultEntryData({debtor:element});
+            if(!entry){
+                return res.status(200).send({ message: "You don't have any invoices in Pending state", success: false, response: "" });
+            }
+            defaulterEntries.push(...( entry));
+        }
+        let remAmount=req.body.amtPaid
+        for(element of defaulterEntries){
+            if(remAmount>0){
+                let amount = 0
+                if(remAmount >= element.totalAmount){
+                    amount = element.totalAmount
+                    element.status=constants.INVOICE_STATUS.PAID
+                } else {
+                    amount = remAmount
+                }
+                remAmount = remAmount-element.totalAmount
+                // element.totalAmount = element.totalAmount - amount
+                // element.save()
+
+                const pmtHistory = await paymentHistoryService.addPaymentHistory(req.body, amount);
+            } else {
+                break
+            }
+        }
+        return res.status(200).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", reponse: "", success: false });
+    }
+};
+
 exports.getAllInvoicesSentToDebtor = async(req, res) => {
     try{
         let crdtrs = [];
@@ -231,8 +272,8 @@ exports.getAllInvoicesSentToDebtor = async(req, res) => {
 
 exports.removeDefultingByInvoiceId = async(req, res) => {
     try{
-        let DefaulterEntry=   await defaulterEntryService.defaultInvoiceById(req.body.defaulterEntryId)
-        res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: DefaulterEntry});
+        let defaulterEntry=   await defaulterEntryService.defaultInvoiceById(req.body.defaulterEntryId)
+        res.status(200).json({message: 'Given invoices has been defaulted', success: true, response: defaulterEntry});
     }catch(error){
         console.log(error)
         res

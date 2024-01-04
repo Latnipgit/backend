@@ -5,7 +5,7 @@ module.exports = app => {
     const auth = require("../../middleware/authentication.js");
     const Authorization = require("../../middleware/userAuthorizations.js");
     router.use(auth);
-    router.use(Authorization.commpanyLoginValidation);
+    router.use(Authorization.companyLoginValidation);
 
     // send bill
     router.post("/create", sendBillTransactions.create);

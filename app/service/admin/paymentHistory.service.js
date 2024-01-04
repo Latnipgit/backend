@@ -18,3 +18,15 @@ exports.updatePaymentHistoryStatus = function(escObj) {
     return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {status: escObj.status});
 };
   
+exports.addPaymentHistory = function(details, amount) {
+    
+    return PaymentHistory.create({
+        defaulterEntryId: details.defaulterEntryId,
+        amtPaid: amount ,
+        proofFiles: "",
+        status: "PENDING",
+        pendingWith: "L1",
+        approvedByCreditor: "false"
+    });
+};
+  

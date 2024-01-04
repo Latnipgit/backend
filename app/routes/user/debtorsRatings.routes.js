@@ -11,7 +11,7 @@ module.exports = app => {
     // router.get("/getAllDebtorsByCompanyId", auth, debtorRating.getAllDebtorsByCompanyId);
     // get debtors of current company
 
-    // router.use(Authorization.commpanyLoginValidation);
+    // router.use(Authorization.companyLoginValidation);
 
     app.use("/api/ratings", router);
 };

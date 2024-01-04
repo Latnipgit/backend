@@ -36,7 +36,7 @@ exports.createInvoice = function(invoice, companyDetails) {
       creditAmount: invoice.creditAmount,
       remainingAmount: invoice.remainingAmount, 
       interestRate: invoice.interestRate,
-      creditorCompanyId: companyDetails.id, 
+      // creditorCompanyId: companyDetails.id, 
       creditLimitDays: invoice.creditLimitDays,
       remark: invoice.remark,
       items: invoice.items,

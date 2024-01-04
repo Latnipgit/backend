@@ -28,7 +28,7 @@ module.exports = app => {
 
     // // Create a new Tutorial
     // router.delete("/", tutorials.deleteAll);
-    router.use(Authorization.commpanyLoginValidation);
+    router.use(Authorization.companyLoginValidation);
 
     app.use("/api/debtors", router);
 };
