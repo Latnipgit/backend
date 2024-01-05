@@ -14,7 +14,7 @@ module.exports = app => {
     router.post("/initiatePaymentVerification", defaulterEntry.initiatePaymentVerification);
     router.post("/initiatePaymentVerificationGeneral", defaulterEntry.initiatePaymentVerificationGeneral);
 
-    router.post("/getAllDefaultInvoicesSentToDebtor", defaulterEntry.getAllInvoicesSentToDebtor);
+    // router.post("/getAllDefaultInvoicesSentToDebtor", defaulterEntry.getAllInvoicesSentToDebtor);
     router.post("/removeDefultingByInvoiceId", defaulterEntry.removeDefultingByInvoiceId);
 
     app.use("/api/defaulters", router);

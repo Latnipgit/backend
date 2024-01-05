@@ -28,13 +28,24 @@ exports.defaultInvoiceById = function(defaulterEntryId) {
 };
 
 
-exports.createEntry = function(defaulterEntryList, debtor, totalAmount,companyDetails) {
-  return defaulterEntry.create({
+exports.createEntry = function(defaulterEntryList, debtor, status, totalAmount,companyDetails) {
+  const result = defaulterEntry.create({
       debtor: debtor,
       creditorCompanyId: companyDetails.id, 
       invoices: defaulterEntryList,
+      status: status,
       totalAmount: totalAmount
   });
+
+  let replacements = [];
+  replacements.push({target: "alertMessage", value: "Invoices have been marked default, kindly check." })
+  mailObj = mailController.getMailTemplate("DEFAULTER_ENTRY_CREATE", replacements)
+
+  mailObj.to = debtor.customerEmail
+  mailUtility.sendMail(mailObj)
+
+  return result;
+
 };
   
 
