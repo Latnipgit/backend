@@ -1,10 +1,12 @@
 module.exports = app => {
-    const user = require("../../controllers/user/questions.controller.js");
+    const questions = require("../../controllers/user/questions.controller.js");
 
     const router = require("express").Router();
     const auth = require("../../middleware/authentication.js");
 
-    router.post("/addQuestion", auth, user.addQuestion);
+    router.post("/addQuestion", auth, questions.addQuestion);
+    router.get("/getQuestionById", auth, questions.getQuestionById);
+    router.get("/getAllQuestions", auth, questions.getAllQuestions);
 
-    app.use("/api/user", router);
+    app.use("/api/questions", router);
 };

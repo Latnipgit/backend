@@ -8,7 +8,16 @@ module.exports = mongoose => {
         },
         amtPaid: String,
         requestor: String,
-        attachment: String,
+        paymentDate: String,
+        paymentMode: String,
+        debtorAttachments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        }],
+        creditorAttachments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        }],
         status: String,
         pendingWith: String,
         approvedByCreditor: String

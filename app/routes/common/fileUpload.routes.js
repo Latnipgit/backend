@@ -9,6 +9,7 @@ module.exports = app => {
 
     router.post("/upload", auth, upload.single('file'), fileUpload.uploadFile);
     router.get("/allFileData", fileUpload.getAllUploadedDocuments);
+    router.get("/getGeneralDocuments", auth, fileUpload.getAllGeneralDocuments);
     router.post("/download", fileUpload.downloadFile);
 
     app.use("/api/files", router);

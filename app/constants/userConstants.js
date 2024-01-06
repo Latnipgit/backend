@@ -10,5 +10,9 @@ module.exports = Object.freeze({
         PAID: 'PAID',
         DEFAULTED: 'DEFAULTED',
         PENDING:"PENDING"
+    },
+    UPLOAD_FILE_TYPE: {
+        GENERAL: 'GENERAL',
+        INVOICE: 'INVOICE'
     }
 });

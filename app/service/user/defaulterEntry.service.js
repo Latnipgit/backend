@@ -60,7 +60,9 @@ exports.createPaymentHistory = function(reqbody, newStatus, newPendingWith, newA
         defaulterEntryId: reqbody.defaulterEntryId,
         amtPaid: reqbody.amtPaid,
         requestor: reqbody.requestor,
-        attachment: "",
+        paymentDate: reqbody.paymentDate,
+        paymentMode: reqbody.paymenttMode,
+        attachments: reqbody.attachments,
         status: newStatus,
         pendingWith: newPendingWith,
         approvedByCreditor: newApprovedByCreditor

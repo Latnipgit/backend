@@ -47,3 +47,35 @@ exports.addQuestion = async(req, res) => {
               .send({ message: "Something went wrong", success: false });
     }
 };
+
+exports.getQuestionById = async(req, res) => {
+
+    try {
+        const question = await Questions.findOne({_id: req.body.questionId});
+        if (!question) {
+            console.log("Question not found")
+            return res.status(409).send({ message: "Question not found", success: false, response: "" });
+        };
+        res.status(200).json({success: true, message: "Fetched Question!", response: question });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+};
+
+exports.getAllQuestions = async(req, res) => {
+
+    try {
+        const q = await Questions.find();
+        res.status(200).json({success: true, message: "Questions fetched successfully", response: q });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+};

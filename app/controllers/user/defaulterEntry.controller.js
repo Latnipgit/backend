@@ -310,3 +310,15 @@ exports.disputedTransactions = async(req, res) => {
     }
 }
 
+exports.deleteDefaulterEntryById = async(req, res) => {
+    try{
+        const det = await DefaulterEntry.findByIdAndDelete({_id:req.body.defaulterEntryId});
+        res.status(200).json({message: 'Defaulter Entry has been deleted.', success: true, response: det});
+    }catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
