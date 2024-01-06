@@ -209,16 +209,18 @@ exports.getAllInvoicesRaisedByMe = async(req, res) => {
 
 exports.initiatePaymentVerification = async(req, res) => {
     try {
-        const pmtHistory = await PaymentHistory.create({
-            defaulterEntryId: req.body.defaulterEntryId,
-            amtPaid: req.body.amtPaid,
-            proofFiles: "",
-            status: "PENDING",
-            pendingWith: "L1",
-            approvedByCreditor: "false"
-        });
+        let pmtHistory;
+        if(req.body.requestor == "DEBTOR"){
+            pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, "PENDING", "L1", "false");
+            let updatedDefaulterEntry;
+        } else if(req.body.requestor == "CREDITOR"){
+            pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, "APPROVED", "", "true");
+            let deftEntry = await DefaulterEntry.findOne({_id: req.body.defaulterEntryId});
+            let newtotalAmount = deftEntry.totalAmount - req.body.amtPaid;
+            let updatedDefaulterEntry = await DefaulterEntry.findByIdAndUpdate({_id: req.body.defaulterEntryId}, {totalAmount: newtotalAmount});
+        }
 
-        return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
+        return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory});
     } catch (err) {
         console.log(err)
         res

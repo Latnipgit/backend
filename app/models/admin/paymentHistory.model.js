@@ -7,7 +7,8 @@ module.exports = mongoose => {
             ref: 'sendBillTransactions'
         },
         amtPaid: String,
-        proofFiles: String,
+        requestor: String,
+        attachment: String,
         status: String,
         pendingWith: String,
         approvedByCreditor: String

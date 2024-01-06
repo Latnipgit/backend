@@ -1,8 +1,10 @@
 const db = require("../../models/user");
+const admin_db = require("../../models/admin");
 const commondb = require("../../models/common/");
 
 const SendBillTransactions = db.sendBillTransactions;
 const defaulterEntry = db.defaulterEntry; 
+const PaymentHistory = admin_db.paymentHistory;
 
 const Companies = db.companies;
 const Token = commondb.token;
@@ -52,4 +54,15 @@ exports.createEntry = function(defaulterEntryList, debtor, status, totalAmount,c
 exports.getCompleteDefaultEntryData = function(condition) {
   return defaulterEntry.find(condition).populate("invoices debtor invoices.purchaseOrderDocument invoices.challanDocument invoices.invoiceDocument invoices.transportationDocument");
 };
-  
+
+exports.createPaymentHistory = function(reqbody, newStatus, newPendingWith, newApprovedByCreditor) {
+      return PaymentHistory.create({
+        defaulterEntryId: reqbody.defaulterEntryId,
+        amtPaid: reqbody.amtPaid,
+        requestor: reqbody.requestor,
+        attachment: "",
+        status: newStatus,
+        pendingWith: newPendingWith,
+        approvedByCreditor: newApprovedByCreditor
+    });
+}
