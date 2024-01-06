@@ -263,7 +263,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
-        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)

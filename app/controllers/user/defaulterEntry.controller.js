@@ -181,7 +181,20 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
-        const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id})//.populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        // const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id}).populate(
+            [
+            { path: 'invoices', populate: [
+                { path: 'purchaseOrderDocument' },
+                { path: 'challanDocument' },
+                { path: 'invoiceDocument' },
+                { path: 'transportationDocument' }
+              ]
+            },
+            { path: 'debtor' },
+            { path: 'debtor.ratings' }
+          ]
+          );
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)
