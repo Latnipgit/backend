@@ -17,6 +17,7 @@ module.exports = app => {
     // router.post("/getAllDefaultInvoicesSentToDebtor", defaulterEntry.getAllInvoicesSentToDebtor);
     router.post("/removeDefultingByInvoiceId", defaulterEntry.removeDefultingByInvoiceId);
     router.post("/deleteDefaulterEntryById", defaulterEntry.deleteDefaulterEntryById);
+    router.post("/updateDefaulterEntry", defaulterEntry.updateDefaulterEntry);
 
     app.use("/api/defaulters", router);
 };

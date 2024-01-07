@@ -165,8 +165,6 @@ exports.updateInvoice = async(req, res) => {
         
         // Create a SendBillTransactions
         const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId,{
-            debtor: debtor,
-            debtorId: req.body.debtorId,
             billDate: req.body.billDate,
             billDescription: req.body.billDescription,
             billNumber: req.body.billNumber,

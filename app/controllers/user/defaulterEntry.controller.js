@@ -322,3 +322,24 @@ exports.deleteDefaulterEntryById = async(req, res) => {
     }
 }
 
+
+exports.updateDefaulterEntry = async(req, res) => {
+    try{
+        // Validate request
+        const defEnt = await DefaulterEntry.findOne({ _id: req.body.defaulterEntryId });
+        if (!defEnt) {
+            console.log("Defaulter Entry not found ", req.body.defaulterEntryId)
+            return res.status(409).send({ message: "Defaulter Entry not found", success: false, response: "" });
+        };
+
+        const defaulterEntry = await defaulterEntryService.updateDefaulterEntry(req.body);
+
+        res.status(201).json({ message: "Defaulter Entry updated successfully.", success: true, response: defaulterEntry });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+
+};
