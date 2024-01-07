@@ -10,24 +10,10 @@ module.exports = app => {
     router.post("/add",auth,debtors.add);
     router.get("/getAllDebtorsByCompanyId", auth, debtors.getAllDebtorsByCompanyId);
     router.get("/getAllCreditorsByCompanyId", auth, debtors.getAllCreditorsByCompanyId);
+    router.get("/getAllCreditorsByDebtorId", auth, debtors.getAllCreditorsByDebtorId);
     // get debtors of current company
     router.post("/", auth, debtors.getDebtors);
 
-
-    // // Retrieve all Tutorials
-    // router.get("/", tutorials.findAll);
-
-    // // Retrieve all published Tutorials
-    // router.get("/published", tutorials.findAllPublished);
-
-    // // Update a Tutorial with id
-    // router.put("/:id", tutorials.update);
-
-    // // Delete a Tutorial with id
-    // router.delete("/:id", tutorials.delete);
-
-    // // Create a new Tutorial
-    // router.delete("/", tutorials.deleteAll);
     router.use(Authorization.companyLoginValidation);
 
     app.use("/api/debtors", router);

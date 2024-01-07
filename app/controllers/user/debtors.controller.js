@@ -118,3 +118,20 @@ exports.getAllCreditorsByCompanyId = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 }
+
+exports.getAllCreditorsByDebtorId = async(req, res) => {
+    try{
+        const dbtr = await Debtors.findOne({_id:req.body.debtorId});
+        const dbtrs = await Debtors.find({gstin: dbtr.gstin});
+        let credIds = dbtrs.map(item => item.creditorCompanyId);
+
+        const crdtrs = await Companies.find({ _id: { $in: credIds } });
+        
+        res.status(200).json({message: 'Creditors list fetched for company.', success: true, response: crdtrs});
+    } catch (error) {
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
