@@ -206,9 +206,9 @@ exports.updateInvoiceDocuments = async(req, res) => {
         // Validate request
         let updates={};
         if(req.body.purchaseOrderDocument) updates.purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
-        if(req.body.purchaseOrderDocument) updates.challanDocument = await Documents.findById(req.body.challanDocument);
-        if(req.body.purchaseOrderDocument) updates.invoiceDocument = await Documents.findById(req.body.invoiceDocument);
-        if(req.body.purchaseOrderDocument) updates.transportationDocument = await Documents.findById(req.body.transportationDocument);
+        if(req.body.challanDocument) updates.challanDocument = await Documents.findById(req.body.challanDocument);
+        if(req.body.invoiceDocument) updates.invoiceDocument = await Documents.findById(req.body.invoiceDocument);
+        if(req.body.transportationDocument) updates.transportationDocument = await Documents.findById(req.body.transportationDocument);
         
         // Create a SendBillTransactions
         const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId, updates, {new: true});
@@ -444,7 +444,7 @@ exports.initiatePaymentVerification = async(req, res) => {
             approvedByCreditor: "false"
         });
 
-        return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
+        return res.status(200).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
     } catch (err) {
         console.log(err)
         res

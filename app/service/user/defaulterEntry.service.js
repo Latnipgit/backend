@@ -1,7 +1,6 @@
 const db = require("../../models/user");
 const admin_db = require("../../models/admin");
 const commondb = require("../../models/common/");
-const Documents = commondb.documents;
 
 const SendBillTransactions = db.sendBillTransactions;
 const defaulterEntry = db.defaulterEntry; 
@@ -50,61 +49,6 @@ exports.createEntry = function(defaulterEntryList, debtor, status, totalAmount,c
   return result;
 
 };
-
-exports.updateDefaulterEntry = function(reqBody) {
-  let tempArray = [];
-  const deftEnt = defaulterEntry.findByIdAndUpdate(reqBody.defaulterEntryId,{
-    creditorCompanyId: reqBody.creditorCompanyId,
-    status: reqBody.status,
-    totalAmount: reqBody.totalAmount
-  }, {new: true});
-
-  const deftEntNew = defaulterEntry.findById(reqBody.defaulterEntryId);
-  console.log(deftEntNew);
-  tempArray = deftEntNew.invoices
-  for(let i= 0; i < tempArray.length; i++){
-
-    let purchaseOrderDocument = null;
-    let challanDocument= null;
-    let invoiceDocument= null;
-    let transportationDocument=null;
-    if(reqBody.invoices[i].purchaseOrderDocument) purchaseOrderDocument = Documents.findById(reqBody.invoices[i].purchaseOrderDocument);
-    if(reqBody.invoices[i].purchaseOrderDocument) challanDocument = Documents.findById(reqBody.invoices[i].challanDocument);
-    if(reqBody.invoices[i].purchaseOrderDocument) invoiceDocument = Documents.findById(reqBody.invoices[i].invoiceDocument);
-    if(reqBody.invoices[i].purchaseOrderDocument) transportationDocument = Documents.findById(reqBody.invoices[i].transportationDocument);
-
-    const invoiceId = tempArray[i]._id
-    SendBillTransactions.updateOne({ _id: invoiceId }, {
-      billDate: reqBody.invoices[i].billDate,
-      billDescription: reqBody.invoices[i].billDescription,
-      billNumber: reqBody.invoices[i].billNumber,
-      creditAmount: reqBody.invoices[i].creditAmount,
-      remainingAmount: reqBody.invoices[i].creditAmount, 
-
-      interestRate: reqBody.invoices[i].interestRate,
-      creditLimitDays: reqBody.invoices[i].creditLimitDays,
-      remark: reqBody.invoices[i].remark,
-      items: reqBody.invoices[i].items,
-      subTotal: reqBody.invoices[i].subTotal,
-      tax: reqBody.invoices[i].tax,
-
-      referenceNumber: reqBody.invoices[i].referenceNumber,
-      invoiceNumber: reqBody.invoices[i].invoiceNumber,
-      dueDate: reqBody.invoices[i].dueDate,
-      percentage: reqBody.invoices[i].percentage,
-
-      purchaseOrderDocument: purchaseOrderDocument,
-      challanDocument: challanDocument,
-      invoiceDocument: invoiceDocument,
-      transportationDocument: transportationDocument
-      
-    });
-  }
-
-  return defaulterEntry.findById(reqBody.defaulterEntryId);
-
-};
-
 
 exports.getCompleteDefaultEntryData = function(condition) {
   return defaulterEntry.find(condition).populate("invoices debtor invoices.purchaseOrderDocument invoices.challanDocument invoices.invoiceDocument invoices.transportationDocument");
