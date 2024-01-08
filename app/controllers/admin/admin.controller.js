@@ -3,6 +3,7 @@ const user_db = require("../../models/user");
 const User = user_db.user;
 const SubscriptionPkg = db.subscriptionPkg;
 const SubscriptionPkgAPIQuotaMapping = db.subscriptionPkgAPIQuotaMapping;
+const constants = require('../../constants/userConstants');
 
 const commondb = require("../../models/common/");
 const paymentHistory = require("../../service/admin/paymentHistory.service");
@@ -227,7 +228,7 @@ exports.getAllAdmins = async(req, res) => {
 };
 exports.getAllTransactions = async(req, res) => {
     try {
-        let transactions = await PaymentHistory.find({ pendingWith: req.token.adminDetails.adminRole }).populate(
+        let transactions = await PaymentHistory.find({ pendingWith: req.token.adminDetails.adminRole, status : {$ne: constants.PAYMENT_HISTORY_STATUS.APPROVED} }).populate(
         [
             { path: 'defaulterEntry' },
             { path: 'defaulterEntry', populate: {

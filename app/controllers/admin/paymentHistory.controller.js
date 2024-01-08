@@ -52,14 +52,16 @@ exports.approveOrRejectPayment = async(req, res) => {
         if(req.body.approve == true){
             status = constants.PAYMENT_HISTORY_STATUS.APPROVED;
             result = await paymentHistoryService.updatePaymentHistoryStatus({status, paymentId});
-            let deftEntry = await DefaulterEntry.findOne({_id: result.defaulterEntryId});
+            let deftEntry = await DefaulterEntry.findById(result.defaulterEntryId);
             //let paymentHistoryAndInvoice =  await result.populate("invoice");
 
-            let newtotalAmount = deftEntry.totalAmount - amtPaid;
+            deftEntry.totalAmount = deftEntry.totalAmount - result.amtPaid;
+            if(deftEntry.totalAmount<=0){
+                deftEntry.status=  constants.INVOICE_STATUS.PAID
+            }
+            deftEntry.save()
 
-            let updatedDefaulterEntry = await DefaulterEntry.findByIdAndUpdate({_id: result.defaulterEntryId}, {totalAmount: newtotalAmount});
-
-            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, updatedDefaulterEntry} });
+            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, deftEntry} });
 
         } else if(req.body.approve == false){
             status = constants.PAYMENT_HISTORY_STATUS.REJECTED;

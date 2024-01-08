@@ -7,6 +7,7 @@ const { ObjectId } = require('mongodb');
 const PaymentHistory = db.paymentHistory;
 const User = user_db.user;
 const config = process.env;
+const constants = require('../../constants/userConstants');
 
 exports.updatePaymentHistoryForEscalate = function(escObj) {
     console.log(escObj);
@@ -19,10 +20,27 @@ exports.updatePaymentHistoryStatus = function(escObj) {
 };
 
 exports.moveToDocumentsNeededQueue = function(escObj) {
-    console.log(escObj);
-    escObj.documentsPendingSince= new Date()
-    return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {status: escObj.status, pendingWith: escObj.pendingWith});
+    // This arrangement can be altered based on how we want the date's format to appear.
+    escObj.documentsPendingSince = new Date().toJSON().slice(0, 10);
+
+    return PaymentHistory.findByIdAndUpdate(escObj.paymentId, {status: escObj.status, pendingWith: escObj.pendingWith,documentsPendingSince: escObj.documentsPendingSince});
 };
+
+exports.moveDocumentsWithPendingDocBackToAdminQueue = function()  {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    console.log('PaymentHistory status updated for documents older than 7 days.');
+
+    return PaymentHistory.updateMany(
+        {
+            documentsPendingSince: { $lte: sevenDaysAgo },
+            status: { $ne: constants.PAYMENT_HISTORY_STATUS.PENDING }
+        },
+        {
+            $set: { status: constants.PAYMENT_HISTORY_STATUS.PENDING }
+        }
+    )
+}
 
 exports.addPaymentHistory = function(details, amount) {
     

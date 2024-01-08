@@ -5,7 +5,6 @@ const sessions = require('express-session');
 
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
-const cron = require('node-cron');
 const shell = require('shelljs');
 const schedule = require('node-schedule');
 
@@ -16,20 +15,7 @@ const Subscription = user_db.subscription;
 const SubscriptionIdRemQuotaMapping = user_db.subscriptionIdRemQuotaMapping;
 const SubscriptionPkgAPIQuotaMapping = admin_db.subscriptionPkgAPIQuotaMapping;
 
-cron.schedule('2 0 * * *', function(){
 
-    function getPreviousDay(date = new Date()) {
-        const previous = new Date(date.getTime());
-        previous.setDate(date.getDate() - 1);
-      
-        return previous;
-      }
-    let COB = (getPreviousDay(new Date())).toISOString();
-
-    const sub = Subscription.updateMany({ endDate: COB, isActive: true }, {isActive: false});
-
-    console.log("This is cron running!");
-})
 
 // setInterval(()=> {
 
