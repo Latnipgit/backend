@@ -30,11 +30,13 @@ exports.addRating = async(req, res) => {
         if (!oldUser) {
             return res.status(404).send({ message: "Debtor does not exist.", success: false });
         }
-
-        const rating = await debtorService.addDebtorRating(req.body)
-        await debtorService.addDebtorRatingToDebtor(req.body.debtorId, rating)
+        let resArray = [];
+        for(let i = 0; i<req.body.length; i++){
+            const rating = await debtorService.addDebtorRating(req.body)
+            await debtorService.addDebtorRatingToDebtor(req.body.debtorId, rating)
+        }
         
-       res.status(200).json({success: true, message: "Rating added successfully" });
+       res.status(200).json({success: true, message: "Rating added successfully", response: ""});
 
     } catch (err) {
         console.log(err)

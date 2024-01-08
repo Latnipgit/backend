@@ -62,6 +62,7 @@ exports.updateDefaulterEntry = async function(reqBody) {
   // const deftEntNew = await defaulterEntry.findById(reqBody.defaulterEntryId);
   // console.log(deftEntNew);
   tempArray = deftEnt.invoices
+  let sendB;
   for(let i= 0; i < tempArray.length; i++){
 
     let purchaseOrderDocument = null;
@@ -74,7 +75,7 @@ exports.updateDefaulterEntry = async function(reqBody) {
     if(reqBody.invoices[i].purchaseOrderDocument) transportationDocument = await Documents.findById(reqBody.invoices[i].transportationDocument);
 
     const invoiceId = tempArray[i]._id
-    await SendBillTransactions.findByIdAndUpdate({ _id: invoiceId }, {
+    sendB = await SendBillTransactions.findByIdAndUpdate(invoiceId, {
       billDate: reqBody.invoices[i].billDate,
       billDescription: reqBody.invoices[i].billDescription,
       billNumber: reqBody.invoices[i].billNumber,
@@ -99,6 +100,7 @@ exports.updateDefaulterEntry = async function(reqBody) {
       transportationDocument: transportationDocument
       
     });
+  
   }
 
   return await defaulterEntry.findById(reqBody.defaulterEntryId);
