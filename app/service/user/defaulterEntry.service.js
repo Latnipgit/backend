@@ -106,7 +106,19 @@ exports.updateDefaulterEntry = async function(reqBody) {
 };
 
 exports.getCompleteDefaultEntryData = function(condition) {
-  return defaulterEntry.find(condition).populate("invoices debtor invoices.purchaseOrderDocument invoices.challanDocument invoices.invoiceDocument invoices.transportationDocument");
+  return defaulterEntry.find(condition).populate([
+    { path: 'invoices' },
+    { path: 'debtor' },
+    { path: 'invoices', populate: [
+        { path: 'purchaseOrderDocument' },
+        { path: 'challanDocument' },
+        { path: 'invoiceDocument' },
+        { path: 'transportationDocument' }
+      ]
+    },
+    { path: 'debtor' },
+    { path: 'debtor', populate: 'ratings' }
+  ]);
 };
 
 exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newPendingWith, newApprovedByCreditor) {
@@ -120,6 +132,8 @@ exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newP
         attachments: reqbody.attachments,
         status: newStatus,
         pendingWith: newPendingWith,
-        approvedByCreditor: newApprovedByCreditor
+        approvedByCreditor: newApprovedByCreditor,
+
+        isDispute: (reqbody.isDispute && reqbody.isDispute != null )? reqbody.isDispute : false
     });
 }
