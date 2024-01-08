@@ -15,7 +15,7 @@ exports.updatePaymentHistoryForEscalate = function(escObj) {
 
 exports.updatePaymentHistoryStatus = function(escObj) {
     console.log(escObj);
-    return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {status: escObj.status});
+    return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {status: escObj.status, pendingWith: escObj.pendingWith});
 };
   
 exports.addPaymentHistory = function(details, amount) {
@@ -30,3 +30,15 @@ exports.addPaymentHistory = function(details, amount) {
     });
 };
   
+
+exports.createPaymentHistory = function(details, newStatus, newPendingWith, newApprovedByCreditor) {
+    return PaymentHistory.create({
+      defaulterEntryId: details.defaulterEntryId,
+      amtPaid: details.amtPaid,
+      requestor: details.requestor,
+      attachment: details.attachmentId,
+      status: newStatus,
+      pendingWith: newPendingWith,
+      approvedByCreditor: newApprovedByCreditor
+  });
+}

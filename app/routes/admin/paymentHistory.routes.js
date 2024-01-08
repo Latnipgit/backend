@@ -7,6 +7,7 @@ module.exports = app => {
     router.get("/getAllApprovedTransactions", auth, paymentHistory.getAllApprovedTransactions);
     router.get("/getAllDisputedTransactions", auth, paymentHistory.getAllDisputedTransactions);
     router.post("/approveOrRejectPayment",auth, paymentHistory.approveOrRejectPayment);
+    router.post("/askForSupportingDocument",auth, paymentHistory.askForSupportingDocument);
 
     app.use("/api/admin", router);
 };

@@ -50,14 +50,26 @@ exports.createEntry = function(defaulterEntryList, debtor, status, totalAmount,c
 
 };
   
-
 exports.getCompleteDefaultEntryData = function(condition) {
-  return defaulterEntry.find(condition).populate("invoices debtor invoices.purchaseOrderDocument invoices.challanDocument invoices.invoiceDocument invoices.transportationDocument");
+  return defaulterEntry.find(condition).populate([
+    { path: 'invoices' },
+    { path: 'debtor' },
+    { path: 'invoices', populate: [
+        { path: 'purchaseOrderDocument' },
+        { path: 'challanDocument' },
+        { path: 'invoiceDocument' },
+        { path: 'transportationDocument' }
+      ]
+    },
+    { path: 'debtor' },
+    { path: 'debtor', populate: 'ratings' }
+  ]);
 };
 
-exports.createPaymentHistory = function(reqbody, newStatus, newPendingWith, newApprovedByCreditor) {
+exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newPendingWith, newApprovedByCreditor) {
       return PaymentHistory.create({
         defaulterEntryId: reqbody.defaulterEntryId,
+        defaulterEntry: defaulterEntry,
         amtPaid: reqbody.amtPaid,
         requestor: reqbody.requestor,
         paymentDate: reqbody.paymentDate,
@@ -65,6 +77,8 @@ exports.createPaymentHistory = function(reqbody, newStatus, newPendingWith, newA
         attachments: reqbody.attachments,
         status: newStatus,
         pendingWith: newPendingWith,
-        approvedByCreditor: newApprovedByCreditor
+        approvedByCreditor: newApprovedByCreditor,
+
+        isDispute: (reqbody.isDispute && reqbody.isDispute != null )? reqbody.isDispute : false
     });
 }

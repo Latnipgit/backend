@@ -182,19 +182,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
         // const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
-        const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id}).populate(
-            [
-            { path: 'invoices', populate: [
-                { path: 'purchaseOrderDocument' },
-                { path: 'challanDocument' },
-                { path: 'invoiceDocument' },
-                { path: 'transportationDocument' }
-              ]
-            },
-            { path: 'debtor' },
-            { path: 'debtor.ratings' }
-          ]
-          );
+        const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id})
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)
@@ -211,16 +199,15 @@ exports.initiatePaymentVerification = async(req, res) => {
     try {
         let pmtHistory;
         if(req.body.requestor == "DEBTOR"){
-            pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, "PENDING", "L1", "false");
-            let updatedDefaulterEntry;
+            pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, await  DefaulterEntry.findById(req.body.defaulterEntryId),  "PENDING", "L1", "false");
         } else if(req.body.requestor == "CREDITOR"){
-            pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, "APPROVED", "", "true");
+            pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, await  DefaulterEntry.findById(req.body.defaulterEntryId),"APPROVED", "", "true");
             let deftEntry = await DefaulterEntry.findOne({_id: req.body.defaulterEntryId});
             let newtotalAmount = deftEntry.totalAmount - req.body.amtPaid;
             let updatedDefaulterEntry = await DefaulterEntry.findByIdAndUpdate({_id: req.body.defaulterEntryId}, {totalAmount: newtotalAmount});
         }
 
-        return res.status(409).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory});
+        return res.status(200).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory});
     } catch (err) {
         console.log(err)
         res
@@ -228,6 +215,7 @@ exports.initiatePaymentVerification = async(req, res) => {
             .send({ message: "Something went wrong", reponse: "", success: false });
     }
 };
+
 
 exports.initiatePaymentVerificationGeneral = async(req, res) => {
     try {

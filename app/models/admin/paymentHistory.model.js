@@ -1,10 +1,9 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema({
-        paymentId: String,
-        invoiceId: String,
-        invoice: {
+        defaulterEntryId: String,
+        defaulterEntry: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'sendBillTransactions'
+            ref: 'defaulterEntry'
         },
         amtPaid: String,
         requestor: String,
@@ -20,7 +19,8 @@ module.exports = mongoose => {
         }],
         status: String,
         pendingWith: String,
-        approvedByCreditor: String
+        approvedByCreditor: String,
+        isDispute: Boolean
     }, { timestamps: true });
 
     schema.method("toJSON", function() {
