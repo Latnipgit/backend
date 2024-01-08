@@ -218,10 +218,10 @@ exports.uploadSupportingDocuments = async(req, res) => {
 
       const pHistory = await PaymentHistory.findOne({ _id: req.body.paymentId });
       if(req.body.type == "DEBTOR"){
-        pHistory.debtorAttachments = req.body.attachment
+        pHistory.debtorAttachments = req.body.attachment.map(item => mongoose.Types.ObjectId(item.documentId))
       }
       else if(req.body.type == "CREDITOR"){
-        pHistory.creditorAttachments = req.body.attachment
+        pHistory.creditorAttachments = req.body.attachment.map(item => mongoose.Types.ObjectId(item.documentId))
       }
       await pHistory.save();
       
