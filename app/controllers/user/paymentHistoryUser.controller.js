@@ -212,3 +212,26 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
             .send({ message: "Something went wrong", reponse: "", success: false });
     }
 };
+
+exports.uploadSupportingDocuments = async(req, res) => {
+  try {
+
+      const pHistory = await PaymentHistory.findOne({ _id: req.body.paymentId });
+      if(req.body.type == "DEBTOR"){
+        pHistory.debtorAttachments = req.body.attachment
+      }
+      else if(req.body.type == "CREDITOR"){
+        pHistory.creditorAttachments = req.body.attachment
+      }
+      await pHistory.save();
+      
+      return res.status(200).send({ message: "Successful upload", success: true, response: "" });
+
+      
+  } catch (err) {
+      console.log(err)
+      res
+          .status(500)
+          .send({ message: "Something went wrong", reponse: "", success: false });
+  }
+};

@@ -9,6 +9,7 @@ module.exports = app => {
 
     // router.get("/addReceivedPayment", auth, paymentHistoryUser.confirmPaymentByCreditor);
     router.get("/getTransactionsPendingForDocs", auth, Authorization.companyLoginValidation, paymentHistoryUser.getTransactionsPendingForDocs);
+    router.post("/uploadSupportingDocuments", auth, Authorization.companyLoginValidation, paymentHistoryUser.uploadSupportingDocuments);
 
     app.use("/api/user", router);
 };
