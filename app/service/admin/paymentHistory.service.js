@@ -18,6 +18,12 @@ exports.updatePaymentHistoryStatus = function(escObj) {
     return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {status: escObj.status, pendingWith: escObj.pendingWith});
 };
 
+exports.moveToDocumentsNeededQueue = function(escObj) {
+    console.log(escObj);
+    escObj.documentsPendingSince= new Date()
+    return PaymentHistory.findByIdAndUpdate({_id: escObj.paymentId}, {status: escObj.status, pendingWith: escObj.pendingWith});
+};
+
 exports.addPaymentHistory = function(details, amount) {
     
     return PaymentHistory.create({

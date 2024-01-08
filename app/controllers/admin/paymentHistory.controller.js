@@ -78,15 +78,16 @@ exports.approveOrRejectPayment = async(req, res) => {
 
 exports.askForSupportingDocument = async(req, res) => {
     try {
+            
             // status = constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED;
-            transaction = await paymentHistoryService.updatePaymentHistoryStatus({status:  constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED, paymentId: req.body.paymentId, pendingWith: "USER"}).populate(["defaulterEntry","defaulterEntry.debtor"]);
+            let transaction = await paymentHistoryService.moveToDocumentsNeededQueue({status:  constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED, paymentId: req.body.paymentId, pendingWith: "USER"}).populate(["defaulterEntry","defaulterEntry.debtor"]);
             //let paymentHistoryAndInvoice =  await result.populate("invoice");
-            creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId)
+            let creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId)
             
             // mail for debtor
             let replacements = [];
             // replacements.push({target: "password", value: password })
-            mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
+            let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
      
             mailObj.to = transaction.defaulterEntry.debtor.customerEmail
             mailUtility.sendMail(mailObj)

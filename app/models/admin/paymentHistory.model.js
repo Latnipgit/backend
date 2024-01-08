@@ -20,6 +20,7 @@ module.exports = mongoose => {
         status: String,
         pendingWith: String,
         approvedByCreditor: String,
+        documentsPendingSince: Date,
         isDispute: Boolean
     }, { timestamps: true });
 
