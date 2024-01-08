@@ -109,9 +109,10 @@ exports.getCompleteDefaultEntryData = function(condition) {
   return defaulterEntry.find(condition).populate("invoices debtor invoices.purchaseOrderDocument invoices.challanDocument invoices.invoiceDocument invoices.transportationDocument");
 };
 
-exports.createPaymentHistory = function(reqbody, newStatus, newPendingWith, newApprovedByCreditor) {
+exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newPendingWith, newApprovedByCreditor) {
       return PaymentHistory.create({
         defaulterEntryId: reqbody.defaulterEntryId,
+        defaulterEntry: defaulterEntry,
         amtPaid: reqbody.amtPaid,
         requestor: reqbody.requestor,
         paymentDate: reqbody.paymentDate,
