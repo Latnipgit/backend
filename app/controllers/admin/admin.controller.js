@@ -238,8 +238,10 @@ exports.getAllTransactions = async(req, res) => {
                 'transportationDocument'
               ]
             }},
-            { path: 'defaulterEntry.debtor' },
-            { path: 'defaulterEntry.debtor.ratings' }
+            { path: 'defaulterEntry' , populate: {
+                path: 'debtor', populate: [
+                  'ratings']}
+            }
           ]
         );
         let detailed = [];
