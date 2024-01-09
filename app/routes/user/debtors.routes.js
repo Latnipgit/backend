@@ -12,7 +12,7 @@ module.exports = app => {
     router.post("/add",debtors.add);
     router.get("/getAllDebtorsByCompanyId", debtors.getAllDebtorsByCompanyId);
     router.get("/getAllCreditorsByCompanyId", debtors.getAllCreditorsByCompanyId);
-    router.get("/getAllCreditorsByDebtorId", debtors.getAllCreditorsByDebtorId);
+    router.post("/getAllCreditorsByDebtorId", debtors.getAllCreditorsByDebtorId);
     // get debtors of current company
     router.post("/", debtors.getDebtors);
 
