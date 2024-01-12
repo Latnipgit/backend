@@ -9,11 +9,19 @@ module.exports = mongoose => {
         requestor: String,
         paymentDate: String,
         paymentMode: String,
-        debtorAttachments: [{
+        creditorcacertificate: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
         }],
-        creditorAttachments: [{
+        creditoradditionaldocuments: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        }],
+        debtorcacertificate:[{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        }],
+        debtoradditionaldocuments:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
         }],

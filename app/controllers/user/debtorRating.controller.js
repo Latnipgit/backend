@@ -32,8 +32,8 @@ exports.addRating = async(req, res) => {
         }
         let resArray = [];
         for(let i = 0; i<req.body.length; i++){
-            const rating = await debtorService.addDebtorRating(req.body)
-            await debtorService.addDebtorRatingToDebtor(req.body.debtorId, rating)
+            const rating = await debtorService.addDebtorRating(req.body[i])
+            await debtorService.addDebtorRatingToDebtor(req.body[i].debtorId, req.token.companyDetails, rating)
         }
         
        res.status(200).json({success: true, message: "Rating added successfully", response: ""});

@@ -16,10 +16,16 @@ exports.findCompany = function(companyDetails) {
     return Companies.findOne(condition);
 };
   
-exports.addDebtorRatingToDebtor = function(debtorId, rating) {
-    return  Debtor.findByIdAndUpdate(
+exports.addDebtorRatingToDebtor = function(debtorId, companyDetails, rating) {
+    
+    return Debtor.findByIdAndUpdate(
         debtorId,
-      { $push: { ratings: rating._id } },
+      { $push: {   
+                ratings: rating._id ,
+                ratingCompany: companyDetails.id
+            } 
+        },
       { new: true, useFindAndModify: false }
     );
+
 };

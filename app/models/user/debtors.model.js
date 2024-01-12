@@ -20,6 +20,10 @@ module.exports = mongoose => {
         ratings: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'debtorRating',
+        }],
+        ratingCompany: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'companies',
         }]
 
     }, { timestamps: true });
