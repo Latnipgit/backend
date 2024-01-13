@@ -108,6 +108,7 @@ exports.updateDefaulterEntry = async function(reqBody) {
 };
 
 exports.getCompleteDefaultEntryData = function(condition) {
+  
   return defaulterEntry.find(condition).populate([
     { path: 'invoices' },
     { path: 'debtor' },

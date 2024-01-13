@@ -119,7 +119,10 @@ exports.create = async(req, res) => {
             console.log("debtor not found", req.body.debtorId)
             return res.status(409).send({ message: "debtor not found", success: false, response: "" });
         };
-
+        req.body.purchaseOrderDocument = null
+        req.body.challanDocument = null
+        req.body.invoiceDocument = null
+        req.body.transportationDocument = null
         if(req.body.purchaseOrderDocument) 
             req.body.purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
         if(req.body.challanDocument) req.body.challanDocument = await Documents.findById(req.body.challanDocument);

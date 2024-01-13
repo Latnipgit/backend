@@ -14,3 +14,15 @@ exports.generateRandomPassword = (mailObj) => {
  
     return pass;
 }
+
+exports.calculateAverageRating= (ratings) => {
+    if (Array.isArray(ratings)) {
+        // Filter ratings that have a 'rating' field
+        const validRatings = ratings.filter(r => typeof r.rating === 'number');
+
+        // Calculate the average rating
+        const averageRating = validRatings.reduce((acc, r) => acc + r.rating, 0) / validRatings.length;
+
+        return averageRating;
+    }
+}
