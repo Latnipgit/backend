@@ -173,6 +173,15 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
         for(const element of dbtrs){
 
             let entry = await defaulterEntryService.getCompleteDefaultEntryData({debtor:element});
+         
+            entry = entry.map(item => {
+                // Assuming you want to rename 'creditorCompanyId' to 'creditorCompanyDetails'
+                item._doc.creditor = item._doc.creditorCompanyId;
+                delete item._doc.creditorCompanyId;
+                return item;
+            });
+
+            // Use transformedResults
             defaulterEntries.push(...( entry));
         }
         res.status(200).json({message: 'Invoices sent for you are fetched', success: true, response: defaulterEntries});
@@ -187,7 +196,16 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
         // const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
-        const invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id})
+        let invoices = await defaulterEntryService.getCompleteDefaultEntryData({creditorCompanyId:req.token.companyDetails.id})
+        
+        invoices = invoices.map(item => {
+            // Assuming you want to rename 'creditorCompanyId' to 'creditorCompanyDetails'
+            item._doc.creditor = item._doc.creditorCompanyId;
+            delete item._doc.creditorCompanyId;
+            return item;
+        });
+
+
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)

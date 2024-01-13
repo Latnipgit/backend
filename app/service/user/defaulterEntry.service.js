@@ -109,6 +109,7 @@ exports.updateDefaulterEntry = async function(reqBody) {
 
 exports.getCompleteDefaultEntryData = function(condition) {
   
+
   return defaulterEntry.find(condition).populate([
     { path: 'invoices' },
     { path: 'debtor' },
@@ -120,8 +121,9 @@ exports.getCompleteDefaultEntryData = function(condition) {
       ]
     },
     { path: 'debtor' },
-    { path: 'debtor', populate: 'ratings' }
-  ]);
+    { path: 'debtor', populate: 'ratings' },
+    { path: 'creditorCompanyId', model: 'company' }
+  ])
 };
 
 exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newPendingWith, newApprovedByCreditor) {
