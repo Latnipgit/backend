@@ -14,7 +14,8 @@ module.exports = app => {
     router.get("/getAllCreditorsByCompanyId", debtors.getAllCreditorsByCompanyId);
     router.post("/getAllCreditorsByDebtorId", debtors.getAllCreditorsByDebtorId);
     // get debtors of current company
-    router.post("/", debtors.getDebtors);
+    // router.post("/", debtors.getDebtors);
+    router.post("/search",auth, Authorization.CheckAccessForEmployee, debtors.companySearch);
 
 
     app.use("/api/debtors", router);

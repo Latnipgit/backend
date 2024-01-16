@@ -4,7 +4,7 @@ module.exports = app => {
     var router = require("express").Router();
 
     // get debtors of current company
-    router.post("/", debtors.getCreditors);
+    // router.post("/", debtors.getCreditors);
 
 
     // // Retrieve all Tutorials

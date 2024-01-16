@@ -12,7 +12,7 @@ module.exports = mongoose => {
             ref: 'sendBillTransactions'
         }],
         status: String,
-        totalAmount: String
+        totalAmount: Number
     },
     {
         timestamps: true

@@ -14,7 +14,6 @@ module.exports = app => {
     router.post("/add",auth, companies.addCompany);
 
     router.post("/selectCompany",auth, companies.selectCompanyByCompanyId);
-    router.post("/search",auth, Authorization.CheckAccessForEmployee, companies.findOne);
 
     // // Retrieve all published Tutorials
     // router.get("/published", tutorials.findAllPublished);

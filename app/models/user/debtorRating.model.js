@@ -1,7 +1,14 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema({
         debtorId: String,
-        questionId: String,
+        ratingCompany: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'company',
+        },
+        question: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'questions',
+        },
         response: String
     }, { timestamps: true });
 

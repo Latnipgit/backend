@@ -54,9 +54,9 @@ exports.createEntry = function(defaulterEntryList, debtor, status, totalAmount,c
 exports.updateDefaulterEntry = async function(reqBody) {
   let tempArray = [];
   const deftEnt = await defaulterEntry.findByIdAndUpdate(reqBody.defaulterEntryId,{
-    creditorCompanyId: reqBody.creditorCompanyId,
+    // creditorCompanyId: reqBody.creditorCompanyId,
     status: reqBody.status,
-    totalAmount: reqBody.totalAmount
+    totalAmount: reqBody.totalAmount,
   }, {new: true});
 
   // const deftEntNew = await defaulterEntry.findById(reqBody.defaulterEntryId);
@@ -106,6 +106,23 @@ exports.updateDefaulterEntry = async function(reqBody) {
   return await defaulterEntry.findById(reqBody.defaulterEntryId);
 
 };
+
+exports.findInvoicesForCreditorPendingByDebtor = function(creditorId, debtorId, condition) {
+  return defaulterEntry.find(
+      { creditorCompanyId: creditorId , debtor: debtorId,
+      ...condition
+      }
+      );
+};
+
+exports.findInvoicesPendingByDebtorIds = function(debtorIds, condition) {
+  return defaulterEntry.find(
+      {debtor:{ $in: debtorIds},
+      ...condition
+      }
+      );
+};
+
 
 exports.getCompleteDefaultEntryData = function(condition) {
   

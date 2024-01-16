@@ -8,10 +8,10 @@ const Subscription = db.subscription;
 const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
 const User = db.user;
 const config = process.env;
-const companyService = require("../../service/user/company.service");
 const service = require("../../service/user/");
 const userService = service.user;
-const subscriptionService = require("../../service/user/subscription.service");
+const companyService = service.company;
+const debtorService = service.debtor;
 
 // Create and Save a new Tutorial
 exports.addCompany = async(req, res) => {
@@ -24,6 +24,12 @@ exports.addCompany = async(req, res) => {
         const company = await companyService.addCompany(req.body);
         await userService.addCompanyToUser(req.token.userDetails.id, company);
         const user = await userService.getUserById( req.token.userDetails.id ).populate("companies");
+
+        req.body.debtorType = "Unknown"
+        req.body.customerEmail = user.emailId
+        req.body.customerMobile = user.phoneNumber
+        const tempDebtor = await debtorService.addDebtor(req.body)
+
         // await userService.addUserToCompany(company._id, loggedInUser);
         // return new user
         res.status(200).json({message: 'Users list fetched.', success: true, response: company});
@@ -87,26 +93,3 @@ exports.selectCompanyByCompanyId = async(req, res) => {
 }
 
 // Find a single Company with an id
-exports.findOne = async(req, res) => {
-    try{
-        // find in subscription by userId and isActive  => get subscription Id
-        // find Rem Quota mapp . limit remaining using sId
-        const updateRemQuota = await subscriptionService.updateRemQuota(req.token.userDetails);
-
-        if(updateRemQuota){
-            data = await companyService.findCompany(req.body);
-            if (!data){
-                res.status(404).send({ message: "Not found company ", success: false, response: ""});
-            }else{
-                res.status(200).json({ message: "Search successful", success: true, response: data});
-            }
-        } else{
-            res.status(200).send({ message: "you don't have an active subscription. Please purchase one suubscription to continue.", success: false, response: ""});
-        }
-    } catch (error) {
-        console.log(error)
-        res
-            .status(500)
-            .send({ message: "Error retrieving company", success: false, response: ""});
-    }
-};

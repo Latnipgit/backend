@@ -21,11 +21,6 @@ module.exports = mongoose => {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'debtorRating',
         }],
-        ratingCompany: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'companies',
-        }]
-
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

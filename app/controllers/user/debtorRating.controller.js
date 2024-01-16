@@ -32,11 +32,12 @@ exports.addRating = async(req, res) => {
         }
         let resArray = [];
         for(let i = 0; i<req.body.length; i++){
+            req.body[i].ratingCompany = req.token.companyDetails.id
             const rating = await debtorService.addDebtorRating(req.body[i])
-            await debtorService.addDebtorRatingToDebtor(req.body[i].debtorId, req.token.companyDetails, rating)
+            await debtorService.addDebtorRatingToDebtor(req.body[i].debtorId, rating)
         }
-        
-       res.status(200).json({success: true, message: "Rating added successfully", response: ""});
+        let givenRating = await DebtorRating.find({ratingCompany: req.token.companyDetails.id}).populate("ratingCompany")
+       res.status(200).json({success: true, message: "Rating added successfully", response: givenRating});
 
     } catch (err) {
         console.log(err)

@@ -26,6 +26,7 @@ exports.defaultInvoiceById = function(invoiceId) {
 };
 
 
+
 exports.createInvoice = function(invoice, companyDetails) {
   return SendBillTransactions.create({
       // debtor: debtor,
