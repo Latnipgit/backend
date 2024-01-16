@@ -174,7 +174,7 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
                     ]
                 }
   
-          }
+              }
       
             // {
             //     $project: {
@@ -249,6 +249,50 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
                   preserveNullAndEmptyArrays: true
                 }
               },
+              {
+                $lookup: {
+                    from: "sendbilltransactions", // Replace with your actual invoices collection name
+                    localField: "defaulterEntry.invoices",
+                    foreignField: "_id",
+                    as: "defaulterEntry.invoices",
+                    pipeline: [
+                      // Additional $lookup stages to populate fields within each invoice
+                      {
+                          $lookup: {
+                              from: "documents", // Replace with the actual collection name
+                              localField: "purchaseOrderDocument",
+                              foreignField: "_id",
+                              as: "purchaseOrderDocument"
+                          }
+                      },
+                      {
+                          $lookup: {
+                              from: "documents", // Replace with the actual collection name
+                              localField: "challanDocument",
+                              foreignField: "_id",
+                              as: "challanDocument"
+                          }
+                      },
+                      {
+                          $lookup: {
+                              from: "documents", // Replace with the actual collection name
+                              localField: "invoiceDocument",
+                              foreignField: "_id",
+                              as: "invoiceDocument"
+                          }
+                      },
+                      {
+                          $lookup: {
+                              from: "documents", // Replace with the actual collection name
+                              localField: "transportationDocument",
+                              foreignField: "_id",
+                              as: "transportationDocument"
+                          }
+                      },
+                    ]
+                }
+  
+          }
           ]);
     
         //   pHistoryCreditor = pHistoryCreditor.filter(ph => ph.defaulterEntry);
