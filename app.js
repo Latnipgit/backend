@@ -92,7 +92,7 @@ require("./app/routes/common/fileUpload.routes")(app);
 require("./app/routes/user/defaulterEntry.routes")(app);
 
 // set port, listen for requests
-const PORT = process.env.PORT || process.env.API_PORT;
+const PORT = process.env.PORT || "8080";
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
     console.log("started in "+ process.env.ENV+" mode")
