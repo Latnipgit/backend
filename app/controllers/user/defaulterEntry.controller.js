@@ -226,11 +226,12 @@ exports.initiatePaymentVerification = async(req, res) => {
         } else if(req.body.requestor == "CREDITOR"){
             pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, await  DefaulterEntry.findById(req.body.defaulterEntryId),"APPROVED", "", "true");
             let deftEntry = await DefaulterEntry.findOne({_id: req.body.defaulterEntryId});
-            let newtotalAmount = deftEntry.totalAmount - req.body.amtPaid;
-            let updatedDefaulterEntry = await DefaulterEntry.findByIdAndUpdate({_id: req.body.defaulterEntryId}, {totalAmount: newtotalAmount});
+            deftEntry.totalAmount = deftEntry.totalAmount - req.body.amtPaid;
+            deftEntry.save()
+            // let updatedDefaulterEntry = await DefaulterEntry.findByIdAndUpdate({_id: req.body.defaulterEntryId}, {totalAmount: newtotalAmount});
         }
 
-        return res.status(200).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory});
+        return res.status(200).send({ message: "Payment verification started with payment history creation", success: true, response: pmtHistory});
     } catch (err) {
         console.log(err)
         res

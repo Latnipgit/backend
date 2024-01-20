@@ -23,7 +23,18 @@ exports.moveToDocumentsNeededQueue = function(escObj) {
     // This arrangement can be altered based on how we want the date's format to appear.
     escObj.documentsPendingSince = new Date().toJSON().slice(0, 10);
 
-    return PaymentHistory.findByIdAndUpdate(escObj.paymentId, {status: escObj.status, pendingWith: escObj.pendingWith,documentsPendingSince: escObj.documentsPendingSince});
+    return PaymentHistory.findByIdAndUpdate(
+        escObj.paymentId, 
+        {
+            status: escObj.status,
+            pendingWith: escObj.pendingWith,
+            documentsPendingSince: escObj.documentsPendingSince,
+            documentsRequired: escObj.documentsRequired,
+            isDocumentsRequiredByCreditor: escObj.isDocumentsRequiredByCreditor,
+            adminRemarksForDebtor: escObj.adminRemarksForDebtor,
+            adminRemarksForCreditor: escObj.adminRemarksForCreditor
+        }
+    );
 };
 
 exports.moveDocumentsWithPendingDocBackToAdminQueue = function()  {
@@ -37,7 +48,9 @@ exports.moveDocumentsWithPendingDocBackToAdminQueue = function()  {
             status: { $ne: constants.PAYMENT_HISTORY_STATUS.PENDING }
         },
         {
-            $set: { status: constants.PAYMENT_HISTORY_STATUS.PENDING }
+            $set: { status: constants.PAYMENT_HISTORY_STATUS.PENDING,
+                pendingWith: "L1"
+             }
         }
     )
 }

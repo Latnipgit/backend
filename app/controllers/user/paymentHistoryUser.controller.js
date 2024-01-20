@@ -65,6 +65,7 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
             {
               $match: {
                 status: constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED,
+                isDocumentsRequiredByCreditor: true
               }
             },
             {
@@ -312,18 +313,45 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
 exports.uploadSupportingDocuments = async(req, res) => {
   try {
 
-      const pHistory = await PaymentHistory.findOne({ _id: req.body.paymentId });
+      const pHistory = await PaymentHistory.findOne({ _id: req.body.paymentId }).populate(
+        [
+            // { path: 'defaulterEntry' },
+            { path: 'defaulterEntry', populate: ['invoices']},
+        ]);
       if(req.body.type == "DEBTOR"){
-        pHistory.debtorcacertificate = req.body.attachment.map(item => mongoose.Types.ObjectId(item.debtorcacertificate))
-        pHistory.debtoradditionaldocuments = req.body.attachment.map(item => mongoose.Types.ObjectId(item.debtoradditionaldocuments))
+        pHistory.debtorcacertificate = mongoose.Types.ObjectId(req.body.debtorcacertificate)
+        pHistory.debtoradditionaldocuments = mongoose.Types.ObjectId(req.body.debtoradditionaldocuments)
+        pHistory.isDocumentsRequiredByDebtor = false
       }
       else if(req.body.type == "CREDITOR"){
-        pHistory.creditorcacertificate = req.body.attachment.map(item => mongoose.Types.ObjectId(item.creditorcacertificate))
-        pHistory.creditoradditionaldocuments = req.body.attachment.map(item => mongoose.Types.ObjectId(item.creditoradditionaldocuments))
+        pHistory.creditorcacertificate =  mongoose.Types.ObjectId(req.body.creditorcacertificate)
+        pHistory.creditoradditionaldocuments = mongoose.Types.ObjectId(req.body.creditoradditionaldocuments)
+        
+        for( let item of req.body.attachment){
+          let invoices = pHistory.defaulterEntry.invoices
+          let invoice =  invoices.find( obj => obj._id.toString() == item._id)
+          if(invoice){
+              if(item.purchaseOrderDocument)
+                invoice.purchaseOrderDocument = mongoose.Types.ObjectId(item.purchaseOrderDocument)
+              if(item.challanDocument)
+                invoice.challanDocument = mongoose.Types.ObjectId(item.challanDocument)
+              if(item.invoiceDocument)
+                invoice.invoiceDocument = mongoose.Types.ObjectId(item.invoiceDocument)
+              if(item.transportationDocument)
+                invoice.transportationDocument = mongoose.Types.ObjectId(item.transportationDocument)
+              await invoice.save()
+          }
+        }
+        pHistory.isDocumentsRequiredByCreditor = false
+
+      }
+      if(!(pHistory.isDocumentsRequiredByCreditor && pHistory.isDocumentsRequiredByDebtor)){
+        pHistory.status = constants.PAYMENT_HISTORY_STATUS.PENDING
+        pHistory.pendingWith = "L1"
       }
       await pHistory.save();
       
-      return res.status(200).send({ message: "Successful upload", success: true, response: "" });
+      return res.status(200).send({ message: "Successful upload", success: true, response: pHistory });
 
       
   } catch (err) {

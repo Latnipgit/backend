@@ -9,6 +9,7 @@ module.exports = mongoose => {
         requestor: String,
         paymentDate: String,
         paymentMode: String,
+        documentsRequired: [String],
         creditorcacertificate: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
@@ -27,8 +28,13 @@ module.exports = mongoose => {
         }],
         status: String,
         pendingWith: String,
+        debtorRemarks: String,
+        adminRemarksForDebtor: String,
+        adminRemarksForCreditor: String,
         approvedByCreditor: String,
         documentsPendingSince: Date,
+        isDocumentsRequiredByCreditor: Boolean,
+        isDocumentsRequiredByDebtor: Boolean,
         isDispute: Boolean
     }, { timestamps: true });
 

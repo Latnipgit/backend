@@ -82,8 +82,17 @@ exports.askForSupportingDocument = async(req, res) => {
     try {
             
             // status = constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED;
-            let transaction = await paymentHistoryService.moveToDocumentsNeededQueue({status:  constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED, paymentId: req.body.paymentId, pendingWith: "USER"}).populate(["defaulterEntry","defaulterEntry.debtor"]);
-            //let paymentHistoryAndInvoice =  await result.populate("invoice");
+            let transaction = await paymentHistoryService.moveToDocumentsNeededQueue({
+                status: constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED,
+                paymentId: req.body.paymentId,
+                pendingWith: "USER",
+                documentsRequired: req.body.documentsRequired,
+                isDocumentsRequiredByCreditor: req.body.isDocumentsRequiredByCreditor,
+                isDocumentsRequiredByDebtor: true,
+                adminRemarksForDebtor: req.body.adminRemarksForDebtor,
+                adminRemarksForCreditor: req.body.adminRemarksForCreditor
+            }).populate(["defaulterEntry", "defaulterEntry.debtor"]);
+                        //let paymentHistoryAndInvoice =  await result.populate("invoice");
             let creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId)
             
             // mail for debtor

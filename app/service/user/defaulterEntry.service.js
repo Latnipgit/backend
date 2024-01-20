@@ -143,7 +143,7 @@ exports.getCompleteDefaultEntryData = function(condition) {
   ])
 };
 
-exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newPendingWith, newApprovedByCreditor) {
+exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newPendingWith, isApprovedByCreditor) {
       return PaymentHistory.create({
         defaulterEntryId: reqbody.defaulterEntryId,
         defaulterEntry: defaulterEntry,
@@ -154,8 +154,9 @@ exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newP
         attachments: reqbody.attachments,
         status: newStatus,
         pendingWith: newPendingWith,
-        approvedByCreditor: newApprovedByCreditor,
+        approvedByCreditor: isApprovedByCreditor,
 
-        isDispute: (reqbody.isDispute && reqbody.isDispute != null )? reqbody.isDispute : false
+        isDispute: (reqbody.isDispute && reqbody.isDispute != null )? reqbody.isDispute : false,
+        debtorRemarks: reqbody.debtorRemarks
     });
 }
