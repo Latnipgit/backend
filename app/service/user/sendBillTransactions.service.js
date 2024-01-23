@@ -55,7 +55,9 @@ exports.createInvoice = function(invoice, companyDetails) {
       purchaseOrderDocument: invoice.purchaseOrderDocument,
       challanDocument: invoice.challanDocument,
       invoiceDocument: invoice.invoiceDocument,
-      transportationDocument: invoice.transportationDocument
+      transportationDocument: invoice.transportationDocument,
+      otherDocuments: invoice.otherDocuments
+      
   });
 };
 

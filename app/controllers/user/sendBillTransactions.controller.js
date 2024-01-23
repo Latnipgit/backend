@@ -123,12 +123,14 @@ exports.create = async(req, res) => {
         req.body.challanDocument = null
         req.body.invoiceDocument = null
         req.body.transportationDocument = null
+        req.body.otherDocuments = null
         if(req.body.purchaseOrderDocument) 
             req.body.purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
         if(req.body.challanDocument) req.body.challanDocument = await Documents.findById(req.body.challanDocument);
         if(req.body.invoiceDocument) req.body.invoiceDocument = await Documents.findById(req.body.invoiceDocument);
         if(req.body.transportationDocument) req.body.transportationDocument = await Documents.findById(req.body.transportationDocument);
-        
+        if(req.body.otherDocuments) req.body.otherDocuments = await Documents.findById(req.body.otherDocuments);
+
         req.body.status= constants.INVOICE_STATUS.PENDING
         req.body.type="EXTERNAL"
         // Create a SendBillTransactions
@@ -161,10 +163,12 @@ exports.updateInvoice = async(req, res) => {
         let challanDocument= null;
         let invoiceDocument= null;
         let transportationDocument=null;
+        let otherDocuments=null;
         if(req.body.purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
         if(req.body.purchaseOrderDocument) challanDocument = await Documents.findById(req.body.challanDocument);
         if(req.body.purchaseOrderDocument) invoiceDocument = await Documents.findById(req.body.invoiceDocument);
         if(req.body.purchaseOrderDocument) transportationDocument = await Documents.findById(req.body.transportationDocument);
+        if(req.body.purchaseOrderDocument) otherDocuments = await Documents.findById(req.body.otherDocuments);
         
         // Create a SendBillTransactions
         const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId,{
@@ -190,7 +194,8 @@ exports.updateInvoice = async(req, res) => {
             purchaseOrderDocument: purchaseOrderDocument,
             challanDocument: challanDocument,
             invoiceDocument: invoiceDocument,
-            transportationDocument: transportationDocument
+            transportationDocument: transportationDocument,
+            otherDocuments: otherDocuments
         }, {new: true});
 
         resjson({ message: "sendbill added successfully.", success: true, response: bill });
@@ -212,7 +217,8 @@ exports.updateInvoiceDocuments = async(req, res) => {
         if(req.body.challanDocument) updates.challanDocument = await Documents.findById(req.body.challanDocument);
         if(req.body.invoiceDocument) updates.invoiceDocument = await Documents.findById(req.body.invoiceDocument);
         if(req.body.transportationDocument) updates.transportationDocument = await Documents.findById(req.body.transportationDocument);
-        
+        if(req.body.otherDocuments) updates.otherDocuments = await Documents.findById(req.body.otherDocuments);
+
         // Create a SendBillTransactions
         const bill = await SendBillTransactions.findByIdAndUpdate(req.body.invoiceId, updates, {new: true});
 
@@ -250,7 +256,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
         //console.log(dbtrs);
         let crdtrs = [];
         for(const element of dbtrs){
-            let invoices = await SendBillTransactions.find({creditorCompanyId:element.creditorCompanyId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+            let invoices = await SendBillTransactions.find({creditorCompanyId:element.creditorCompanyId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument otherDocuments");
             crdtrs.push(...( invoices));
         }
         res.status(200).json({message: 'Invoices sent for you are fetched', success: true, response: crdtrs});
@@ -264,7 +270,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
 
 exports.getAllInvoicesRaisedByMe = async(req, res) => {
     try{
-        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        const invoices = await SendBillTransactions.find({creditorCompanyId:req.token.companyDetails.id}).populate("purchaseOrderDocument challanDocument invoiceDocument transportationDocument otherDocuments");
         res.status(200).json({message: 'Invoices raised by you are fetched', success: true, response: invoices});
     }catch(error){
         console.log(error)
@@ -279,7 +285,7 @@ exports.getAllInvoicesForIds = async(req, res) => {
         let invoices = [];
         let invoiceIds = req.body;
         for(const element of invoiceIds){
-            let inv = await SendBillTransactions.findById({_id:element.invoiceId}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+            let inv = await SendBillTransactions.findById({_id:element.invoiceId}).populate("debtor debtor.ratings purchaseOrderDocument challanDocument invoiceDocument transportationDocument otherDocuments");
             invoices.push(inv);
         }
         res.status(200).json({message: 'Invoices raised by provided ids are fetched', success: true, response: invoices});
@@ -358,10 +364,12 @@ exports.createDefaultedInvoice = async(req, res) => {
         let challanDocument= null;
         let invoiceDocument= null;
         let transportationDocument=null;
+        let otherDocuments = null;
         if(req.body.purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(req.body.purchaseOrderDocument);
         if(req.body.purchaseOrderDocument) challanDocument = await Documents.findById(req.body.challanDocument);
         if(req.body.purchaseOrderDocument) invoiceDocument = await Documents.findById(req.body.invoiceDocument);
         if(req.body.purchaseOrderDocument) transportationDocument = await Documents.findById(req.body.transportationDocument);
+        if(req.body.purchaseOrderDocument) otherDocuments = await Documents.findById(req.body.otherDocuments);
         
         // Create a SendBillTransactions
         
@@ -390,7 +398,8 @@ exports.createDefaultedInvoice = async(req, res) => {
             purchaseOrderDocument: purchaseOrderDocument,
             challanDocument: challanDocument,
             invoiceDocument: invoiceDocument,
-            transportationDocument: transportationDocument
+            transportationDocument: transportationDocument,
+            otherDocuments: otherDocuments
         });
 
         //create pdf here
@@ -421,7 +430,7 @@ exports.getAllInvoicesSentToDebtor = async(req, res) => {
     try{
         let crdtrs = [];
         // for(const element of dbtrs){
-        let invoices = await SendBillTransactions.find({debtorId: req.body.debtorId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
+        let invoices = await SendBillTransactions.find({debtorId: req.body.debtorId}).populate("debtor purchaseOrderDocument challanDocument invoiceDocument transportationDocument otherDocuments");
         crdtrs.push(...( invoices));
         
         res.status(200).json({message: 'Invoices sent for debtor are fetched', success: true, response: crdtrs});

@@ -127,10 +127,10 @@ exports.getAllCreditorsByDebtorId = async(req, res) => {
         for( let elem of allEntries){
             let i=0;
             // finding matching creditor from invoice
-            while(crdtrs[i]._id != elem.creditorCompanyId){
+            while(i<crdtrs.length && crdtrs[i]._id != elem.creditorCompanyId){
                 i++;
             }
-            if(i> crdtrs.length){   
+            if(i>= crdtrs.length){   
                  console.log("creditor not found")
                  break;
             }
@@ -147,6 +147,7 @@ exports.getAllCreditorsByDebtorId = async(req, res) => {
                 }
             }
             crdtrs[i].dueFrom = commonUtil.getDateInGeneralFormat(crdtrs[i].dueFrom)
+            crdtrs[i].status = elem.status
 
             //finding totalAmount
             crdtrs[i].totalAmount = 0;

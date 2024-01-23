@@ -2,7 +2,7 @@ module.exports = mongoose => {
     var schema = mongoose.Schema({
         companyId: String,
         companyName: String,
-        gstin: String,
+        gstin: {type: String, unique: true},
         companyPan: String,
     },
     {

@@ -134,11 +134,13 @@ exports.create = async(req, res) => {
             invoicesList[i].challanDocument = null
             invoicesList[i].invoiceDocument = null
             invoicesList[i].transportationDocument = null
+            invoicesList[i].otherDocuments = null
 
             if(invoicesList[i].purchaseOrderDocument) invoicesList[i].purchaseOrderDocument = await Documents.findById(invoicesList[i].purchaseOrderDocument);
             if(invoicesList[i].challanDocument) invoicesList[i].challanDocument = await Documents.findById(invoicesList[i].challanDocument);
             if(invoicesList[i].invoiceDocument) invoicesList[i].invoiceDocument = await Documents.findById(invoicesList[i].invoiceDocument);
             if(invoicesList[i].transportationDocument) invoicesList[i].transportationDocument = await Documents.findById(invoicesList[i].transportationDocument);
+            if(invoicesList[i].otherDocuments) invoicesList[i].otherDocuments = await Documents.findById(invoicesList[i].otherDocuments);
             
             invoicesList[i].type="EXTERNAL"
             // Create a SendBillTransactions

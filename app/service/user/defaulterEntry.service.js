@@ -69,10 +69,12 @@ exports.updateDefaulterEntry = async function(reqBody) {
     let challanDocument= null;
     let invoiceDocument= null;
     let transportationDocument=null;
+    let otherDocuments = null;
     if(reqBody.invoices[i].purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(reqBody.invoices[i].purchaseOrderDocument);
     if(reqBody.invoices[i].purchaseOrderDocument) challanDocument = await Documents.findById(reqBody.invoices[i].challanDocument);
     if(reqBody.invoices[i].purchaseOrderDocument) invoiceDocument = await Documents.findById(reqBody.invoices[i].invoiceDocument);
     if(reqBody.invoices[i].purchaseOrderDocument) transportationDocument = await Documents.findById(reqBody.invoices[i].transportationDocument);
+    if(reqBody.invoices[i].purchaseOrderDocument) otherDocuments = await Documents.findById(reqBody.invoices[i].otherDocuments);
 
     const invoiceId = tempArray[i]._id
     sendB = await SendBillTransactions.findByIdAndUpdate(invoiceId, {
@@ -97,7 +99,8 @@ exports.updateDefaulterEntry = async function(reqBody) {
       purchaseOrderDocument: purchaseOrderDocument,
       challanDocument: challanDocument,
       invoiceDocument: invoiceDocument,
-      transportationDocument: transportationDocument
+      transportationDocument: transportationDocument,
+      otherDocuments: otherDocuments
       
     });
   
@@ -134,7 +137,8 @@ exports.getCompleteDefaultEntryData = function(condition) {
         { path: 'purchaseOrderDocument' },
         { path: 'challanDocument' },
         { path: 'invoiceDocument' },
-        { path: 'transportationDocument' }
+        { path: 'transportationDocument' },
+        { path: 'otherDocuments' }
       ]
     },
     { path: 'debtor' },

@@ -12,6 +12,7 @@ const Admin = db.admin;
 const PaymentHistory = db.paymentHistory;
 const SendBillTrans = user_db.sendBillTransactions;
 const DefaulterEntry = user_db.defaulterEntry;
+const Questions = user_db.questions;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -236,7 +237,8 @@ exports.getAllTransactions = async(req, res) => {
                 'purchaseOrderDocument',
                 'challanDocument',
                 'invoiceDocument',
-                'transportationDocument'
+                'transportationDocument',
+                'otherDocuments'
               ]
             }},
             { path: 'defaulterEntry' , populate: {
@@ -467,5 +469,19 @@ exports.escalateRequest = async(req, res) => {
         res
             .status(500)
             .send({ message: "Something went wrong", reponse: "", success: false });
+    }
+};
+
+exports.removeQuestion = async(req, res) => {
+
+    try {
+        const q = await Questions.findByIdAndRemove({ _id: req.body.questionId });
+       res.status(200).json({success: true, message: "Question deleted successfully", response: q });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
     }
 };
