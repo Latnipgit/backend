@@ -6,6 +6,7 @@ const Documents = commondb.documents;
 const SendBillTransactions = db.sendBillTransactions;
 const defaulterEntry = db.defaulterEntry; 
 const PaymentHistory = admin_db.paymentHistory;
+const Debtor = db.debtors;
 
 const Companies = db.companies;
 const Token = commondb.token;
@@ -164,3 +165,16 @@ exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newP
         debtorRemarks: reqbody.debtorRemarks
     });
 }
+
+exports.getDefaulterCountForSelectedCompany = function(companyGstin) {
+  let debtrs = Debtor.find({gstin: companyGstin}).select(_id);
+  let arrayOfDebtorIds = debtrs.map(debtor => debtor._id);
+
+  const reslt = [];
+  for(let i = 0; i < arrayOfDebtorIds.length ; i++){
+    reslt.push(defaulterEntry.findOne({_id: arrayOfDebtorIds[i], status: constants.INVOICE_STATUS.DEFAULTED}));
+  }
+
+  return reslt;
+
+};

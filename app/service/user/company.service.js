@@ -16,6 +16,8 @@ exports.addCompany = function(companyDetails) {
         companyName: companyDetails.companyName,
         gstin: companyDetails.gstin,
         companyPan: companyDetails.companyPan,
+        city: companyDetails.city,
+        state: companyDetails.state
     });
 };
 

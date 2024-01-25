@@ -11,6 +11,8 @@ module.exports = mongoose => {
         role: String,
         passwordChangeNeeded: Boolean,
         status: Boolean,
+        city: String,
+        state: String,
         token: { type: String },
         permissions: [{ type: String}],
         companies: [{

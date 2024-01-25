@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
 const { ObjectId } = require('mongodb');
+const axios = require('axios');
 const Companies = db.companies;
 const Subscription = db.subscription;
 const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
@@ -91,5 +92,3 @@ exports.selectCompanyByCompanyId = async(req, res) => {
     }
 
 }
-
-// Find a single Company with an id

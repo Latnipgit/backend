@@ -13,6 +13,7 @@ const PaymentHistory = db.paymentHistory;
 const SendBillTrans = user_db.sendBillTransactions;
 const DefaulterEntry = user_db.defaulterEntry;
 const Questions = user_db.questions;
+const Companies = user_db.companies;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -23,6 +24,9 @@ const mailUtility = require('../../util/mailUtility')
 const config = process.env;
 const Joi = require("joi");
 const crypto = require("crypto");
+// const { defaulterEntry } = require("../../service/user");
+const service = require("../../service/user/");
+const defaulterEntryService = service.defaulterEntry;
 
 exports.addAdmin = async(req, res) => {
 
@@ -485,3 +489,50 @@ exports.removeQuestion = async(req, res) => {
               .send({ message: "Something went wrong", success: false });
     }
 };
+
+exports.companiesFilter = async(req, res) => {
+    try {
+        const { cities, state } = req.body;
+
+        let filter = {};
+
+        if (cities && cities.length > 0) {
+            filter.city = { $in: cities };
+        }
+
+        if (state) {
+            filter.state = state;
+        }
+
+        // if (subStatus) {
+        //     filter.subStatus = subStatus;
+        // }
+
+        const cmpns = await Companies.find(filter);
+
+        res.status(200).json({success: true, message: "Filtered the result", response: cmpns });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+}
+
+exports.getDefaulterCountForSelectedCompanies = async(req, res) => {
+    try {
+        let defEntCnt = []
+        for(let i = 0; i < req.body; i++){
+            defEntCnt.push(defaulterEntryService.getDefaulterCountForSelectedCompany(req.body[i].gstin));
+        }
+
+        res.status(200).json({success: true, message: "Count Retrieved", response: defEntCnt});
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+}

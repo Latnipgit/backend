@@ -4,6 +4,8 @@ module.exports = mongoose => {
         companyName: String,
         gstin: {type: String, unique: true},
         companyPan: String,
+        city: String,
+        state: String,
     },
     {
         timestamps: true,

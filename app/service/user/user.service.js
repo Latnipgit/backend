@@ -27,6 +27,8 @@ exports.addUser = function(user) {
         emailId: user.emailId,
         role: user.role,
         passwordChangeNeeded: passwordChangeNeeded,
+        city: user.city,
+        state: user.state,
         permissions:  user.permissions
     });
 };
@@ -43,6 +45,8 @@ exports.updateUser = function(userId, user) {
         phoneNumber: user.mobile,
         aadharCardNo: user.aadharCardNo,
         password: user.password,
+        city: user.city,
+        state: user.state,
     }
     return  User.findByIdAndUpdate(userId, updates);
 };
