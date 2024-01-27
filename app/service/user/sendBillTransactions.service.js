@@ -2,6 +2,7 @@ const db = require("../../models/user");
 const commondb = require("../../models/common/");
 
 const SendBillTransactions = db.sendBillTransactions;
+const DefaulterEntry = db.defaulterEntry;
 const Companies = db.companies;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
@@ -17,7 +18,7 @@ const constants = require('../../constants/userConstants');
 
 
 exports.defaultInvoiceById = function(invoiceId) {
-    return SendBillTransactions.findByIdAndUpdate(
+    return DefaulterEntry.findByIdAndUpdate(
         invoiceId
         ,
         { status: constants.INVOICE_STATUS.DEFAULTED },

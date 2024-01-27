@@ -508,7 +508,13 @@ exports.companiesFilter = async(req, res) => {
         //     filter.subStatus = subStatus;
         // }
 
-        const cmpns = await Companies.find(filter);
+        let cmpns = await Companies.find(filter);
+        // cmpns = cmpns.toJSON();
+        cmpns = cmpns.map(cmpn => cmpn.toObject());
+
+        for(let i = 0; i < cmpns.length; i++){
+            cmpns[i].defaulterCount = await defaulterEntryService.getDefaulterCountForSelectedCompany(cmpns[i].gstin)
+        }
 
         res.status(200).json({success: true, message: "Filtered the result", response: cmpns });
 
@@ -520,19 +526,19 @@ exports.companiesFilter = async(req, res) => {
     }
 }
 
-exports.getDefaulterCountForSelectedCompanies = async(req, res) => {
-    try {
-        let defEntCnt = []
-        for(let i = 0; i < req.body; i++){
-            defEntCnt.push(defaulterEntryService.getDefaulterCountForSelectedCompany(req.body[i].gstin));
-        }
+// exports.getDefaulterCountForSelectedCompanies = async(req, res) => {
+//     try {
+//         let defEntCnt = []
+//         for(let i = 0; i < req.body.length; i++){
+//             await defaulterEntryService.getDefaulterCountForSelectedCompany(req.body[i].gstin)
+//         }
 
-        res.status(200).json({success: true, message: "Count Retrieved", response: defEntCnt});
+//         res.status(200).json({success: true, message: "Count Retrieved", response: defEntCnt});
 
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-              .send({ message: "Something went wrong", success: false });
-    }
-}
+//     } catch (err) {
+//         console.log(err)
+//         res
+//             .status(500)
+//               .send({ message: "Something went wrong", success: false });
+//     }
+// }

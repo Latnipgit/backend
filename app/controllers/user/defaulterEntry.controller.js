@@ -300,6 +300,20 @@ exports.initiatePaymentVerificationGeneral = async(req, res) => {
 //     }
 // }
 
+exports.defaultInvoicesById = async(req, res) => {
+    try{
+        for(let invoice of req.body.invoices){
+            await defaulterEntryService.defaultInvoiceById(invoice.invoiceId)
+        }
+        res.status(200).json({message: 'Given invoices has been defaulted', success: true});
+    } catch(error){
+        console.log(error)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
 exports.removeDefultingByInvoiceId = async(req, res) => {
     try{
         let defaulterEntry=   await defaulterEntryService.defaultInvoiceById(req.body.defaulterEntryId)

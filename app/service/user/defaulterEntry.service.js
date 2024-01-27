@@ -166,15 +166,21 @@ exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newP
     });
 }
 
-exports.getDefaulterCountForSelectedCompany = function(companyGstin) {
-  let debtrs = Debtor.find({gstin: companyGstin}).select(_id);
-  let arrayOfDebtorIds = debtrs.map(debtor => debtor._id);
+exports.getDefaulterCountForSelectedCompany = async function(companyGstin) {
+  let debtrs = await Debtor.find({gstin: companyGstin}).select('_id');
+  
+  // let arrayOfDebtorIds = debtrs.map(debtor => debtor._id);
+  let arrayOfDebtorIds = debtrs;
+  
 
-  const reslt = [];
+  // const reslt = [];
+  let ct = 0
   for(let i = 0; i < arrayOfDebtorIds.length ; i++){
-    reslt.push(defaulterEntry.findOne({_id: arrayOfDebtorIds[i], status: constants.INVOICE_STATUS.DEFAULTED}));
+    console.log(arrayOfDebtorIds[i])
+    const temp = await defaulterEntry.find({debtor: arrayOfDebtorIds[i]._id})
+    if(temp){ct += temp.length}
   }
 
-  return reslt;
+  return ct;
 
 };
