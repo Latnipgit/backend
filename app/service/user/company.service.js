@@ -8,10 +8,6 @@ const User = db.user;
 const config = process.env;
 
 exports.addCompany = function(companyDetails) {
-    const uniGST = Companies.findOne({gstin: companyDetails.gstin})
-    if(uniGST){
-        return res.status(409).send({ message: "Company Already Exists with this gstin", success: false, response: "" });
-    }
     return Companies.create({
         companyName: companyDetails.companyName,
         gstin: companyDetails.gstin,

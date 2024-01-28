@@ -22,7 +22,12 @@ exports.addCompany = async(req, res) => {
 
         const loggedInUser = await User.findOne({ emailId: req.token.userDetails.emailId });
 
+        const uniGST = await Companies.findOne({gstin: req.body.gstin})
+        if(uniGST){
+            return res.status(409).send({ message: "Company Already Exists with this gstin", success: false, response: "" });
+        }
         const company = await companyService.addCompany(req.body);
+        
         await userService.addCompanyToUser(req.token.userDetails.id, company);
         const user = await userService.getUserById( req.token.userDetails.id ).populate("companies");
 
