@@ -43,7 +43,10 @@ exports.signup = async(req, res) => {
         let companyDetails = {
             companyName: req.body.companyName,
             gstin: req.body.gstin,
-            companyPan: req.body.companyPan
+            companyPan: req.body.companyPan,
+            city: req.body.city,
+            state: req.body.state,
+            zipcode: req.body.zipcode
         }
         const company = await companyService.addCompany(companyDetails)
         await userService.addCompanyToUser(user._id, company)

@@ -6,6 +6,7 @@ module.exports = mongoose => {
         companyPan: String,
         city: String,
         state: String,
+        zipcode: String
     },
     {
         timestamps: true,
