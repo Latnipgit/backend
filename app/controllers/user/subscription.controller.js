@@ -2,6 +2,7 @@ const db = require("../../models/user");
 const admin_db = require("../../models/admin");
 const commondb = require("../../models/common");
 const Subscription = db.subscription;
+const SubscriptionPkg = admin_db.subscriptionPkg;
 const SubscriptionIdRemQuotaMapping = db.subscriptionIdRemQuotaMapping;
 const SubscriptionPkgAPIQuotaMapping = admin_db.subscriptionPkgAPIQuotaMapping;
 const Token = commondb.token;
@@ -176,6 +177,24 @@ exports.getAllSubscription = async(req, res) => {
         res
             .status(500)
             .send({ message: "Something went wrong", success: false, reponse: "" });
+    }
+};
+
+exports.getAllSubscriptionPkgsForUser = async(req, res) => {
+    try {
+        let subscriptionPkgs = await SubscriptionPkg.find({
+                $or: [
+                    { subscriptionFor: { $elemMatch: { $eq: req.token.userDetails.emailId } } },
+                    { subscriptionFor: { $exists: true, $eq: [] } }
+                ]
+            
+        });
+        res.status(201).json({ message: "Subscription Packages found.", success: true, response: subscriptionPkgs });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
     }
 };
 

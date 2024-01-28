@@ -2,6 +2,7 @@ const db = require("../../models/user");
 const commondb = require("../../models/common/");
 
 const User = db.user;
+const Subscription = db.subscription;
 const Companies = db.companies;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
@@ -59,4 +60,28 @@ exports.addCompanyToUser = function(userId, company) {
       { new: true, useFindAndModify: false }
     );
 };
+
+exports.getUsersWithActiveSubscription = function(companyId) {
+    return User.find({
+        companies: companyId
+    }).populate({
+        path: 'companies',
+        match: { companyId: companyId }
+    }).exec().then(users => {
+        
+        const userIds = users.map(user => user._id);
+
+        return Subscription.find({
+            userId: { $in: userIds },
+            isActive: true
+        }).exec().then(subscriptions => {
+
+            return users.filter(user => {
+                const userSubscription = subscriptions.find(sub => sub.userId === user._id.toString());
+                return userSubscription && userSubscription.isActive;
+            });
+        });
+    });
+};
+
   

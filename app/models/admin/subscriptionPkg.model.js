@@ -5,7 +5,8 @@ module.exports = mongoose => {
         monthlyAmt: String,
         yearlyAmt: String,
         monthlyDiscount: String,
-        yearlylyDiscount: String 
+        yearlylyDiscount: String,
+        subscriptionFor: []
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

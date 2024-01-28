@@ -27,6 +27,7 @@ const crypto = require("crypto");
 // const { defaulterEntry } = require("../../service/user");
 const service = require("../../service/user/");
 const defaulterEntryService = service.defaulterEntry;
+const userService = service.user;
 
 exports.addAdmin = async(req, res) => {
 
@@ -298,7 +299,8 @@ exports.addSubscriptionPkg = async(req, res) => {
                 monthlyAmt: req.body.monthlyAmt,
                 yearlyAmt: req.body.yearlyAmt,
                 monthlyDiscount: req.body.monthlyDiscount,
-                yearlylyDiscount: req.body.yearlylyDiscount
+                yearlylyDiscount: req.body.yearlylyDiscount,
+                subscriptionFor: req.body.subscriptionFor
             })
 
         res.status(201).json({ message: "Subscription Package added successfully.", success: true, response: subscriptionPkg });
@@ -341,6 +343,10 @@ exports.getSubscriptionPkgById = async(req, res) => {
 
 exports.updateSubscriptionPkgById = async(req, res) => {
     try {
+        const subPkg = await SubscriptionPkg.findOne({ _id: req.body.subscriptionPkgId });
+        if (!subPkg) {
+            res.status(201).json({ message: "Subscription Package not found.", success: true, response: subPkg });
+        }
         let subscriptionPkg = {
             subscriptionPkgName: req.body.subscriptionPkgName,
             monthlyAmt: req.body.monthlyAmt,
@@ -348,7 +354,18 @@ exports.updateSubscriptionPkgById = async(req, res) => {
             monthlyDiscount: req.body.monthlyDiscount,
             yearlylyDiscount: req.body.yearlylyDiscount
         }
-        const updatedSubPkg = await SubscriptionPkg.findByIdAndUpdate({ _id: req.body.subscriptionPkgId}, subscriptionPkg );
+
+        const updatedSubPkg = await SubscriptionPkg.findByIdAndUpdate(
+                { _id: req.body.subscriptionPkgId}, 
+                {
+                    $addToSet: {
+                        subscriptionFor: { $each: req.body.subscriptionFor }
+                    },
+                    ...subscriptionPkg
+                }, 
+                
+        );
+
         res.status(201).json({ message: "Subscription Package updated.", success: true, response: updatedSubPkg});
     } catch (err) {
         console.log(err)
@@ -514,6 +531,10 @@ exports.companiesFilter = async(req, res) => {
 
         for(let i = 0; i < cmpns.length; i++){
             cmpns[i].defaulterCount = await defaulterEntryService.getDefaulterCountForSelectedCompany(cmpns[i].gstin)
+        }
+
+        for(let i = 0; i < cmpns.length; i++){
+            cmpns[i].usersWithActiveSubscription = await userService.getUsersWithActiveSubscription(cmpns[i]._id)
         }
 
         res.status(200).json({success: true, message: "Filtered the result", response: cmpns });
