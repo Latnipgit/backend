@@ -509,7 +509,7 @@ exports.removeQuestion = async(req, res) => {
 
 exports.companiesFilter = async(req, res) => {
     try {
-        const { cities, state } = req.body;
+        const { cities, state, defaulterCountFlag, activeSubscriptionFlag } = req.body;
 
         let filter = {};
 
@@ -521,21 +521,21 @@ exports.companiesFilter = async(req, res) => {
             filter.state = state;
         }
 
-        // if (subStatus) {
-        //     filter.subStatus = subStatus;
-        // }
-
         let cmpns = await Companies.find(filter);
         // cmpns = cmpns.toJSON();
         cmpns = cmpns.map(cmpn => cmpn.toObject());
 
-        for(let i = 0; i < cmpns.length; i++){
-            cmpns[i].defaulterCount = await defaulterEntryService.getDefaulterCountForSelectedCompany(cmpns[i].gstin)
+        if (defaulterCountFlag) {
+            for(let i = 0; i < cmpns.length; i++){
+                cmpns[i].defaulterCount = await defaulterEntryService.getDefaulterCountForSelectedCompany(cmpns[i].gstin)
+            }
         }
 
-        for(let i = 0; i < cmpns.length; i++){
-            cmpns[i].usersWithActiveSubscription = await userService.getUsersWithActiveSubscription(cmpns[i]._id)
-        }
+        if (activeSubscriptionFlag) {
+            for(let i = 0; i < cmpns.length; i++){
+                cmpns[i].usersWithActiveSubscription = await userService.getUsersWithActiveSubscriptionByCompanyId(cmpns[i]._id)
+            }
+        }   
 
         res.status(200).json({success: true, message: "Filtered the result", response: cmpns });
 

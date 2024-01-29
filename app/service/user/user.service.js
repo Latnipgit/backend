@@ -61,27 +61,28 @@ exports.addCompanyToUser = function(userId, company) {
     );
 };
 
-exports.getUsersWithActiveSubscription = function(companyId) {
-    return User.find({
+exports.getUsersWithActiveSubscriptionByCompanyId = async function(companyId) {
+    let users = await User.find({
         companies: companyId
     }).populate({
         path: 'companies',
         match: { companyId: companyId }
-    }).exec().then(users => {
+    }).exec()
         
-        const userIds = users.map(user => user._id);
+    const userIds = users.map(user => user._id);
 
-        return Subscription.find({
-            userId: { $in: userIds },
-            isActive: true
-        }).exec().then(subscriptions => {
+    let subscriptions = await Subscription.find({
+        userId: { $in: userIds },
+        isActive: true
+    }).exec();
 
-            return users.filter(user => {
-                const userSubscription = subscriptions.find(sub => sub.userId === user._id.toString());
-                return userSubscription && userSubscription.isActive;
-            });
+    let us = await users.filter(user => {
+            const userSubscription = subscriptions.find(sub => sub.userId === user._id.toString());
+            return userSubscription && userSubscription.isActive;
         });
-    });
+
+    return us;
+
 };
 
   
