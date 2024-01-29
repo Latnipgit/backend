@@ -130,11 +130,11 @@ exports.create = async(req, res) => {
         let totalAmount = 0;
 
         for(let i = 0; i < invoicesList.length; i++){
-            invoicesList[i].purchaseOrderDocument = null
-            invoicesList[i].challanDocument = null
-            invoicesList[i].invoiceDocument = null
-            invoicesList[i].transportationDocument = null
-            invoicesList[i].otherDocuments = null
+            // invoicesList[i].purchaseOrderDocument = null
+            // invoicesList[i].challanDocument = null
+            // invoicesList[i].invoiceDocument = null
+            // invoicesList[i].transportationDocument = null
+            // invoicesList[i].otherDocuments = null
 
             if(invoicesList[i].purchaseOrderDocument) invoicesList[i].purchaseOrderDocument = await Documents.findById(invoicesList[i].purchaseOrderDocument);
             if(invoicesList[i].challanDocument) invoicesList[i].challanDocument = await Documents.findById(invoicesList[i].challanDocument);

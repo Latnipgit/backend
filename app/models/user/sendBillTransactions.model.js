@@ -43,10 +43,10 @@ module.exports = mongoose => {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
         },
-        otherDocuments: {
+        otherDocuments: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
-        },
+        }],
     }, { timestamps: true });
 
     schema.method("toJSON", function() {
