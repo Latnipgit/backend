@@ -28,8 +28,8 @@ exports.defaultInvoiceById = function(invoiceId) {
 
 
 
-exports.createInvoice = function(invoice, companyDetails) {
-  return SendBillTransactions.create({
+exports.createInvoice = async function(invoice, companyDetails) {
+  let createdDefaulterEntries = await SendBillTransactions.create({
       // debtor: debtor,
       debtorId: invoice.debtorId,
       billDate: invoice.billDate,
@@ -59,6 +59,10 @@ exports.createInvoice = function(invoice, companyDetails) {
       transportationDocument: invoice.transportationDocument,
       otherDocuments: invoice.otherDocuments
       
+  });
+
+  return  await createdDefaulterEntries.populate({
+    path: 'otherDocuments'
   });
 };
 
