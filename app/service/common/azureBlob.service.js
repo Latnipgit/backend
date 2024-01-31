@@ -20,15 +20,7 @@ async function uploadFileToBlob(fileStream, originalName) {
     const blockBlobClient = containerClient.getBlockBlobClient(uniqueBlobName);
     const stream = streamifier.createReadStream(fileStream);
 
-    // Detect the MIME type of the file
-    const fileType = await FileType.fromStream(stream);
-    const contentType = fileType ? fileType.mime : 'application/octet-stream';
-
-    // Reset the stream because it was consumed by FileType.fromStream
-    const resetStream = streamifier.createReadStream(fileStream);
-
-    const uploadOptions = { blobHTTPHeaders: { blobContentType: contentType } };
-    await blockBlobClient.uploadStream(resetStream, undefined, undefined, uploadOptions);
+    await blockBlobClient.uploadStream(stream);
 
     return { fileUrl: blockBlobClient.url, uniqueName: uniqueBlobName };
 }
