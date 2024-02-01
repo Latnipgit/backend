@@ -15,6 +15,8 @@ module.exports = app => {
     router.post("/escalateRequest",auth, admin.escalateRequest);
     router.post("/removeQuestionById",auth, admin.removeQuestion);
     router.get("/companiesFilter",auth, admin.companiesFilter);
+    router.get("/getCompanyCountStateWise",auth, admin.getCompanyCountStateWise);
+    router.get("/getCompanyCountCityWiseForState",auth, admin.getCompanyCountCityWiseForState);
     // router.get("/getDefaulterCountForSelectedCompanies", auth, admin.getDefaulterCountForSelectedCompanies);
 
     // subscription pkg routes

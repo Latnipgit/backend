@@ -547,6 +547,47 @@ exports.companiesFilter = async(req, res) => {
     }
 }
 
+exports.getCompanyCountStateWise = async(req, res) => {
+    try {
+        const result = await Companies.aggregate([
+            {
+                $group: {
+                    _id: "$state",
+                    totalCompanies: { $sum: 1 }, 
+                }
+            }
+        ]);
+        return res.status(200).json({success: true, message: "statewise result", response: result });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+}
+
+exports.getCompanyCountCityWiseForState = async (req, res) => {
+    try {
+        const stateToFilter = req.body.state;
+        const result = await Companies.aggregate([
+            {
+                $match: { state: stateToFilter } 
+            },
+            {
+                $group: {
+                    _id: "$city",
+                    totalCompanies: { $sum: 1 } 
+                }
+            }
+        ]);
+        return res.status(200).json({ success: true, message: "citywise result", response: result });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: "Something went wrong", success: false });
+    }
+};
+
 // exports.getDefaulterCountForSelectedCompanies = async(req, res) => {
 //     try {
 //         let defEntCnt = []
