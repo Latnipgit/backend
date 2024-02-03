@@ -20,6 +20,7 @@ const service = require("../../service/user/");
 const userService = service.user;
 const companyService = service.company;
 var constants = require('../../constants/userConstants');
+const debtorService = service.debtor;
 
 
 exports.signup = async(req, res) => {
@@ -52,6 +53,11 @@ exports.signup = async(req, res) => {
         await userService.addCompanyToUser(user._id, company)
         
         user = await userService.getUserById( user._id ).populate("companies");
+        req.body.debtorType = "Unknown"
+        req.body.customerEmail = user.emailId
+        req.body.customerMobile = user.phoneNumber
+        const tempDebtor = await debtorService.addDebtor(req.body)
+
         // user.token = jwtUtil.generateUserToken(user);
        // Save Tutorial in the database
        let replacements = [];

@@ -249,9 +249,21 @@ exports.getAllTransactions = async(req, res) => {
             { path: 'defaulterEntry' , populate: {
                 path: 'debtor', populate: [
                   'ratings']}
-            }
-          ]
+            },
+            { path: 'defaulterEntry', populate: { path: 'creditorCompanyId', model: 'company' }}
+            // { path: 'defaulterEntry.creditorCompanyId', model: 'company' } // Populate the creditorCompanyId field
+        ]
         );
+        
+        transactions = transactions.map(transaction => {
+            transaction = transaction.toJSON();
+            if (transaction.defaulterEntry && transaction.defaulterEntry.creditor) {
+              transaction.defaulterEntry.creditor = transaction.defaulterEntry.creditorCompanyId;
+              delete transaction.defaulterEntry.creditorCompanyId;
+            }
+            return transaction;
+          });
+          
         let detailed = [];
         // for(let i=0; i<transactions.length; i++){
         //     sendBill = await SendBillTrans.findOne({_id: transactions[i].invoiceId}).populate("purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
