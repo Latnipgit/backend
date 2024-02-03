@@ -17,6 +17,7 @@ module.exports = app => {
     router.get("/companiesFilter",auth, admin.companiesFilter);
     router.get("/getCompanyCountStateWise",auth, admin.getCompanyCountStateWise);
     router.get("/getCompanyCountCityWiseForState",auth, admin.getCompanyCountCityWiseForState);
+    router.get("/getDisputedTransactionsStateCityWise",auth, admin.getDisputedTransactionsStateCityWise);
     // router.get("/getDefaulterCountForSelectedCompanies", auth, admin.getDefaulterCountForSelectedCompanies);
 
     // subscription pkg routes

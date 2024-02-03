@@ -588,6 +588,40 @@ exports.getCompanyCountCityWiseForState = async (req, res) => {
     }
 };
 
+exports.getDisputedTransactionsStateCityWise = async (req, res) => {
+    try {
+        const { state, city } = req.body;
+
+        const result = await DefaulterEntry.aggregate([
+            {
+                $lookup: {
+                    from: "debtors",
+                    localField: "debtor",
+                    foreignField: "_id",
+                    as: "debtor"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$debtor",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $match: {
+                    "debtor.state": state,
+                    "debtor.city": city
+                }
+            }
+        ]);
+
+        return res.status(200).json({ success: true, message: "Disputed Transactions City and State wise result", response: result });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ message: "Something went wrong", success: false });
+    }
+};
+
 // exports.getDefaulterCountForSelectedCompanies = async(req, res) => {
 //     try {
 //         let defEntCnt = []
