@@ -4,31 +4,73 @@ const constants = require('../../constants/userConstants');
 const service = require('../../service/common');
 const AzureBlobService = service.azureBlobService;
 
+// exports.uploadFile = async (req, res) => {
+//     try {
+//         const file = req.file;
+//         if (!file) {
+//             return res.status(400).send('No file uploaded.');
+//         }
+
+//         const { fileUrl, uniqueName } = await AzureBlobService.uploadFileToBlob(file.buffer, file.originalname);
+
+//         let newType;
+//         if(req.body.type == ""){
+//             newType = constants.UPLOAD_FILE_TYPE.INVOICE
+//         }else if(req.body.type == "GENERAL"){
+//             newType = constants.UPLOAD_FILE_TYPE.GENERAL
+//         }
+
+//         const savedFile = await Documents.create({
+//             userId: req.token.userDetails.id,
+//             name: req.file.originalname,
+//             url: fileUrl,
+//             uniqueName: uniqueName,
+//             type: newType
+//         }); 
+//         res.json({message: 'File Uploaded successfully.', success: true, response: { documentId: savedFile._id , fieldName: req.body.fieldName , fileUrl: savedFile.url}});
+
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).send({ message: "Something went wrong", success: false });
+//     }
+// };
+
+const upload = async (req, file) => {
+    const { fileUrl, uniqueName } = await AzureBlobService.uploadFileToBlob(file.buffer, file.originalname);
+
+    let newType;
+    if (req.body.type == "") {
+        newType = constants.UPLOAD_FILE_TYPE.INVOICE;
+    } else if (req.body.type == "GENERAL") {
+        newType = constants.UPLOAD_FILE_TYPE.GENERAL;
+    }
+
+    const savedFile = await Documents.create({
+        userId: req.token.userDetails.id,
+        name: file.originalname,
+        url: fileUrl,
+        uniqueName: uniqueName,
+        type: newType,
+    });
+
+    return {
+        documentId: savedFile._id,
+        fieldName: req.body.fieldName,
+        fileUrl: savedFile.url,
+    };
+};
+
 exports.uploadFile = async (req, res) => {
     try {
-        const file = req.file;
-        if (!file) {
-            return res.status(400).send('No file uploaded.');
+        const files = req.files;
+
+        if (!files || files.length === 0) {
+            return res.status(400).send('No files uploaded.');
         }
 
-        const { fileUrl, uniqueName } = await AzureBlobService.uploadFileToBlob(file.buffer, file.originalname);
+        const uploadResults = await Promise.all(files.map(file => upload(req, file)));
 
-        let newType;
-        if(req.body.type == ""){
-            newType = constants.UPLOAD_FILE_TYPE.INVOICE
-        }else if(req.body.type == "GENERAL"){
-            newType = constants.UPLOAD_FILE_TYPE.GENERAL
-        }
-
-        const savedFile = await Documents.create({
-            userId: req.token.userDetails.id,
-            name: req.file.originalname,
-            url: fileUrl,
-            uniqueName: uniqueName,
-            type: newType
-        }); 
-        res.json({message: 'File Uploaded successfully.', success: true, response: { documentId: savedFile._id , fieldName: req.body.fieldName , fileUrl: savedFile.url}});
-
+        res.json({ message: 'Files Uploaded successfully.', success: true, response: uploadResults });
     } catch (error) {
         console.log(error);
         res.status(500).send({ message: "Something went wrong", success: false });
