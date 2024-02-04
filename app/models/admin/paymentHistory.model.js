@@ -36,7 +36,11 @@ module.exports = mongoose => {
         isDocumentsRequiredByCreditor: Boolean,
         isDocumentsRequiredByDebtor: Boolean,
         isDispute: Boolean
-    }, { timestamps: true });
+    },
+    {
+        timestamps: true
+    }
+);
 
     schema.method("toJSON", function() {
         const { __v, _id, ...object } = this.toObject();
