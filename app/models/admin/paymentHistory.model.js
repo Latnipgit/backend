@@ -37,7 +37,7 @@ module.exports = mongoose => {
         isDocumentsRequiredByCreditor: Boolean,
         isDocumentsRequiredByDebtor: Boolean,
         isDispute: Boolean,
-        disputeType: Boolean
+        disputeType: String
     },
     {
         timestamps: true
