@@ -7,7 +7,8 @@ module.exports = app => {
 
     const router = require("express").Router();
 
-    router.post("/upload", auth, upload.array('files', 5), fileUpload.uploadFile);
+    router.post("/upload", auth, upload.single('file'), fileUpload.uploadFile);
+    router.post("/uploadMultiple", auth, upload.array('files'), fileUpload.uploadMultipleFile);
     router.get("/allFileData", fileUpload.getAllUploadedDocuments);
     router.get("/getGeneralDocuments", auth, fileUpload.getAllGeneralDocuments);
     router.post("/download", fileUpload.downloadFile);
