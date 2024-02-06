@@ -129,26 +129,33 @@ exports.create = async(req, res) => {
         let defaulterEntryList = [];
         let totalAmount = 0;
 
-        for(let i = 0; i < invoicesList.length; i++){
-            // invoicesList[i].purchaseOrderDocument = null
-            // invoicesList[i].challanDocument = null
-            // invoicesList[i].invoiceDocument = null
-            // invoicesList[i].transportationDocument = null
-            // invoicesList[i].otherDocuments = null
+        for(const element of invoicesList){
 
-            if(invoicesList[i].purchaseOrderDocument) invoicesList[i].purchaseOrderDocument = await Documents.findById(invoicesList[i].purchaseOrderDocument);
-            if(invoicesList[i].challanDocument) invoicesList[i].challanDocument = await Documents.findById(invoicesList[i].challanDocument);
-            if(invoicesList[i].invoiceDocument) invoicesList[i].invoiceDocument = await Documents.findById(invoicesList[i].invoiceDocument);
-            if(invoicesList[i].transportationDocument) invoicesList[i].transportationDocument = await Documents.findById(invoicesList[i].transportationDocument);
-            if(invoicesList[i].otherDocuments) invoicesList[i].otherDocuments = await Documents.findById(invoicesList[i].otherDocuments);
+            if(element.purchaseOrderDocument){
+                 element.purchaseOrderDocument = await Documents.findById(element.purchaseOrderDocument);
+            } else element.purchaseOrderDocument = null
+
+            if(element.challanDocument) element.challanDocument = await Documents.findById(element.challanDocument);
+            else element.challanDocument = null
             
-            invoicesList[i].type="EXTERNAL"
+            if(element.invoiceDocument) element.invoiceDocument = await Documents.findById(element.invoiceDocument);
+            else element.invoiceDocument = null
+
+            if(element.transportationDocument){
+                element.transportationDocument = await Documents.findById(element.transportationDocument);
+            }
+            else element.transportationDocument = null
+
+            if(element.otherDocuments) element.otherDocuments = await Documents.find({_id : { $in: element.otherDocuments}});
+            else element.otherDocuments = null
+
+            element.type="EXTERNAL"
             // Create a SendBillTransactions
-            const bill = await sendBillTransactionsService.createInvoice(invoicesList[i], req.token.companyDetails);
+            const bill = await sendBillTransactionsService.createInvoice(element, req.token.companyDetails);
 
             //append to store in defaultEntry and calculate totalAmount of invoices
             defaulterEntryList.push(bill);
-            totalAmount += Number(invoicesList[i].remainingAmount);
+            totalAmount += Number(element.remainingAmount);
 
             //create pdf here
             // createInvoicePDF(bill, debtor, './temp/invoices/'+bill._id+'.pdf');
@@ -156,7 +163,7 @@ exports.create = async(req, res) => {
         }
         const defEnt = await defaulterEntryService.createEntry(defaulterEntryList, debtor, newStatus, totalAmount, req.token.companyDetails);
 
-        res.status(201).json({ message: "sendbill/s added successfully.", success: true, response: defEnt });
+        res.status(201).json({ message: "Defaulter has been added successfully.", success: true, response: defEnt });
     } catch (err) {
         console.log(err)
         res

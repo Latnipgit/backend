@@ -345,7 +345,7 @@ exports.uploadSupportingDocuments = async(req, res) => {
         
         for( let item of req.body.attachment){
           let invoices = pHistory.defaulterEntry.invoices
-          let invoice =  invoices.find( obj => obj._id.toString() == item._id)
+          let invoice =  invoices.find( obj => obj._id.toString() == item.invoiceId)
           if(invoice){
               if(item.purchaseOrderDocument)
                 invoice.purchaseOrderDocument = mongoose.Types.ObjectId(item.purchaseOrderDocument)
