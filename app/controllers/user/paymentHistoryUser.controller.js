@@ -165,14 +165,14 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
                           }
                       },
                       {
-                          $lookup: {
-                              from: "documents", // Replace with the actual collection name
-                              localField: "transportationDocument",
-                              foreignField: "_id",
-                              as: "transportationDocument"
-                          }
-                      },
-                      {
+                        $lookup: {
+                            from: "documents", // Replace with the actual collection name
+                            localField: "transportationDocument",
+                            foreignField: "_id",
+                            as: "transportationDocument"
+                        }
+                    },
+                    {
                         $lookup: {
                             from: "documents", // Replace with the actual collection name
                             localField: "otherDocuments",
@@ -355,8 +355,6 @@ exports.uploadSupportingDocuments = async(req, res) => {
                 invoice.invoiceDocument = mongoose.Types.ObjectId(item.invoiceDocument)
               if(item.transportationDocument)
                 invoice.transportationDocument = mongoose.Types.ObjectId(item.transportationDocument)
-              if(item.otherDocuments)
-                invoice.otherDocuments = mongoose.Types.ObjectId(item.otherDocuments)
               await invoice.save()
           }
         }

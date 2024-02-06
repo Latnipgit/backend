@@ -250,7 +250,12 @@ exports.getAllTransactions = async(req, res) => {
                 path: 'debtor', populate: [
                   'ratings']}
             },
-            { path: 'defaulterEntry', populate: { path: 'creditorCompanyId', model: 'company' }}
+            { path: 'defaulterEntry', populate: { path: 'creditorCompanyId', model: 'company' }},
+            { path: 'creditorcacertificate'},
+            { path: 'creditoradditionaldocuments'},
+            { path: 'debtorcacertificate'},
+            { path: 'debtoradditionaldocuments'},
+            { path: 'supportingDocuments'}    
             // { path: 'defaulterEntry.creditorCompanyId', model: 'company' } // Populate the creditorCompanyId field
         ]
         );

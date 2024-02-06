@@ -11,22 +11,27 @@ module.exports = mongoose => {
         paymentMode: String,
         documentsRequiredFromCreditor: [String],
         documentsRequiredFromDebtor: [String],
-        creditorcacertificate: [{
+        creditorcacertificate: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
-        }],
+        },
         creditoradditionaldocuments: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
         }],
-        debtorcacertificate:[{
+        debtorcacertificate:{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
-        }],
+        },
         debtoradditionaldocuments:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'documents',
         }],
+        supportingDocuments:{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'documents',
+        },
+
         status: String,
         pendingWith: String,
         debtorRemarks: String,

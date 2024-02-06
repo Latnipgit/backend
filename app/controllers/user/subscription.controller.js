@@ -98,7 +98,7 @@ exports.deleteSubIdRemQtMappingById = async(req, res) => {
 // subscription methods --------------------------------------------------------------------------------------------------------
 exports.addSubscription = async(req, res) => {
     try {
-        const sub = await Subscription.findOne({ userId: req.token.userDetails.id, isActive: true});
+        const sub = await Subscription.find({ userId: req.token.userDetails.id, isActive: true});
         let endDate = null;
         let startDate = new Date();
         if (sub) {
@@ -106,10 +106,14 @@ exports.addSubscription = async(req, res) => {
                 return res.status(409).send({ message: "Subscription Already Exists.", success: false });
             }else if(req.body.isForce == true){
                 // found subscription and force is true here, disable previous subscription here
-                let updateData = {
-                    isActive: false
+                // let updateData = {
+                //     isActive: false
+                // }
+                for( elem of sub){
+                    elem.isActive = false
+                    elem.save()
                 }
-                const updatedMapp = await Subscription.findByIdAndUpdate({ _id: sub._id}, updateData );
+                // const updatedMapp = await Subscription.findByIdAndUpdate({ _id: { $in: sub }}, updateData );
             }
         }
 
@@ -133,8 +137,8 @@ exports.addSubscription = async(req, res) => {
 
         if (sub) {
             // after creating new subscription, if already mapping for that subscriber is present, remove that mapping, make new below
-            const varx = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId: sub._id });
-            if(varx) await SubscriptionIdRemQuotaMapping.findByIdAndRemove({ _id: varx._id });
+            let subIds = sub.map(x => x._id)
+            const varx = await SubscriptionIdRemQuotaMapping.deleteMany({ subscriptionId: {$in: subIds}});
         }
 
         // bring subscription package api quota from pkg id and check with tenure, assign limit and apiName on that basis
@@ -170,7 +174,7 @@ exports.addSubscription = async(req, res) => {
 
 exports.getAllSubscription = async(req, res) => {
     try {
-        let sub = await Subscription.find();
+        let sub = await Subscription.find({ userId: req.token.userDetails.id, isActive: true});
         res.status(201).json({ message: "Subscriptions found.", success: true, response: sub });
     } catch (err) {
         console.log(err)
