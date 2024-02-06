@@ -21,6 +21,8 @@ const userService = service.user;
 const companyService = service.company;
 var constants = require('../../constants/userConstants');
 const debtorService = service.debtor;
+const subscriptionService =  service.subscription
+
 
 
 exports.signup = async(req, res) => {
@@ -57,6 +59,20 @@ exports.signup = async(req, res) => {
         req.body.customerEmail = user.emailId
         req.body.customerMobile = user.phoneNumber
         const tempDebtor = await debtorService.addDebtor(req.body)
+
+        // Adding Free Subscription by default for 5 years
+       let currentDate = new Date();
+       currentDate.setFullYear(currentDate.getFullYear() + 5);
+       endDate = currentDate.toISOString();
+
+       req.body.subscriptionPkgId = constants.FREE_PLAN_SUBSCRIPTION_PKG_ID
+       req.body.tenure = "NO_LIMIT"
+       token = {
+        "userDetails":{
+            "id": user._id
+        }
+       }
+       await  subscriptionService.createSubscription(token, req, currentDate, endDate)
 
         // user.token = jwtUtil.generateUserToken(user);
        // Save Tutorial in the database
@@ -131,6 +147,21 @@ exports.addEmployee = async(req, res) => {
 
         await userService.addCompanyToUser(user._id, req.token.companyDetails)
         user =await  userService.getUserById( user._id ).populate("companies");
+
+        // Adding Free Subscription by default for 5 years
+        let currentDate = new Date();
+        currentDate.setFullYear(currentDate.getFullYear() + 5);
+        endDate = currentDate.toISOString();
+ 
+        req.body.subscriptionPkgId = constants.FREE_PLAN_SUBSCRIPTION_PKG_ID
+        req.body.tenure = "NO_LIMIT"
+        token = {
+         "userDetails":{
+             "id": user._id
+         }
+        }
+        await  subscriptionService.createSubscription(token, req, currentDate, endDate)
+ 
         // user.token = jwtUtil.generateUserToken(user);
        let replacements = [];
        replacements.push({target: "password", value: password })
@@ -138,6 +169,7 @@ exports.addEmployee = async(req, res) => {
 
        mailObj.to = req.body.emailId
        mailUtility.sendMail(mailObj)
+
 
        res.status(201).json({success: true, response: user });
 

@@ -6,7 +6,10 @@ const SubscriptionPkgAPIQuotaMapping = db.subscriptionPkgAPIQuotaMapping;
 const constants = require('../../constants/userConstants');
 
 const commondb = require("../../models/common/");
-const paymentHistory = require("../../service/admin/paymentHistory.service");
+const adminServices = require("../../service/admin/");
+
+const paymentHistoryService = adminServices.paymentHistoryService;
+const subscriptionPkgService = adminServices.subscriptionPkgService;
 
 const Admin = db.admin;
 const PaymentHistory = db.paymentHistory;
@@ -304,6 +307,20 @@ exports.getAllUsers = async(req, res) => {
 };
 
 // subscription pkg methods -----------------------------------------------------------------------------
+
+
+exports.getServicesListForSubPkg = async(req, res) => {
+    try {
+        
+        res.status(201).json({ message: "Subscription Packages found.", success: true, response: subscriptionPkgs });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
 exports.addSubscriptionPkg = async(req, res) => {
     try {
         const subPkg = await SubscriptionPkg.findOne({ subscriptionPkgName: req.body.subscriptionPkgName });
@@ -319,7 +336,13 @@ exports.addSubscriptionPkg = async(req, res) => {
                 yearlylyDiscount: req.body.yearlylyDiscount,
                 subscriptionFor: req.body.subscriptionFor
             })
-
+            subscriptionPkgAPIQuota = []
+            for(row of req.body.services){
+                row.subscriptionPkgId = subscriptionPkg._id
+                subscriptionPkgAPIQuota.push(await subscriptionPkgService.addSubscriptionPkgAPIQuotaMapping(row))
+            }
+            subscriptionPkg.subscriptionPkgAPIQuota = subscriptionPkgAPIQuota
+            subscriptionPkg.save()
         res.status(201).json({ message: "Subscription Package added successfully.", success: true, response: subscriptionPkg });
     } catch (err) {
         console.log(err)
@@ -331,7 +354,7 @@ exports.addSubscriptionPkg = async(req, res) => {
 
 exports.getAllSubscriptionPkg = async(req, res) => {
     try {
-        let subscriptionPkgs = await SubscriptionPkg.find();
+        let subscriptionPkgs = await SubscriptionPkg.find().populate("subscriptionPkgAPIQuota");
         res.status(201).json({ message: "Subscription Packages found.", success: true, response: subscriptionPkgs });
     } catch (err) {
         console.log(err)
@@ -343,7 +366,7 @@ exports.getAllSubscriptionPkg = async(req, res) => {
 
 exports.getSubscriptionPkgById = async(req, res) => {
     try {
-        const subPkg = await SubscriptionPkg.findOne({ _id: req.body.subscriptionPkgId });
+        const subPkg = await SubscriptionPkg.findOne({ _id: req.body.subscriptionPkgId }).populate("subscriptionPkgAPIQuota");
         if (subPkg) {
             res.status(201).json({ message: "Subscription Package found.", success: true, response: subPkg });
         }else{
@@ -395,6 +418,7 @@ exports.updateSubscriptionPkgById = async(req, res) => {
 exports.deleteSubscriptionPkg = async(req, res) => {
     try {
         const subPkg = await SubscriptionPkg.findByIdAndRemove({ _id: req.body.subscriptionPkgId });
+        await SubscriptionPkgAPIQuotaMapping.deleteMany({subscriptionPkgId: req.body.subscriptionPkgId})
         res.status(201).json({ message: "Subscription Package deleted.", success: true, response: subPkg });
     } catch (err) {
         console.log(err)
@@ -412,14 +436,9 @@ exports.addSubPkgAPIQtMapping = async(req, res) => {
             return res.status(409).send({ message: "Mapping Already Exists.", success: false });
         }
 
-        const subscriptionPkgAPIQuotaMapping = await SubscriptionPkgAPIQuotaMapping.create({
-                subscriptionPkgId: req.body.subscriptionPkgId,
-                apiName: req.body.apiName,
-                monthlyQuotaLimit: req.body.monthlyQuotaLimit,
-                yearlyQuotaLimit: req.body.yearlyQuotaLimit
-            })
+        let subscriptionPkgAPIQuota = await subscriptionPkgService.addSubscriptionPkgAPIQuotaMapping(req.body)
 
-        res.status(201).json({ message: "Mapping added successfully.", success: true, response: subscriptionPkgAPIQuotaMapping });
+        res.status(201).json({ message: "Mapping added successfully.", success: true, response: subscriptionPkgAPIQuota });
     } catch (err) {
         console.log(err)
         res
@@ -496,10 +515,10 @@ exports.escalateRequest = async(req, res) => {
         let result = null;
         if(req.token.adminDetails.adminRole == "L1"){
             pendingWith="L2";
-            result = await paymentHistory.updatePaymentHistoryForEscalate({pendingWith, paymentId});
+            result = await paymentHistoryService.updatePaymentHistoryForEscalate({pendingWith, paymentId});
         }if(req.token.adminDetails.adminRole == "L2"){
             pendingWith="L2";
-            result = await paymentHistory.updatePaymentHistoryForEscalate({pendingWith, paymentId});
+            result = await paymentHistoryService.updatePaymentHistoryForEscalate({pendingWith, paymentId});
         }
         return res.status(200).send({ message: "Issue Escalated", success: true, response: result });
     } catch (err) {

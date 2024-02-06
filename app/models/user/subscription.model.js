@@ -5,7 +5,14 @@ module.exports = mongoose => {
         startDate: String,
         endDate: String,
         tenure: String,
-        isActive: Boolean
+        isActive: Boolean,
+        subscriptionIdRemQuotaMapping: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'subscriptionIdRemQuotaMapping'
+            }
+        ]
+
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

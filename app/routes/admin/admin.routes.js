@@ -22,6 +22,7 @@ module.exports = app => {
 
     // subscription pkg routes
     router.post("/addSubscriptionPkg",auth, admin.addSubscriptionPkg);
+    router.post("/getServicesListForSubPkg",auth, admin.getServicesListForSubPkg);
     router.get("/getAllSubscriptionPkg",auth, admin.getAllSubscriptionPkg);
     router.post("/getSubscriptionPkgById",auth, admin.getSubscriptionPkgById);
     router.post("/updateSubscriptionPkgById",auth, admin.updateSubscriptionPkgById);

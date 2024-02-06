@@ -12,6 +12,9 @@ const jwtUtil = require('../../util/jwtUtil')
 const commonUtil = require('../../util/commonUtil')
 const { addMonths, format } = require('date-fns');
 
+const service = require('../../service/user')
+const subscriptionService =  service.subscription
+
 // subscription Id remaining Quota Mapping methods -----------------------------------------------------------------------------
 exports.addSubIdRemQtMapping = async(req, res) => {
     try {
@@ -96,6 +99,8 @@ exports.deleteSubIdRemQtMappingById = async(req, res) => {
 
 
 // subscription methods --------------------------------------------------------------------------------------------------------
+
+
 exports.addSubscription = async(req, res) => {
     try {
         const sub = await Subscription.find({ userId: req.token.userDetails.id, isActive: true});
@@ -126,41 +131,44 @@ exports.addSubscription = async(req, res) => {
             endDate = currentDate.toISOString();
         }
 
-        const RSubscription = await Subscription.create({
-                userId: req.token.userDetails.id,
-                subscriptionPkgId: req.token.subscriptionPkgId,
-                startDate: startDate.toISOString(),
-                endDate: endDate,
-                tenure: req.body.tenure,
-                isActive: true
-            })
-
         if (sub) {
             // after creating new subscription, if already mapping for that subscriber is present, remove that mapping, make new below
             let subIds = sub.map(x => x._id)
-            const varx = await SubscriptionIdRemQuotaMapping.deleteMany({ subscriptionId: {$in: subIds}});
+            let varx = await SubscriptionIdRemQuotaMapping.deleteMany({ subscriptionId: {$in: subIds}});
         }
+        let RSubscription = await subscriptionService.createSubscription(req.token, req, startDate, endDate)
 
-        // bring subscription package api quota from pkg id and check with tenure, assign limit and apiName on that basis
-        let tempObj = await SubscriptionPkgAPIQuotaMapping.find({subscriptionPkgId: req.body.subscriptionPkgId});
-        for(let i = 0; i < tempObj.length; i++){
-            let limit = null;
-            let api = tempObj[i].apiName;
+        // const RSubscription = await Subscription.create({
+        //         userId: req.token.userDetails.id,
+        //         subscriptionPkgId: req.body.subscriptionPkgId,
+        //         startDate: startDate.toISOString(),
+        //         endDate: endDate,
+        //         tenure: req.body.tenure,
+        //         isActive: true
+        //     })
 
-            if(req.body.tenure == "Monthly"){
-                limit = tempObj[i].monthlyQuotaLimit;
-            }else if(req.body.tenure == "Yearly"){
-                limit = tempObj[i].yearlyQuotaLimit;
-            }
+        // let subscriptionIdRemQuota = []
+        // // bring subscription package api quota from pkg id and check with tenure, assign limit and apiName on that basis
+        // let tempObj = await SubscriptionPkgAPIQuotaMapping.find({subscriptionPkgId: req.body.subscriptionPkgId});
+        // for(let i = 0; i < tempObj.length; i++){
+        //     let limit = null;
+        //     let api = tempObj[i].apiName;
 
-            // create new mapping for remaining quota
-            await SubscriptionIdRemQuotaMapping.create({
-                    subscriptionId: RSubscription._id,
-                    apiName: api,
-                    limitRemaining: limit
-            })
-        }
-        
+        //     if(req.body.tenure == "Monthly"){
+        //         limit = tempObj[i].monthlyQuotaLimit;
+        //     }else if(req.body.tenure == "Yearly"){
+        //         limit = tempObj[i].yearlyQuotaLimit;
+        //     }
+
+        //     // create new mapping for remaining quota
+        //     subscriptionIdRemQuota.push(await SubscriptionIdRemQuotaMapping.create({
+        //             subscriptionId: RSubscription._id,
+        //             apiName: api,
+        //             limitRemaining: limit
+        //     }))
+        // }
+        // RSubscription.subscriptionIdRemQuotaMapping = subscriptionIdRemQuota
+        // RSubscription.save()
         
 
         res.status(201).json({ message: "Subscription added successfully.", success: true, response: RSubscription });
@@ -174,7 +182,9 @@ exports.addSubscription = async(req, res) => {
 
 exports.getAllSubscription = async(req, res) => {
     try {
-        let sub = await Subscription.find({ userId: req.token.userDetails.id, isActive: true});
+        let sub = await Subscription.find({ userId: req.token.userDetails.id, isActive: true})
+        .populate('subscriptionIdRemQuotaMapping'); // Adjust the path based on your actual field name
+
         res.status(201).json({ message: "Subscriptions found.", success: true, response: sub });
     } catch (err) {
         console.log(err)
