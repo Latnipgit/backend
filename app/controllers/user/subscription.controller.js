@@ -134,7 +134,7 @@ exports.addSubscription = async(req, res) => {
         if (sub) {
             // after creating new subscription, if already mapping for that subscriber is present, remove that mapping, make new below
             const varx = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId: sub._id });
-            await SubscriptionIdRemQuotaMapping.findByIdAndRemove({ _id: varx._id });
+            if(varx) await SubscriptionIdRemQuotaMapping.findByIdAndRemove({ _id: varx._id });
         }
 
         // bring subscription package api quota from pkg id and check with tenure, assign limit and apiName on that basis
