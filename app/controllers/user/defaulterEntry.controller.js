@@ -189,7 +189,7 @@ exports.getAllInvoicesSentToMe = async(req, res) => {
                 delete item._doc.creditorCompanyId;
                 return item;
             });
-
+    
             // Use transformedResults
             defaulterEntries.push(...( entry));
         }

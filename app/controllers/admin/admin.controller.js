@@ -265,7 +265,7 @@ exports.getAllTransactions = async(req, res) => {
         
         transactions = transactions.map(transaction => {
             transaction = transaction.toJSON();
-            if (transaction.defaulterEntry && transaction.defaulterEntry.creditor) {
+            if (transaction.defaulterEntry && transaction.defaulterEntry.creditorCompanyId) {
               transaction.defaulterEntry.creditor = transaction.defaulterEntry.creditorCompanyId;
               delete transaction.defaulterEntry.creditorCompanyId;
             }
