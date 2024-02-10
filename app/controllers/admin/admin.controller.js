@@ -54,7 +54,6 @@ exports.addAdmin = async(req, res) => {
             })
         
             // Create token
-        // admin.token = jwtUtil.generateAdminToken(admin);
         let replacements = [];
         replacements.push({target: "password", value: password })
         mailObj = await mailController.getMailTemplate("ADMIN_SIGNUP", replacements)
@@ -192,6 +191,7 @@ exports.authenticateAdmin = async(req, res) => {
             // save user token
             if(!user.passwordChangeNeeded){
                 user.token = jwtUtil.generateAdminToken(user);
+                user.refreshToken = jwtUtil.generateAdminRefreshToken(user);
                 res.status(200).json({ message: "Logged in Successfully.", success: true, response: user });
             } else {
                 let passwordChangeToken = jwtUtil.generateAdminToken(user);
@@ -210,6 +210,24 @@ exports.authenticateAdmin = async(req, res) => {
 
 };
 
+
+exports.refreshToken = async(req, res) => {
+    try {
+        const refreshToken = req.body.refreshToken;
+        let payload = await jwtUtil.verifyRefreshToken(refreshToken)
+
+        const accessToken = jwtUtil.signAccessTokenWithPayload(payload)
+        const refToken = jwtUtil.signRefreshTokenWithPayload(payload)
+  
+        res.send({ message: "New Token generated successfully.", success: true, response: {"token": accessToken, "refreshToken": refToken}})
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    };
+};
 
 exports.logout = (req, res) => {
     req.session.destroy();

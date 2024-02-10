@@ -36,6 +36,7 @@ module.exports = app => {
     router.post("/deleteSubPkgAPIQtMappingById", auth, admin.deleteSubPkgAPIQtMappingById);
 
     router.post("/login", admin.authenticateAdmin);
+    router.post("/refreshToken", admin.refreshToken);
     router.post("/changePasswordUsingToken", admin.changePasswordUsingToken);
     router.post("/changePasswordUsingOldPass",auth, admin.changePasswordUsingOldPass);
     router.post("/forgetPassword", admin.forgetPassword);

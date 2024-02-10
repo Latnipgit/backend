@@ -87,7 +87,8 @@ exports.selectCompanyByCompanyId = async(req, res) => {
 
         // console.log({userToken, companyDetails});
         const newToken = jwtUtil.generateUserTokenWithCmpDetails(userToken, companyDetails);
-        res.status(200).json({  message: "Selected a company", success: true, response: {"token": newToken}});
+        const newRefreshToken = jwtUtil.generateUserRefreshTokenWithCmpDetails(userToken, companyDetails);
+        res.status(200).json({  message: "Selected a company", success: true, response: {"token": newToken, "refreshToken": newRefreshToken}});
             
     }catch(error){
         console.log(error);

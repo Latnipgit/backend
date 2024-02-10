@@ -13,6 +13,7 @@ module.exports = app => {
     router.post("/addEmployee",auth,Authorization.AuthorizeOwner,  user.addEmployee);
     router.post("/getAllEmployee",auth,Authorization.AuthorizeOwner,  user.getAllEmployees);
     router.post("/login", user.authenticateUser);
+    router.post("/refreshToken", user.refreshToken);
     router.post("/logout", auth, user.logout);
     router.get("/getLoginInfo",auth, user.getLoginInfo);
     router.post("/updateUserData",auth, user.updateUserData);
