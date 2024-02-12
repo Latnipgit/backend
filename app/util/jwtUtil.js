@@ -5,7 +5,7 @@ exports.generateUserToken = (user) => {
     let payload = {"userDetails" : { id: user._id, emailId: user.emailId, phoneNumber: user.phoneNumber, password: user.password, role: user.role}}
     const secret = process.env.TOKEN_KEY
     const options = {
-        expiresIn: '3h',
+        expiresIn: '1m',
         // issuer: 'pickurpage.com',
         audience: user.id,
     }
@@ -19,7 +19,7 @@ exports.generateUserRefreshToken = (user) => {
     let payload = {"userDetails" : { id: user._id, emailId: user.emailId, phoneNumber: user.phoneNumber, password: user.password, role: user.role}}
     const secret = process.env.TOKEN_KEY
     const options = {
-        expiresIn: '1d',
+        expiresIn: '5m',
         // issuer: 'pickurpage.com',
         audience: user.id,
     }
@@ -29,31 +29,33 @@ exports.generateUserRefreshToken = (user) => {
     return token;
   }
 
-
-  exports.generateUserRefreshTokenWithCmpDetails = (user, cmp) => {
-    let payload = {"userDetails" : user, "companyDetails" : {_id: cmp.id, id: cmp.id, companyName: cmp.companyName, gstin: cmp.gstin, companyPan: cmp.companyPan,
-        createdAt: cmp.createdAt, updatedAt:cmp.updatedAt}}
-    const secret = process.env.TOKEN_KEY
-    const options = {
-        expiresIn: '1d',
-        // issuer: 'pickurpage.com',
-        audience: user.id,
-    }
-  
-    const token = jwt.sign(payload, secret, options); 
-
-    return token;
-  }
 
 exports.generateUserTokenWithCmpDetails = (user, cmp) => {
     const token = jwt.sign({"userDetails" : user, 
                             "companyDetails" : {_id: cmp.id, id: cmp.id, companyName: cmp.companyName, gstin: cmp.gstin, companyPan: cmp.companyPan,
                                                  createdAt: cmp.createdAt, updatedAt:cmp.updatedAt}},
         process.env.TOKEN_KEY, {
-        expiresIn: "2h",
+        expiresIn: "1m",
     }); 
     return token;
 };
+
+
+
+exports.generateUserRefreshTokenWithCmpDetails = (user, cmp) => {
+    let payload = {"userDetails" : user, "companyDetails" : {_id: cmp.id, id: cmp.id, companyName: cmp.companyName, gstin: cmp.gstin, companyPan: cmp.companyPan,
+        createdAt: cmp.createdAt, updatedAt:cmp.updatedAt}}
+    const secret = process.env.TOKEN_KEY
+    const options = {
+        expiresIn: '5m',
+        // issuer: 'pickurpage.com',
+        audience: user.id,
+    }
+  
+    const token = jwt.sign(payload, secret, options); 
+
+    return token;
+  }
 
 exports.generateAdminToken = (admin) => {
     
@@ -85,7 +87,7 @@ exports.signAccessTokenWithPayload = (payload) => {
     const secret = process.env.TOKEN_KEY
     delete payload.exp 
     const options = {
-        expiresIn: '1d',
+        expiresIn: '1m',
         // issuer: 'pickurpage.com',
         // audience: user.id,
     }
@@ -99,7 +101,7 @@ exports.signRefreshTokenWithPayload = (payload) => {
     const secret = process.env.TOKEN_KEY
     delete payload.exp 
     const options = {
-        expiresIn: '1d',
+        expiresIn: '5m',
         // issuer: 'pickurpage.com',
         // audience: user.id,
     }
