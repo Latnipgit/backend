@@ -2,12 +2,12 @@ const jwt = require("jsonwebtoken");
 const createError = require('http-errors')
 
 exports.generateUserToken = (user) => {
-    let payload = {"userDetails" : { id: user._id, emailId: user.emailId, phoneNumber: user.phoneNumber, password: user.password, role: user.role}}
+    let payload = {"userDetails" : { _id: user._id,id: user._id, emailId: user.emailId, phoneNumber: user.phoneNumber, password: user.password, role: user.role}}
     const secret = process.env.TOKEN_KEY
     const options = {
         expiresIn: '1m',
         // issuer: 'pickurpage.com',
-        audience: user.id,
+        // audience: user.id,
     }
   
     const token = jwt.sign(payload, secret, options); 
@@ -21,7 +21,7 @@ exports.generateUserRefreshToken = (user) => {
     const options = {
         expiresIn: '5m',
         // issuer: 'pickurpage.com',
-        audience: user.id,
+        // audience: user.id,
     }
   
     const token = jwt.sign(payload, secret, options); 
@@ -49,7 +49,7 @@ exports.generateUserRefreshTokenWithCmpDetails = (user, cmp) => {
     const options = {
         expiresIn: '5m',
         // issuer: 'pickurpage.com',
-        audience: user.id,
+        // audience: user.id,
     }
   
     const token = jwt.sign(payload, secret, options); 
@@ -74,7 +74,7 @@ exports.generateAdminRefreshToken = (admin) => {
     const options = {
         expiresIn: '1d',
         // issuer: 'pickurpage.com',
-        audience: admin._id.toString(),
+        // audience: admin._id.toString(),
     }
   
     const token = jwt.sign(payload, secret, options); 
@@ -122,7 +122,7 @@ exports.verifyRefreshToken = (refreshToken) => {
         refreshToken,
         process.env.TOKEN_KEY,
         (err, payload) => {
-          if (err) return reject(createError.Unauthorized())
+          if (err) return reject(err)
           resolve(payload)
           // client.GET(userId, (err, result) => {
           //   if (err) {

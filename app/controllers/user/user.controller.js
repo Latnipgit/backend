@@ -339,9 +339,15 @@ exports.refreshToken = async(req, res) => {
     try {
         const refreshToken = req.body.refreshToken;
         let payload = await jwtUtil.verifyRefreshToken(refreshToken)
-
-        const accessToken = jwtUtil.signAccessTokenWithPayload(payload)
-        const refToken = jwtUtil.signRefreshTokenWithPayload(payload)
+        let accessToken = ""
+        let refToken = ""
+        if(payload.companyDetails){
+            accessToken = jwtUtil.generateUserTokenWithCmpDetails(payload.userDetails, payload.companyDetails)
+            refToken = jwtUtil.generateUserRefreshTokenWithCmpDetails(payload.userDetails, payload.companyDetails);
+        } else{
+            accessToken = jwtUtil.generateUserToken(payload.userDetails)
+            refToken = jwtUtil.generateUserRefreshToken(payload.userDetails);
+        }
   
         res.send({ message: "New Token generated successfully.", success: true, response: {"token": accessToken, "refreshToken": refToken}})
 
