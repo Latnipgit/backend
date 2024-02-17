@@ -559,6 +559,22 @@ exports.companiesFilter = async(req, res) => {
     }
 }
 
+exports.getAllCompanies = async(req, res) => {
+    try {
+        
+        let cmpns = await Companies.find();
+        // cmpns = cmpns.map(cmpn => cmpn.toObject());
+
+        res.status(200).json({success: true, message: "All companies fetched", response: cmpns });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+}
+
 exports.getCompanyCountStateWise = async(req, res) => {
     try {
         const result = await Companies.aggregate([
