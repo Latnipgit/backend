@@ -1,9 +1,16 @@
 module.exports = Object.freeze({
     MY_CONSTANT: 'some value',
     ANOTHER_CONSTANT: 'another value',
+    FREE_PLAN_SUBSCRIPTION_PKG_ID: '65c274d7844c7f01a3a5f7af',
     API_NAME_URL_MAPPING: {
-        "/api/companies/search": "companySearch",
+        "/api/debtors/search": "companySearch",
         "/api/transactions/create": "invoicingLedger",
+        // "/api/companies/search": "recordPayment"
+    },
+    API_NAME_URL_MAPPING_FOR_SUBSCRIPTION: {
+        "/api/debtors/search": "Defaulter Search",
+        "/api/transactions/create": "Invoicing",
+        // "/api/transactions/create": "Calls"
         // "/api/companies/search": "recordPayment"
     },
     INVOICE_STATUS: {

@@ -21,6 +21,8 @@ const userService = service.user;
 const companyService = service.company;
 var constants = require('../../constants/userConstants');
 const debtorService = service.debtor;
+const subscriptionService =  service.subscription
+
 
 
 exports.signup = async(req, res) => {
@@ -58,8 +60,20 @@ exports.signup = async(req, res) => {
         req.body.customerMobile = user.phoneNumber
         const tempDebtor = await debtorService.addDebtor(req.body)
 
-        // user.token = jwtUtil.generateUserToken(user);
-       // Save Tutorial in the database
+        // Adding Free Subscription by default for 5 years
+       let currentDate = new Date();
+       currentDate.setFullYear(currentDate.getFullYear() + 5);
+       endDate = currentDate.toISOString();
+
+       req.body.subscriptionPkgId = constants.FREE_PLAN_SUBSCRIPTION_PKG_ID
+       req.body.tenure = "NO_LIMIT"
+       token = {
+        "userDetails":{
+            "id": user._id
+        }
+       }
+       await  subscriptionService.createSubscription(token, req, currentDate, endDate)
+
        let replacements = [];
        replacements.push({target: "password", value: password })
        mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
@@ -91,6 +105,7 @@ exports.updateUserData = async(req, res) => {
         let user =await userService.updateUser(req.token.userDetails.id, req.body);        
         user = await userService.getUserById( user._id ).populate("companies");
         user.token = jwtUtil.generateUserToken(user);
+        user.refreshToken = jwtUtil.generateUserRefreshToken(user);
 
        res.status(200).json({success: true, response: user });
 
@@ -131,13 +146,28 @@ exports.addEmployee = async(req, res) => {
 
         await userService.addCompanyToUser(user._id, req.token.companyDetails)
         user =await  userService.getUserById( user._id ).populate("companies");
-        // user.token = jwtUtil.generateUserToken(user);
+
+        // Adding Free Subscription by default for 5 years
+        let currentDate = new Date();
+        currentDate.setFullYear(currentDate.getFullYear() + 5);
+        endDate = currentDate.toISOString();
+ 
+        req.body.subscriptionPkgId = constants.FREE_PLAN_SUBSCRIPTION_PKG_ID
+        req.body.tenure = "NO_LIMIT"
+        token = {
+         "userDetails":{
+             "id": user._id
+         }
+        }
+        await  subscriptionService.createSubscription(token, req, currentDate, endDate)
+ 
        let replacements = [];
        replacements.push({target: "password", value: password })
        mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
 
        mailObj.to = req.body.emailId
        mailUtility.sendMail(mailObj)
+
 
        res.status(201).json({success: true, response: user });
 
@@ -286,6 +316,7 @@ exports.authenticateUser = async(req, res) => {
             // Create token
             if(!user.passwordChangeNeeded){
                 user.token = jwtUtil.generateUserToken(user);
+                user.refreshToken = jwtUtil.generateUserRefreshToken(user);
                 res.status(200).json({ message: "Logged in Successfully.", success: true, response: user });
             } else {
                 let passwordChangeToken = jwtUtil.generateUserToken(user);
@@ -294,6 +325,31 @@ exports.authenticateUser = async(req, res) => {
         } else {
             res.status(400).send({ message: "Invalid Credentials", success: false });
         }
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    };
+};
+
+
+exports.refreshToken = async(req, res) => {
+    try {
+        const refreshToken = req.body.refreshToken;
+        let payload = await jwtUtil.verifyRefreshToken(refreshToken)
+        let accessToken = ""
+        let refToken = ""
+        if(payload.companyDetails){
+            accessToken = jwtUtil.generateUserTokenWithCmpDetails(payload.userDetails, payload.companyDetails)
+            refToken = jwtUtil.generateUserRefreshTokenWithCmpDetails(payload.userDetails, payload.companyDetails);
+        } else{
+            accessToken = jwtUtil.generateUserToken(payload.userDetails)
+            refToken = jwtUtil.generateUserRefreshToken(payload.userDetails);
+        }
+  
+        res.send({ message: "New Token generated successfully.", success: true, response: {"token": accessToken, "refreshToken": refToken}})
 
     } catch (err) {
         console.log(err)

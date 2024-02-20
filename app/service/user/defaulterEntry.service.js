@@ -72,10 +72,10 @@ exports.updateDefaulterEntry = async function(reqBody) {
     let transportationDocument=null;
     let otherDocuments = null;
     if(reqBody.invoices[i].purchaseOrderDocument) purchaseOrderDocument = await Documents.findById(reqBody.invoices[i].purchaseOrderDocument);
-    if(reqBody.invoices[i].purchaseOrderDocument) challanDocument = await Documents.findById(reqBody.invoices[i].challanDocument);
-    if(reqBody.invoices[i].purchaseOrderDocument) invoiceDocument = await Documents.findById(reqBody.invoices[i].invoiceDocument);
-    if(reqBody.invoices[i].purchaseOrderDocument) transportationDocument = await Documents.findById(reqBody.invoices[i].transportationDocument);
-    if(reqBody.invoices[i].purchaseOrderDocument) otherDocuments = await Documents.findById(reqBody.invoices[i].otherDocuments);
+    if(reqBody.invoices[i].challanDocument) challanDocument = await Documents.findById(reqBody.invoices[i].challanDocument);
+    if(reqBody.invoices[i].invoiceDocument) invoiceDocument = await Documents.findById(reqBody.invoices[i].invoiceDocument);
+    if(reqBody.invoices[i].transportationDocument) transportationDocument = await Documents.findById(reqBody.invoices[i].transportationDocument);
+    if(reqBody.invoices[i].otherDocuments) otherDocuments = await Documents.find({_id : { $in: reqBody.invoices[i].otherDocuments}});
 
     const invoiceId = tempArray[i]._id
     sendB = await SendBillTransactions.findByIdAndUpdate(invoiceId, {
@@ -162,7 +162,9 @@ exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newP
         approvedByCreditor: isApprovedByCreditor,
 
         isDispute: (reqbody.isDispute && reqbody.isDispute != null )? reqbody.isDispute : false,
-        debtorRemarks: reqbody.debtorRemarks
+        debtorRemarks: reqbody.debtorRemarks,
+        disputeType: reqbody.disputeType,
+        supportingDocuments: reqbody.supportingDocuments
     });
 }
 

@@ -6,7 +6,14 @@ module.exports = mongoose => {
         yearlyAmt: String,
         monthlyDiscount: String,
         yearlylyDiscount: String,
-        subscriptionFor: []
+        subscriptionFor: [],
+        subscriptionPkgAPIQuota: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'subscriptionPkgAPIQuotaMapping'
+            }
+        ]
+
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

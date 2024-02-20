@@ -38,7 +38,7 @@ module.exports.CheckAccessForEmployee = async (req, res, next) => {
       let user =  (await userService.getUserById( req.token.userDetails.id ));
       if (user.permissions.includes(constants.API_NAME_URL_MAPPING[currentURL])) {
         next(); // Allow access to the protected route
-      } else {  
+      } else {
         res.status(403).json({ message: 'You are not Authorised to perform the operation.', success: false});
       }
     }

@@ -6,7 +6,10 @@ const SubscriptionPkgAPIQuotaMapping = db.subscriptionPkgAPIQuotaMapping;
 const constants = require('../../constants/userConstants');
 
 const commondb = require("../../models/common/");
-const paymentHistory = require("../../service/admin/paymentHistory.service");
+const adminServices = require("../../service/admin/");
+
+const paymentHistoryService = adminServices.paymentHistoryService;
+const subscriptionPkgService = adminServices.subscriptionPkgService;
 
 const Admin = db.admin;
 const PaymentHistory = db.paymentHistory;
@@ -14,6 +17,7 @@ const SendBillTrans = user_db.sendBillTransactions;
 const DefaulterEntry = user_db.defaulterEntry;
 const Questions = user_db.questions;
 const Companies = user_db.companies;
+const Debtor = user_db.debtors;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -28,6 +32,7 @@ const crypto = require("crypto");
 const service = require("../../service/user/");
 const defaulterEntryService = service.defaulterEntry;
 const userService = service.user;
+const debtorService = service.debtor;
 
 exports.addAdmin = async(req, res) => {
 
@@ -51,7 +56,6 @@ exports.addAdmin = async(req, res) => {
             })
         
             // Create token
-        // admin.token = jwtUtil.generateAdminToken(admin);
         let replacements = [];
         replacements.push({target: "password", value: password })
         mailObj = await mailController.getMailTemplate("ADMIN_SIGNUP", replacements)
@@ -189,6 +193,7 @@ exports.authenticateAdmin = async(req, res) => {
             // save user token
             if(!user.passwordChangeNeeded){
                 user.token = jwtUtil.generateAdminToken(user);
+                user.refreshToken = jwtUtil.generateAdminRefreshToken(user);
                 res.status(200).json({ message: "Logged in Successfully.", success: true, response: user });
             } else {
                 let passwordChangeToken = jwtUtil.generateAdminToken(user);
@@ -207,6 +212,24 @@ exports.authenticateAdmin = async(req, res) => {
 
 };
 
+
+exports.refreshToken = async(req, res) => {
+    try {
+        const refreshToken = req.body.refreshToken;
+        let payload = await jwtUtil.verifyRefreshToken(refreshToken)
+
+        const accessToken = jwtUtil.signAccessTokenWithPayload(payload)
+        const refToken = jwtUtil.signRefreshTokenWithPayload(payload)
+  
+        res.send({ message: "New Token generated successfully.", success: true, response: {"token": accessToken, "refreshToken": refToken}})
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    };
+};
 
 exports.logout = (req, res) => {
     req.session.destroy();
@@ -250,14 +273,19 @@ exports.getAllTransactions = async(req, res) => {
                 path: 'debtor', populate: [
                   'ratings']}
             },
-            { path: 'defaulterEntry', populate: { path: 'creditorCompanyId', model: 'company' }}
+            { path: 'defaulterEntry', populate: { path: 'creditorCompanyId', model: 'company' }},
+            { path: 'creditorcacertificate'},
+            { path: 'creditoradditionaldocuments'},
+            { path: 'debtorcacertificate'},
+            { path: 'debtoradditionaldocuments'},
+            { path: 'supportingDocuments'}    
             // { path: 'defaulterEntry.creditorCompanyId', model: 'company' } // Populate the creditorCompanyId field
         ]
         );
         
         transactions = transactions.map(transaction => {
             transaction = transaction.toJSON();
-            if (transaction.defaulterEntry && transaction.defaulterEntry.creditor) {
+            if (transaction.defaulterEntry && transaction.defaulterEntry.creditorCompanyId) {
               transaction.defaulterEntry.creditor = transaction.defaulterEntry.creditorCompanyId;
               delete transaction.defaulterEntry.creditorCompanyId;
             }
@@ -299,6 +327,20 @@ exports.getAllUsers = async(req, res) => {
 };
 
 // subscription pkg methods -----------------------------------------------------------------------------
+
+
+exports.getServicesListForSubPkg = async(req, res) => {
+    try {
+        
+        res.status(201).json({ message: "Subscription Packages found.", success: true, response: subscriptionPkgs });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+};
+
 exports.addSubscriptionPkg = async(req, res) => {
     try {
         const subPkg = await SubscriptionPkg.findOne({ subscriptionPkgName: req.body.subscriptionPkgName });
@@ -314,7 +356,13 @@ exports.addSubscriptionPkg = async(req, res) => {
                 yearlylyDiscount: req.body.yearlylyDiscount,
                 subscriptionFor: req.body.subscriptionFor
             })
-
+            subscriptionPkgAPIQuota = []
+            for(row of req.body.services){
+                row.subscriptionPkgId = subscriptionPkg._id
+                subscriptionPkgAPIQuota.push(await subscriptionPkgService.addSubscriptionPkgAPIQuotaMapping(row))
+            }
+            subscriptionPkg.subscriptionPkgAPIQuota = subscriptionPkgAPIQuota
+            subscriptionPkg.save()
         res.status(201).json({ message: "Subscription Package added successfully.", success: true, response: subscriptionPkg });
     } catch (err) {
         console.log(err)
@@ -326,7 +374,7 @@ exports.addSubscriptionPkg = async(req, res) => {
 
 exports.getAllSubscriptionPkg = async(req, res) => {
     try {
-        let subscriptionPkgs = await SubscriptionPkg.find();
+        let subscriptionPkgs = await SubscriptionPkg.find().populate("subscriptionPkgAPIQuota");
         res.status(201).json({ message: "Subscription Packages found.", success: true, response: subscriptionPkgs });
     } catch (err) {
         console.log(err)
@@ -338,7 +386,7 @@ exports.getAllSubscriptionPkg = async(req, res) => {
 
 exports.getSubscriptionPkgById = async(req, res) => {
     try {
-        const subPkg = await SubscriptionPkg.findOne({ _id: req.body.subscriptionPkgId });
+        const subPkg = await SubscriptionPkg.findOne({ _id: req.body.subscriptionPkgId }).populate("subscriptionPkgAPIQuota");
         if (subPkg) {
             res.status(201).json({ message: "Subscription Package found.", success: true, response: subPkg });
         }else{
@@ -390,6 +438,7 @@ exports.updateSubscriptionPkgById = async(req, res) => {
 exports.deleteSubscriptionPkg = async(req, res) => {
     try {
         const subPkg = await SubscriptionPkg.findByIdAndRemove({ _id: req.body.subscriptionPkgId });
+        await SubscriptionPkgAPIQuotaMapping.deleteMany({subscriptionPkgId: req.body.subscriptionPkgId})
         res.status(201).json({ message: "Subscription Package deleted.", success: true, response: subPkg });
     } catch (err) {
         console.log(err)
@@ -407,14 +456,9 @@ exports.addSubPkgAPIQtMapping = async(req, res) => {
             return res.status(409).send({ message: "Mapping Already Exists.", success: false });
         }
 
-        const subscriptionPkgAPIQuotaMapping = await SubscriptionPkgAPIQuotaMapping.create({
-                subscriptionPkgId: req.body.subscriptionPkgId,
-                apiName: req.body.apiName,
-                monthlyQuotaLimit: req.body.monthlyQuotaLimit,
-                yearlyQuotaLimit: req.body.yearlyQuotaLimit
-            })
+        let subscriptionPkgAPIQuota = await subscriptionPkgService.addSubscriptionPkgAPIQuotaMapping(req.body)
 
-        res.status(201).json({ message: "Mapping added successfully.", success: true, response: subscriptionPkgAPIQuotaMapping });
+        res.status(201).json({ message: "Mapping added successfully.", success: true, response: subscriptionPkgAPIQuota });
     } catch (err) {
         console.log(err)
         res
@@ -491,10 +535,10 @@ exports.escalateRequest = async(req, res) => {
         let result = null;
         if(req.token.adminDetails.adminRole == "L1"){
             pendingWith="L2";
-            result = await paymentHistory.updatePaymentHistoryForEscalate({pendingWith, paymentId});
+            result = await paymentHistoryService.updatePaymentHistoryForEscalate({pendingWith, paymentId});
         }if(req.token.adminDetails.adminRole == "L2"){
             pendingWith="L2";
-            result = await paymentHistory.updatePaymentHistoryForEscalate({pendingWith, paymentId});
+            result = await paymentHistoryService.updatePaymentHistoryForEscalate({pendingWith, paymentId});
         }
         return res.status(200).send({ message: "Issue Escalated", success: true, response: result });
     } catch (err) {
@@ -562,10 +606,35 @@ exports.companiesFilter = async(req, res) => {
 exports.getAllCompanies = async(req, res) => {
     try {
         
-        let cmpns = await Companies.find();
-        // cmpns = cmpns.map(cmpn => cmpn.toObject());
+        data = await Debtor.find();
+            for(let i=0;i<data.length;i++) {
+                const dbtrs = await Debtor.find({gstin: data[i].gstin});
+                let debtordIds = dbtrs.map(item => item._id);
+        
+                let allEntries = await defaulterEntryService.findInvoicesPendingByDebtorIds( debtordIds, { $or: [ {status: constants.INVOICE_STATUS.PENDING} , {status: constants.INVOICE_STATUS.DEFAULTED}] }).populate("invoices")
+                data[i] = data[i].toJSON()
+                data[i].totalAmount = 0;
 
-        res.status(200).json({success: true, message: "All companies fetched", response: cmpns });
+                for( let elem of allEntries){
+                    // finding lowest duefrom date
+                    for(let invoice of elem.invoices){
+                        if(data[i].dueFrom){
+                            if(data[i].dueFrom > invoice.dueDate) {
+                                data[i].dueFrom = invoice.dueDate
+                            }
+                        } else {
+                            data[i].dueFrom = invoice.dueDate
+                        }
+                    }
+                    data[i].dueFrom = commonUtil.getDateInGeneralFormat(data[i].dueFrom)
+        
+                    //finding totalAmount
+                    data[i].totalAmount += Number(elem.totalAmount)
+                }
+        
+            }
+
+        res.status(200).json({success: true, message: "All companies fetched", response: data });
 
     } catch (err) {
         console.log(err)

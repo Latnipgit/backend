@@ -168,7 +168,7 @@ exports.companySearch = async(req, res) => {
     try{
         // find in subscription by userId and isActive  => get subscription Id
         // find Rem Quota mapp . limit remaining using sId
-        const updateRemQuota = await subscriptionService.updateRemQuota(req.token.userDetails);
+        const updateRemQuota = await subscriptionService.updateRemQuotaForAPI(req.token.userDetails, req.originalUrl);
 
         if(updateRemQuota){
 
@@ -202,10 +202,10 @@ exports.companySearch = async(req, res) => {
             }
             if (!data){
                 res.status(404).send({ message: "Not found company ", success: false, response: ""});
-            }else{
+            } else{
                 res.status(200).json({ message: "Search successful", success: true, response: data});
             }
-        } else{
+        } else {
             res.status(200).send({ message: "you don't have an active subscription. Please purchase one suubscription to continue.", success: false, response: ""});
         }
     } catch (error) {

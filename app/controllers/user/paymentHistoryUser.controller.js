@@ -165,14 +165,14 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
                           }
                       },
                       {
-                          $lookup: {
-                              from: "documents", // Replace with the actual collection name
-                              localField: "transportationDocument",
-                              foreignField: "_id",
-                              as: "transportationDocument"
-                          }
-                      },
-                      {
+                        $lookup: {
+                            from: "documents", // Replace with the actual collection name
+                            localField: "transportationDocument",
+                            foreignField: "_id",
+                            as: "transportationDocument"
+                        }
+                    },
+                    {
                         $lookup: {
                             from: "documents", // Replace with the actual collection name
                             localField: "otherDocuments",
@@ -345,7 +345,7 @@ exports.uploadSupportingDocuments = async(req, res) => {
         
         for( let item of req.body.attachment){
           let invoices = pHistory.defaulterEntry.invoices
-          let invoice =  invoices.find( obj => obj._id.toString() == item._id)
+          let invoice =  invoices.find( obj => obj._id.toString() == item.invoiceId)
           if(invoice){
               if(item.purchaseOrderDocument)
                 invoice.purchaseOrderDocument = mongoose.Types.ObjectId(item.purchaseOrderDocument)
@@ -355,8 +355,6 @@ exports.uploadSupportingDocuments = async(req, res) => {
                 invoice.invoiceDocument = mongoose.Types.ObjectId(item.invoiceDocument)
               if(item.transportationDocument)
                 invoice.transportationDocument = mongoose.Types.ObjectId(item.transportationDocument)
-              if(item.otherDocuments)
-                invoice.otherDocuments = mongoose.Types.ObjectId(item.otherDocuments)
               await invoice.save()
           }
         }

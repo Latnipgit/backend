@@ -2,6 +2,7 @@ const db = require("../../models/common");
 const Documents = db.documents;
 const constants = require('../../constants/userConstants');
 const service = require('../../service/common');
+const { output } = require("pdfkit");
 const AzureBlobService = service.azureBlobService;
 
 // exports.uploadFile = async (req, res) => {
@@ -62,15 +63,33 @@ const upload = async (req, file) => {
 
 exports.uploadFile = async (req, res) => {
     try {
-        const files = req.files;
+        const file = req.file;
 
+        if (!file) {
+            return res.status(400).send('No files uploaded.');
+        }
+
+        const uploadResults = await upload(req, file);
+
+        res.json({ message: 'Files Uploaded successfully.', success: true, response: uploadResults });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Something went wrong", success: false });
+    }
+};
+
+
+exports.uploadMultipleFile = async (req, res) => {
+    try {
+        let out = [];
+        let files = req.files
         if (!files || files.length === 0) {
             return res.status(400).send('No files uploaded.');
         }
 
-        const uploadResults = await Promise.all(files.map(file => upload(req, file)));
+        out  = await Promise.all(files.map(file => upload(req, file)));
+        res.json({message: 'File Uploaded successfully.', success: true, response: out});
 
-        res.json({ message: 'Files Uploaded successfully.', success: true, response: uploadResults });
     } catch (error) {
         console.log(error);
         res.status(500).send({ message: "Something went wrong", success: false });

@@ -29,7 +29,8 @@ exports.moveToDocumentsNeededQueue = function(escObj) {
             status: escObj.status,
             pendingWith: escObj.pendingWith,
             documentsPendingSince: escObj.documentsPendingSince,
-            documentsRequired: escObj.documentsRequired,
+            documentsRequiredFromCreditor: escObj.documentsRequiredFromCreditor,
+            documentsRequiredFromDebtor: escObj.documentsRequiredFromDebtor,
             isDocumentsRequiredByCreditor: escObj.isDocumentsRequiredByCreditor,
             adminRemarksForDebtor: escObj.adminRemarksForDebtor,
             adminRemarksForCreditor: escObj.adminRemarksForCreditor

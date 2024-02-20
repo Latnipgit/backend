@@ -9,7 +9,8 @@ module.exports = mongoose => {
         password: String,
         adminRole: String,
         passwordChangeNeeded: Boolean,
-        token: { type: String }
+        token: { type: String },
+        refreshToken: { type: String }
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

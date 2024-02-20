@@ -14,6 +14,7 @@ module.exports = mongoose => {
         city: String,
         state: String,
         token: { type: String },
+        refreshToken: { type: String },
         permissions: [{ type: String}],
         companies: [{
             type: mongoose.Schema.Types.ObjectId,

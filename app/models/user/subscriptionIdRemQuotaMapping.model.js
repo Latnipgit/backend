@@ -2,7 +2,7 @@ module.exports = mongoose => {
     var schema = mongoose.Schema({
         subscriptionId: String,
         apiName: String,
-        limitRemaining: String
+        limitRemaining: Number
     }, { timestamps: true });
 
     schema.method("toJSON", function() {

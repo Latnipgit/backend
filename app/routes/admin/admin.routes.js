@@ -23,6 +23,7 @@ module.exports = app => {
 
     // subscription pkg routes
     router.post("/addSubscriptionPkg",auth, admin.addSubscriptionPkg);
+    router.post("/getServicesListForSubPkg",auth, admin.getServicesListForSubPkg);
     router.get("/getAllSubscriptionPkg",auth, admin.getAllSubscriptionPkg);
     router.post("/getSubscriptionPkgById",auth, admin.getSubscriptionPkgById);
     router.post("/updateSubscriptionPkgById",auth, admin.updateSubscriptionPkgById);
@@ -36,6 +37,7 @@ module.exports = app => {
     router.post("/deleteSubPkgAPIQtMappingById", auth, admin.deleteSubPkgAPIQtMappingById);
 
     router.post("/login", admin.authenticateAdmin);
+    router.post("/refreshToken", admin.refreshToken);
     router.post("/changePasswordUsingToken", admin.changePasswordUsingToken);
     router.post("/changePasswordUsingOldPass",auth, admin.changePasswordUsingOldPass);
     router.post("/forgetPassword", admin.forgetPassword);
