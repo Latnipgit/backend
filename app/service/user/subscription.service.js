@@ -13,7 +13,6 @@ exports.updateRemQuotaForAPI = async function(userDetails, apiURL) {
 
     let apiName = userConstants.API_NAME_URL_MAPPING_FOR_SUBSCRIPTION[apiURL]
     const sub = await Subscription.findOne({ userId: userDetails.id, isActive: true});
-    // console.log(sub)
     if(sub){
         const subRemMapp = await SubscriptionIdRemQuotaMapping.findOne({ subscriptionId : sub._id, apiName: apiName });
         if(subRemMapp){
