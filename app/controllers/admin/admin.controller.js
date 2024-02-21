@@ -652,6 +652,13 @@ exports.getCompanyCountStateWise = async(req, res) => {
                     _id: "$state",
                     totalCompanies: { $sum: 1 }, 
                 }
+            },
+            {
+                $project: {
+                    state: "$_id",
+                    totalCompanies: 1,
+                    _id: 0
+                }
             }
         ]);
         return res.status(200).json({success: true, message: "statewise result", response: result });
@@ -675,6 +682,13 @@ exports.getCompanyCountCityWiseForState = async (req, res) => {
                 $group: {
                     _id: "$city",
                     totalCompanies: { $sum: 1 } 
+                }
+            },
+            {
+                $project: {
+                    city: "$_id",
+                    totalCompanies: 1,
+                    _id: 0
                 }
             }
         ]);
