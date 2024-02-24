@@ -94,16 +94,17 @@ exports.askForSupportingDocument = async(req, res) => {
                 adminRemarksForCreditor: req.body.adminRemarksForCreditor
             }).populate(["defaulterEntry", "defaulterEntry.debtor"]);
                         //let paymentHistoryAndInvoice =  await result.populate("invoice");
-            let creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId)
+            // let creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId)
             
             // mail for debtor
             let replacements = [];
             // replacements.push({target: "password", value: password })
             let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
-     
-            mailObj.to = transaction.defaulterEntry.debtor.customerEmail
-            mailUtility.sendMail(mailObj)
-     
+            
+            if(transaction.defaulterEntry?.debtor?.customerEmail){
+                mailObj.to = transaction.defaulterEntry?.debtor.customerEmail
+                mailUtility.sendMail(mailObj)
+            }
             return res.status(200).send({ message: "Transaction has now been moved to Document Needed Queue and mail is sent to Creditor and Debtor", success: true, response: transaction });
 
         // return res.status(409).send({ message: "Not Implemented", success: true, response: result });
