@@ -3,6 +3,8 @@ const user_db = require("../../models/user/");
 
 const PaymentHistory = db.paymentHistory;
 const Companies = user_db.companies;
+const Debtors = user_db.debtors;
+const Users = user_db.user;
 const DefaulterEntry = user_db.defaulterEntry;
 const constants = require('../../constants/userConstants');
 const service = require("../../service/admin/");
@@ -92,17 +94,33 @@ exports.askForSupportingDocument = async(req, res) => {
                 isDocumentsRequiredByDebtor: true,
                 adminRemarksForDebtor: req.body.adminRemarksForDebtor,
                 adminRemarksForCreditor: req.body.adminRemarksForCreditor
-            }).populate(["defaulterEntry", "defaulterEntry.debtor"]);
+            // }).populate(["defaulterEntry", "defaulterEntry.debtor"]);
+            }).populate([
+                {path: "defaulterEntry"},
+                {path: "defaulterEntry.debtor"},
+                { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
+            ]);
                         //let paymentHistoryAndInvoice =  await result.populate("invoice");
-            let creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId)
+            // let creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId);
             
             // mail for debtor
             let replacements = [];
-            // replacements.push({target: "password", value: password })
             let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
-     
             mailObj.to = transaction.defaulterEntry.debtor.customerEmail
             mailUtility.sendMail(mailObj)
+
+            if(req.body.isDocumentsRequiredByCreditor){
+                let credMail = await Users.find({
+                    companies: { $elemMatch: { $eq: transaction.defaulterEntry.creditorCompanyId } }, // Match companyId within the companies array
+                    role: "OWNER"
+                }).select("emailId");
+
+                // mail for creditor
+                let creditorReplacements = [];
+                let mailObj2 = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_CREDITOR, creditorReplacements)
+                mailObj2.to = credMail
+                mailUtility.sendMail(mailObj2)
+            }//658c45c62a986850aee382d9
      
             return res.status(200).send({ message: "Transaction has now been moved to Document Needed Queue and mail is sent to Creditor and Debtor", success: true, response: transaction });
 

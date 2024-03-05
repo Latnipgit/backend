@@ -338,6 +338,11 @@ exports.uploadSupportingDocuments = async(req, res) => {
         pHistory.debtorcacertificate = mongoose.Types.ObjectId(req.body.debtorcacertificate)
         pHistory.debtoradditionaldocuments = mongoose.Types.ObjectId(req.body.debtoradditionaldocuments)
         pHistory.isDocumentsRequiredByDebtor = false
+        
+        // let replacements = [];
+        // let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
+        // mailObj.to = "test@gmail.com"
+        // mailUtility.sendMail(mailObj)
       }
       else if(req.body.type == "CREDITOR"){
         pHistory.creditorcacertificate =  mongoose.Types.ObjectId(req.body.creditorcacertificate)
@@ -360,6 +365,10 @@ exports.uploadSupportingDocuments = async(req, res) => {
         }
         pHistory.isDocumentsRequiredByCreditor = false
 
+        // let replacements = [];
+        // let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
+        // mailObj.to = "test@gmail.com"
+        // mailUtility.sendMail(mailObj)
       }
       if(!(pHistory.isDocumentsRequiredByCreditor && pHistory.isDocumentsRequiredByDebtor)){
         pHistory.status = constants.PAYMENT_HISTORY_STATUS.PENDING
