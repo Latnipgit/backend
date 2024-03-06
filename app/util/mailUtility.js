@@ -20,6 +20,7 @@ exports.sendMail = (mailObj) => {
     mailTransporter.sendMail(mailDetails, function(err, data) {
         if(err) {
             console.log('Error Occurred while sending email', err);
+            console.log('Failed email details: ', mailDetails);
         }
     });
 }

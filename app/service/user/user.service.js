@@ -85,4 +85,12 @@ exports.getUsersWithActiveSubscriptionByCompanyId = async function(companyId) {
 
 };
 
+exports.getCompanyOwner = function(creditorCompanyId) {
+    return User.find({
+        companies: { $elemMatch: { $eq: creditorCompanyId } }, // Match companyId within the companies array
+        role: "OWNER"
+    });
+};
+
+
   

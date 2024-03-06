@@ -8,6 +8,7 @@ const Users = user_db.user;
 const DefaulterEntry = user_db.defaulterEntry;
 const constants = require('../../constants/userConstants');
 const service = require("../../service/admin/");
+const userService = require("../../service/user/user.service");
 const paymentHistoryService = service.paymentHistoryService
 const mailController=  require('../../controllers/common/mailTemplates.controller')
 const mailUtility = require('../../util/mailUtility')
@@ -110,10 +111,7 @@ exports.askForSupportingDocument = async(req, res) => {
             mailUtility.sendMail(mailObj)
 
             if(req.body.isDocumentsRequiredByCreditor){
-                let credMail = await Users.find({
-                    companies: { $elemMatch: { $eq: transaction.defaulterEntry.creditorCompanyId } }, // Match companyId within the companies array
-                    role: "OWNER"
-                }).select("emailId");
+                let credMail = await userService.getCompanyOwner(transaction.defaulterEntry.creditorCompanyId).select("emailId");
 
                 // mail for creditor
                 let creditorReplacements = [];

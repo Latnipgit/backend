@@ -331,18 +331,20 @@ exports.uploadSupportingDocuments = async(req, res) => {
 
       const pHistory = await PaymentHistory.findOne({ _id: req.body.paymentId }).populate(
         [
-            // { path: 'defaulterEntry' },
+            // { path: 'defaulterEntry.debtor' },
             { path: 'defaulterEntry', populate: ['invoices']},
+            { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
         ]);
       if(req.body.type == "DEBTOR"){
         pHistory.debtorcacertificate = mongoose.Types.ObjectId(req.body.debtorcacertificate)
         pHistory.debtoradditionaldocuments = mongoose.Types.ObjectId(req.body.debtoradditionaldocuments)
         pHistory.isDocumentsRequiredByDebtor = false
         
-        // let replacements = [];
-        // let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
-        // mailObj.to = "test@gmail.com"
-        // mailUtility.sendMail(mailObj)
+        let replacements = [];
+        let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_DEBTOR, replacements)
+        mailObj.to = pHistory.defaulterEntry.debtor.customerEmail
+        mailUtility.sendMail(mailObj)
+
       }
       else if(req.body.type == "CREDITOR"){
         pHistory.creditorcacertificate =  mongoose.Types.ObjectId(req.body.creditorcacertificate)
@@ -365,10 +367,13 @@ exports.uploadSupportingDocuments = async(req, res) => {
         }
         pHistory.isDocumentsRequiredByCreditor = false
 
-        // let replacements = [];
-        // let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
-        // mailObj.to = "test@gmail.com"
-        // mailUtility.sendMail(mailObj)
+        let credMail = await userService.getCompanyOwner(pHistory.defaulterEntry.creditorCompanyId).select("emailId");
+
+        let replacements = [];
+        let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_CREDITOR, replacements)
+        mailObj.to = credMail
+        mailUtility.sendMail(mailObj)
+
       }
       if(!(pHistory.isDocumentsRequiredByCreditor && pHistory.isDocumentsRequiredByDebtor)){
         pHistory.status = constants.PAYMENT_HISTORY_STATUS.PENDING
