@@ -80,3 +80,13 @@ exports.createPaymentHistory = function(details, newStatus, newPendingWith, newA
       approvedByCreditor: newApprovedByCreditor
   });
 }
+
+exports.getDocumentsRequiredFromPaymentId = async function(paymentId, userType){
+    let pH = await PaymentHistory.findOne({ _id: paymentId}).populate(
+        [
+            { path: 'defaulterEntry', populate: [{path: 'invoices', populate: ['purchaseOrderDocument', 'challanDocument', 'invoiceDocument', 'transportationDocument'] }]}
+        ]);
+    // console.log(pH)
+    console.log(pH);
+    return pH;
+}

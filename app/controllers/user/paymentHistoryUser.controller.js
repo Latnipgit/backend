@@ -1,11 +1,17 @@
 const db = require("../../models/admin/");
 const user_db = require("../../models/user");
 const mongoose = require('mongoose');
-
+const uService = require("../../service/user/");
+const userService = uService.user;
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
 const PaymentHistory = db.paymentHistory;
 const SendBillTrans = user_db.sendBillTransactions;
 const Debtors = user_db.debtors;
 const constants = require('../../constants/userConstants');
+const mailController=  require('../../controllers/common/mailTemplates.controller')
+const mailUtility = require('../../util/mailUtility')
 
 exports.confirmPaymentByCreditor = async(req, res) => {
     try {
@@ -328,6 +334,12 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
 
 exports.uploadSupportingDocuments = async(req, res) => {
   try {
+      if(req.body.token){
+        let token =  jwtUtil.verifyCustomToken(req.body.token)
+        let tokenType = token.tokenType
+        req.body.paymentId = token.tokenDetails.paymentId;
+        req.body.type = token.tokenDetails.type;
+      }
 
       const pHistory = await PaymentHistory.findOne({ _id: req.body.paymentId }).populate(
         [

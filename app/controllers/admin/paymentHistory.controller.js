@@ -12,6 +12,10 @@ const userService = require("../../service/user/user.service");
 const paymentHistoryService = service.paymentHistoryService
 const mailController=  require('../../controllers/common/mailTemplates.controller')
 const mailUtility = require('../../util/mailUtility')
+const crypto = require("crypto");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
 
 
 exports.getAllApprovedTransactions = async(req, res) => {
@@ -106,6 +110,10 @@ exports.askForSupportingDocument = async(req, res) => {
             
             // mail for debtor
             let replacements = [];
+            linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "DEBTOR"}, "CUSTOM");
+            const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document/${linkToken}`;
+            replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
+
             let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
             mailObj.to = transaction.defaulterEntry.debtor.customerEmail
             mailUtility.sendMail(mailObj)
@@ -115,6 +123,10 @@ exports.askForSupportingDocument = async(req, res) => {
 
                 // mail for creditor
                 let creditorReplacements = [];
+                linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "CREDITOR"}, "CUSTOM");
+                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document/${linkToken}`;
+                creditorReplacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
+
                 let mailObj2 = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_CREDITOR, creditorReplacements)
                 mailObj2.to = credMail
                 mailUtility.sendMail(mailObj2)
@@ -132,3 +144,20 @@ exports.askForSupportingDocument = async(req, res) => {
 };
 
 
+
+exports.getDocumentsRequiredFromPaymentId = async(req, res) => {
+    try {
+        const token = jwtUtil.verifyCustomToken(req.body.token);
+        console.log(token);
+        const _paymentId = token.tokenDetails.paymentId;
+        const _userType = token.tokenDetails.type;
+        const result = await service.paymentHistoryService.getDocumentsRequiredFromPaymentId(_paymentId, _userType);
+        return res.status(200).send({ message: "Records returned", success: true, response: result });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", reponse: "", success: false });
+}
+}
