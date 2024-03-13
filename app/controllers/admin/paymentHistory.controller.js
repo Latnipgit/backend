@@ -111,7 +111,7 @@ exports.askForSupportingDocument = async(req, res) => {
             // mail for debtor
             let replacements = [];
             linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "DEBTOR"}, "CUSTOM");
-            const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document/${linkToken}`;
+            const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}`;
             replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
             let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
@@ -124,7 +124,7 @@ exports.askForSupportingDocument = async(req, res) => {
                 // mail for creditor
                 let creditorReplacements = [];
                 linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "CREDITOR"}, "CUSTOM");
-                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document/${linkToken}`;
+                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}`;
                 creditorReplacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
                 let mailObj2 = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_CREDITOR, creditorReplacements)
