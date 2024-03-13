@@ -87,8 +87,6 @@ exports.approveOrRejectPayment = async(req, res) => {
 
 exports.askForSupportingDocument = async(req, res) => {
     try {
-            
-            // status = constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED;
             let transaction = await paymentHistoryService.moveToDocumentsNeededQueue({
                 status: constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED,
                 paymentId: req.body.paymentId,
@@ -99,24 +97,27 @@ exports.askForSupportingDocument = async(req, res) => {
                 isDocumentsRequiredByDebtor: true,
                 adminRemarksForDebtor: req.body.adminRemarksForDebtor,
                 adminRemarksForCreditor: req.body.adminRemarksForCreditor
-            // }).populate(["defaulterEntry", "defaulterEntry.debtor"]);
             }).populate([
                 {path: "defaulterEntry"},
+                { path: 'defaulterEntry', populate: ['invoices']},
                 {path: "defaulterEntry.debtor"},
                 { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
             ]);
-                        //let paymentHistoryAndInvoice =  await result.populate("invoice");
-            // let creditorDetails = await Companies.findById(transaction.defaulterEntry.creditorCompanyId);
             
             // mail for debtor
             let replacements = [];
             linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "DEBTOR"}, "CUSTOM");
-            const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}`;
+            const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}&userType=DEBTOR`;
             replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
             let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
             mailObj.to = transaction.defaulterEntry.debtor.customerEmail
-            mailUtility.sendMail(mailObj)
+
+            let debtorDocumentIds = []
+            debtorDocumentIds.push(transaction.debtorcacertificate);
+            debtorDocumentIds.push(...transaction.debtoradditionaldocuments);
+
+            mailUtility.sendEmailWithAttachments(mailObj, debtorDocumentIds);
 
             if(req.body.isDocumentsRequiredByCreditor){
                 let credMail = await userService.getCompanyOwner(transaction.defaulterEntry.creditorCompanyId).select("emailId");
@@ -124,17 +125,47 @@ exports.askForSupportingDocument = async(req, res) => {
                 // mail for creditor
                 let creditorReplacements = [];
                 linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "CREDITOR"}, "CUSTOM");
-                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}`;
+                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}&userType=CREDITOR`;
                 creditorReplacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
                 let mailObj2 = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_CREDITOR, creditorReplacements)
                 mailObj2.to = credMail
-                mailUtility.sendMail(mailObj2)
-            }//658c45c62a986850aee382d9
+
+                let credDocumentIds = []
+                if (transaction.creditorcacertificate) {
+                    credDocumentIds.push(transaction.creditorcacertificate);
+                }
+                if (transaction.creditoradditionaldocuments) {
+                    credDocumentIds.push(...transaction.creditoradditionaldocuments);
+                }
+            
+                let invoices = transaction.defaulterEntry.invoices;
+                
+                for (let i = 0; i < invoices.length; i++) {
+                    let invoice = invoices[i];
+                    let invoiceDocuments = []; 
+
+                    if (invoice.purchaseOrderDocument) {
+                        invoiceDocuments.push(invoice.purchaseOrderDocument);
+                    }
+                    if (invoice.challanDocument) {
+                        invoiceDocuments.push(invoice.challanDocument);
+                    }
+                    if (invoice.invoiceDocument) {
+                        invoiceDocuments.push(invoice.invoiceDocument);
+                    }
+                    if (invoice.transportationDocument) {
+                        invoiceDocuments.push(invoice.transportationDocument);
+                    }
+
+                    credDocumentIds.push(...invoiceDocuments);
+                }
+
+                mailUtility.sendEmailWithAttachments(mailObj2, credDocumentIds)
+            }
      
             return res.status(200).send({ message: "Transaction has now been moved to Document Needed Queue and mail is sent to Creditor and Debtor", success: true, response: transaction });
 
-        // return res.status(409).send({ message: "Not Implemented", success: true, response: result });
     } catch (err) {
         console.log(err)
         res
