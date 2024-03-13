@@ -17,6 +17,7 @@ const SendBillTrans = user_db.sendBillTransactions;
 const DefaulterEntry = user_db.defaulterEntry;
 const Questions = user_db.questions;
 const Companies = user_db.companies;
+const Debtor = user_db.debtors;
 const Token = commondb.token;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -31,6 +32,7 @@ const crypto = require("crypto");
 const service = require("../../service/user/");
 const defaulterEntryService = service.defaulterEntry;
 const userService = service.user;
+const debtorService = service.debtor;
 
 exports.addAdmin = async(req, res) => {
 
@@ -601,6 +603,47 @@ exports.companiesFilter = async(req, res) => {
     }
 }
 
+exports.getAllCompanies = async(req, res) => {
+    try {
+        
+        data = await Debtor.find();
+            for(let i=0;i<data.length;i++) {
+                const dbtrs = await Debtor.find({gstin: data[i].gstin});
+                let debtordIds = dbtrs.map(item => item._id);
+        
+                let allEntries = await defaulterEntryService.findInvoicesPendingByDebtorIds( debtordIds, { $or: [ {status: constants.INVOICE_STATUS.PENDING} , {status: constants.INVOICE_STATUS.DEFAULTED}] }).populate("invoices")
+                data[i] = data[i].toJSON()
+                data[i].totalAmount = 0;
+
+                for( let elem of allEntries){
+                    // finding lowest duefrom date
+                    for(let invoice of elem.invoices){
+                        if(data[i].dueFrom){
+                            if(data[i].dueFrom > invoice.dueDate) {
+                                data[i].dueFrom = invoice.dueDate
+                            }
+                        } else {
+                            data[i].dueFrom = invoice.dueDate
+                        }
+                    }
+                    data[i].dueFrom = commonUtil.getDateInGeneralFormat(data[i].dueFrom)
+        
+                    //finding totalAmount
+                    data[i].totalAmount += Number(elem.totalAmount)
+                }
+        
+            }
+
+        res.status(200).json({success: true, message: "All companies fetched", response: data });
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+}
+
 exports.getCompanyCountStateWise = async(req, res) => {
     try {
         const result = await Companies.aggregate([
@@ -608,6 +651,13 @@ exports.getCompanyCountStateWise = async(req, res) => {
                 $group: {
                     _id: "$state",
                     totalCompanies: { $sum: 1 }, 
+                }
+            },
+            {
+                $project: {
+                    state: "$_id",
+                    totalCompanies: 1,
+                    _id: 0
                 }
             }
         ]);
@@ -632,6 +682,13 @@ exports.getCompanyCountCityWiseForState = async (req, res) => {
                 $group: {
                     _id: "$city",
                     totalCompanies: { $sum: 1 } 
+                }
+            },
+            {
+                $project: {
+                    city: "$_id",
+                    totalCompanies: 1,
+                    _id: 0
                 }
             }
         ]);

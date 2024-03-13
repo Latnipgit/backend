@@ -1,11 +1,17 @@
 const db = require("../../models/admin/");
 const user_db = require("../../models/user");
 const mongoose = require('mongoose');
-
+const uService = require("../../service/user/");
+const userService = uService.user;
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
 const PaymentHistory = db.paymentHistory;
 const SendBillTrans = user_db.sendBillTransactions;
 const Debtors = user_db.debtors;
 const constants = require('../../constants/userConstants');
+const mailController=  require('../../controllers/common/mailTemplates.controller')
+const mailUtility = require('../../util/mailUtility')
 
 exports.confirmPaymentByCreditor = async(req, res) => {
     try {
@@ -328,16 +334,29 @@ exports.getTransactionsPendingForDocs = async(req, res) => {
 
 exports.uploadSupportingDocuments = async(req, res) => {
   try {
+      if(req.body.token){
+        let token =  jwtUtil.verifyCustomToken(req.body.token)
+        let tokenType = token.tokenType
+        req.body.paymentId = token.tokenDetails.paymentId;
+        req.body.type = token.tokenDetails.type;
+      }
 
       const pHistory = await PaymentHistory.findOne({ _id: req.body.paymentId }).populate(
         [
-            // { path: 'defaulterEntry' },
+            // { path: 'defaulterEntry.debtor' },
             { path: 'defaulterEntry', populate: ['invoices']},
+            { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
         ]);
       if(req.body.type == "DEBTOR"){
         pHistory.debtorcacertificate = mongoose.Types.ObjectId(req.body.debtorcacertificate)
         pHistory.debtoradditionaldocuments = mongoose.Types.ObjectId(req.body.debtoradditionaldocuments)
         pHistory.isDocumentsRequiredByDebtor = false
+        
+        let replacements = [];
+        let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_DEBTOR, replacements)
+        mailObj.to = pHistory.defaulterEntry.debtor.customerEmail
+        mailUtility.sendMail(mailObj)
+
       }
       else if(req.body.type == "CREDITOR"){
         pHistory.creditorcacertificate =  mongoose.Types.ObjectId(req.body.creditorcacertificate)
@@ -359,6 +378,13 @@ exports.uploadSupportingDocuments = async(req, res) => {
           }
         }
         pHistory.isDocumentsRequiredByCreditor = false
+
+        let credMail = await userService.getCompanyOwner(pHistory.defaulterEntry.creditorCompanyId).select("emailId");
+
+        let replacements = [];
+        let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_CREDITOR, replacements)
+        mailObj.to = credMail
+        mailUtility.sendMail(mailObj)
 
       }
       if(!(pHistory.isDocumentsRequiredByCreditor && pHistory.isDocumentsRequiredByDebtor)){

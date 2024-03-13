@@ -82,6 +82,30 @@ exports.generateAdminRefreshToken = (admin) => {
     return token;
 }
 
+exports.generateCustomToken = (object, tType) => {
+    let payload = {"tokenDetails" : object, "tokentype": tType}
+    const secret = process.env.TOKEN_KEY
+    const options = {
+        expiresIn: '1d',
+        // issuer: 'pickurpage.com',
+        // audience: admin._id.toString(),
+    }
+  
+    const token = jwt.sign(payload, secret, options); 
+
+    return token;
+}
+
+exports.verifyCustomToken = (token) => {
+    try {
+        const decoded = jwt.verify(token, process.env.TOKEN_KEY);
+        return decoded;
+    } catch (error) {
+        console.error('Token verification failed:', error.message);
+        return null;
+    }
+};
+
 
 // exports.signAccessTokenWithPayload = (payload) => {
 //     const secret = process.env.TOKEN_KEY

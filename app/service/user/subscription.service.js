@@ -30,7 +30,6 @@ exports.updateRemQuotaForAPI = async function(userDetails, apiURL) {
     } 
     return null;
 };
-
 exports.createSubscription = async(token, req, startDate, endDate) =>{
     
     const RSubscription = await Subscription.create({
