@@ -106,7 +106,8 @@ exports.askForSupportingDocument = async(req, res) => {
             
             // mail for debtor
             let replacements = [];
-            linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "DEBTOR"}, "CUSTOM");
+            let userDetailsId = await Users.findOne({"emailId": transaction.defaulterEntry.debtor.customerEmail})._id;
+            linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": userDetailsId, "type": "DEBTOR"}, "CUSTOM");
             const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}&userType=DEBTOR`;
             replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
@@ -124,7 +125,8 @@ exports.askForSupportingDocument = async(req, res) => {
 
                 // mail for creditor
                 let creditorReplacements = [];
-                linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "type": "CREDITOR"}, "CUSTOM");
+                let credUserDetailsId = await Users.findOne({"emailId": credMail})._id;
+                linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": credUserDetailsId, "type": "CREDITOR"}, "CUSTOM");
                 const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}&userType=CREDITOR`;
                 creditorReplacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 

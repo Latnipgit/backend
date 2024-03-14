@@ -1,4 +1,7 @@
 const db = require("../../models/common");
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const jwtUtil = require('../../util/jwtUtil')
 const Documents = db.documents;
 const constants = require('../../constants/userConstants');
 const service = require('../../service/common');
@@ -63,6 +66,10 @@ const upload = async (req, file) => {
 
 exports.uploadFile = async (req, res) => {
     try {
+        if(req.body.token){
+            let token =  jwtUtil.verifyCustomToken(req.body.token)
+            req.token = {userDetails: {id: token.userId}}
+        }
         const file = req.file;
 
         if (!file) {
@@ -81,6 +88,12 @@ exports.uploadFile = async (req, res) => {
 
 exports.uploadMultipleFile = async (req, res) => {
     try {
+        console.log(req.body.token )
+        if(req.body.token){
+            let token =  jwtUtil.verifyCustomToken(req.body.token)
+            req.token = {userDetails: {id: token.userId}}
+        }
+
         let out = [];
         let files = req.files
         if (!files || files.length === 0) {

@@ -16,9 +16,9 @@ module.exports = app => {
     router.post("/removeQuestionById",auth, admin.removeQuestion);
     router.get("/companiesFilter",auth, admin.companiesFilter);
     router.get("/getAllCompanies",auth, admin.getAllCompanies);
-    router.get("/getCompanyCountStateWise",auth, admin.getCompanyCountStateWise);
-    router.get("/getCompanyCountCityWiseForState",auth, admin.getCompanyCountCityWiseForState);
-    router.get("/getDisputedTransactionsStateCityWise",auth, admin.getDisputedTransactionsStateCityWise);
+    router.post("/getCompanyCountStateWise",auth, admin.getCompanyCountStateWise);
+    router.post("/getCompanyCountCityWiseForState",auth, admin.getCompanyCountCityWiseForState);
+    router.post("/getDisputedTransactionsStateCityWise",auth, admin.getDisputedTransactionsStateCityWise);
     // router.get("/getDefaulterCountForSelectedCompanies", auth, admin.getDefaulterCountForSelectedCompanies);
 
     // subscription pkg routes
