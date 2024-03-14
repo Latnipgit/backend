@@ -86,7 +86,7 @@ exports.generateCustomToken = (object, tType) => {
     let payload = {"tokenDetails" : object, "tokentype": tType}
     const secret = process.env.TOKEN_KEY
     const options = {
-        expiresIn: '1d',
+        expiresIn: '7d',
         // issuer: 'pickurpage.com',
         // audience: admin._id.toString(),
     }

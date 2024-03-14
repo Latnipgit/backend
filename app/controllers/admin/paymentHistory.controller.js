@@ -108,7 +108,7 @@ exports.askForSupportingDocument = async(req, res) => {
             let replacements = [];
             let userDetailsId = await Users.findOne({"emailId": transaction.defaulterEntry.debtor.customerEmail})._id;
             linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": userDetailsId, "type": "DEBTOR"}, "CUSTOM");
-            const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}&userType=DEBTOR`;
+            const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=${linkToken}&userType=DEBTOR`;
             replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
             let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
@@ -127,7 +127,7 @@ exports.askForSupportingDocument = async(req, res) => {
                 let creditorReplacements = [];
                 let credUserDetailsId = await Users.findOne({"emailId": credMail})._id;
                 linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": credUserDetailsId, "type": "CREDITOR"}, "CUSTOM");
-                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=/${linkToken}&userType=CREDITOR`;
+                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=${linkToken}&userType=CREDITOR`;
                 creditorReplacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
                 let mailObj2 = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_CREDITOR, creditorReplacements)
@@ -182,11 +182,14 @@ exports.getDocumentsRequiredFromPaymentId = async(req, res) => {
     try {
         const token = jwtUtil.verifyCustomToken(req.body.token);
         console.log(token);
-        const _paymentId = token.tokenDetails.paymentId;
-        const _userType = token.tokenDetails.type;
-        const result = await service.paymentHistoryService.getDocumentsRequiredFromPaymentId(_paymentId, _userType);
-        return res.status(200).send({ message: "Records returned", success: true, response: result });
-
+        if(token){
+            const _paymentId = token.tokenDetails.paymentId;
+            const _userType = token.tokenDetails.type;
+            const result = await service.paymentHistoryService.getDocumentsRequiredFromPaymentId(_paymentId, _userType);
+            return res.status(200).send({ message: "Records returned", success: true, response: result });
+        } else {
+            return res.status(401).send({ success: false, message: 'Failed to authenticate token.' });
+        }
     } catch (err) {
         console.log(err)
         res
