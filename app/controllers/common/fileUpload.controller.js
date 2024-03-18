@@ -68,7 +68,11 @@ exports.uploadFile = async (req, res) => {
     try {
         if(req.body.token){
             let token =  jwtUtil.verifyCustomToken(req.body.token)
-            req.token = {userDetails: {id: token.userId}}
+            if(token) {
+                req.token = {userDetails: {id: token.userId}}
+            } else {
+                return res.status(401).send({ success: false, message: 'Failed to authenticate token.' });
+            }    
         }
         const file = req.file;
 
@@ -91,7 +95,11 @@ exports.uploadMultipleFile = async (req, res) => {
         console.log(req.body.token )
         if(req.body.token){
             let token =  jwtUtil.verifyCustomToken(req.body.token)
-            req.token = {userDetails: {id: token.userId}}
+            if(token) {
+                req.token = {userDetails: {id: token.userId}}
+            } else {
+                return res.status(401).send({ success: false, message: 'Failed to authenticate token.' });
+            }    
         }
 
         let out = [];
