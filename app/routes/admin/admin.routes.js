@@ -11,6 +11,7 @@ module.exports = app => {
     router.get("/getLoginInfo", auth, admin.getLoginInfo);
     router.get("/getAllAdmins",auth,admin.getAllAdmins);
     router.post("/getalltransactions",auth,admin.getAllTransactions);
+    router.post("/getalltransactionsMerged",auth,admin.getalltransactionsMerged);
     router.get("/getAllUsers",auth, admin.getAllUsers);
     router.post("/escalateRequest",auth, admin.escalateRequest);
     router.post("/removeQuestionById",auth, admin.removeQuestion);

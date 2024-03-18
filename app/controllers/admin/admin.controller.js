@@ -291,19 +291,7 @@ exports.getAllTransactions = async(req, res) => {
             }
             return transaction;
           });
-          
-        let detailed = [];
-        // for(let i=0; i<transactions.length; i++){
-        //     sendBill = await SendBillTrans.findOne({_id: transactions[i].invoiceId}).populate("purchaseOrderDocument challanDocument invoiceDocument transportationDocument");
-        //     let paymentHistory = transactions[i];
 
-        //     detailed[i] = { paymentHistory, Invoice: sendBill
-        //         // , debtor: sendBill?.debtor
-        //      };
-        //     // detailed[i] =  await sendBill.populate("debtor");
-        // }
-        // console.log(detailed);
-        //user =  await userService.getUserById( user._id ).populate("companies");
         // return all transactions
         res.status(200).json({ message: "Transaction list fetched successfully.", success: true, response: transactions });
     } catch (err) {
@@ -313,6 +301,87 @@ exports.getAllTransactions = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 }
+
+exports.getalltransactionsMerged = async(req, res) => {
+    try {
+        let transactions = await PaymentHistory.find({ pendingWith: req.token.adminDetails.adminRole, status : {$ne: constants.PAYMENT_HISTORY_STATUS.APPROVED} }).populate(
+        [
+            { path: 'defaulterEntry' },
+            { path: 'defaulterEntry', populate: {
+              path: 'invoices', populate: [
+                'purchaseOrderDocument',
+                'challanDocument',
+                'invoiceDocument',
+                'transportationDocument',
+                'otherDocuments'
+              ]
+            }},
+            { path: 'defaulterEntry' , populate: {
+                path: 'debtor', populate: [
+                  'ratings']}
+            },
+            { path: 'defaulterEntry', populate: { path: 'creditorCompanyId', model: 'company' }},
+            { path: 'creditorcacertificate'},
+            { path: 'creditoradditionaldocuments'},
+            { path: 'debtorcacertificate'},
+            { path: 'debtoradditionaldocuments'},
+            { path: 'supportingDocuments'}    
+            // { path: 'defaulterEntry.creditorCompanyId', model: 'company' } // Populate the creditorCompanyId field
+        ]
+        );
+        
+        transactions = transactions.map(transaction => {
+            transaction = transaction.toJSON();
+            if (transaction.defaulterEntry && transaction.defaulterEntry.creditorCompanyId) {
+              transaction.defaulterEntry.creditor = transaction.defaulterEntry.creditorCompanyId;
+              delete transaction.defaulterEntry.creditorCompanyId;
+            }
+            return transaction;
+          });
+
+        let transBackup = [];
+        transBackup = transactions;
+
+        let resArray = [];
+        let countMap = new Map();
+        let count = 0;
+
+        for (let i = 0; i < transactions.length; i++) {
+            if(countMap.has(transactions[i].defaulterEntryId)){
+                delete transactions[i].defaulterEntry;
+                resArray[countMap.get(transactions[i].defaulterEntryId)].pHArray.push(transactions[i]);
+            }else{
+                let temp = {"defaulterEntry":transactions[i].defaulterEntry}
+                delete transactions[i].defaulterEntry;
+                temp["pHArray"] = [transactions[i]];
+
+                resArray[count] = temp;
+                countMap.set(transactions[i].defaulterEntryId, count);
+                count++;
+            }
+        }
+
+        // let countMap = new Map();
+        // for(let i = 0; i < transactions.length; i++){
+        //     if(countMap.has(transactions[i].defaulterEntryId)){
+        //         countMap.get(transactions[i].defaulterEntryId).push(transactions[i]);
+        //     }else{
+        //         countMap.set(transactions[i].defaulterEntryId, [transactions[i]]);
+        //     }
+        // }
+
+        // console.log(countMap);
+
+        // return all transactions
+        res.status(200).json({ message: "Transaction list fetched successfully.", success: true, response: resArray });
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send({ message: "Something went wrong", success: false });
+    }
+}
+
 exports.getAllUsers = async(req, res) => {
     try {
         let users = await User.find();
