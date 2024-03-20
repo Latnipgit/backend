@@ -164,7 +164,7 @@ exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newP
         isDispute: (reqbody.isDispute && reqbody.isDispute != null )? reqbody.isDispute : false,
         debtorRemarks: reqbody.debtorRemarks,
         disputeType: reqbody.disputeType,
-        supportingDocuments: reqbody.supportingDocuments
+        supportingDocuments: (reqbody.supportingDocuments && reqbody.supportingDocuments != "" ) ? reqbody.supportingDocuments : null 
     });
 }
 
