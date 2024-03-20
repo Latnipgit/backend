@@ -18,6 +18,18 @@ exports.getMailTemplate = async(mailType, replacements) => {
 };
 
 
+exports.getAllMailTemplate = async(req, res) => {
+    let templates;
+    try {
+        templates = await MailTemplates.find();
+        res.status(200).json({message: '.', success: true, response: templates});
+    } catch (err) {
+        console.log(err)
+    }
+
+};
+
+
 
 exports.addMailTemplate = async(req, res) => {
     try {
