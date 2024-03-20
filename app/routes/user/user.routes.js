@@ -10,13 +10,13 @@ module.exports = app => {
     // Create a new Tutorial
     router.post("/signup", user.signup);
 
-    router.post("/addEmployee",auth,Authorization.AuthorizeOwner,  user.addEmployee);
-    router.post("/getAllEmployee",auth,Authorization.AuthorizeOwner,  user.getAllEmployees);
+    router.post("/addEmployee", auth, Authorization.AuthorizeOwner, user.addEmployee);
+    router.post("/getAllEmployee", auth, Authorization.AuthorizeOwner, user.getAllEmployees);
     router.post("/login", user.authenticateUser);
     router.post("/refreshToken", user.refreshToken);
     router.post("/logout", auth, user.logout);
-    router.get("/getLoginInfo",auth, user.getLoginInfo);
-    router.post("/updateUserData",auth, user.updateUserData);
+    router.get("/getLoginInfo", auth, user.getLoginInfo);
+    router.post("/updateUserData", auth, user.updateUserData);
 
     // router.post("/changePassword",auth, user.changePassword);
     router.post("/changePasswordUsingToken", user.changePasswordUsingToken);
