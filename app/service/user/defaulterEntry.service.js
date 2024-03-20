@@ -155,7 +155,7 @@ exports.createPaymentHistory = function(reqbody, defaulterEntry, newStatus, newP
         amtPaid: reqbody.amtPaid,
         requestor: reqbody.requestor,
         paymentDate: reqbody.paymentDate,
-        paymentMode: reqbody.paymenttMode,
+        paymentMode: reqbody.paymentMode,
         attachments: reqbody.attachments,
         status: newStatus,
         pendingWith: newPendingWith,
