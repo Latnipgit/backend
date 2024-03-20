@@ -44,7 +44,7 @@ module.exports = app => {
     router.post("/forgetPassword", admin.forgetPassword);
     router.post("/password-reset/:userId/:token", admin.forgetPasswordLink);
 
-    router.post("/delete", auth, admin.deleteUser);
+    router.post("/delete", admin.deleteAdmin);
 
     app.use("/api/admin", router);
 };

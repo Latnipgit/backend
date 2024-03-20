@@ -810,7 +810,7 @@ exports.getDisputedTransactionsStateCityWise = async (req, res) => {
     }
 };
 
-exports.deleteUser = async (req, res) => {
+exports.deleteAdmin = async (req, res) => {
     console.log('dfd', req.body.emailId);
     try {
         await Admin.deleteOne({ emailId: req.body.emailId });
