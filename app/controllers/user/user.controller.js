@@ -12,7 +12,7 @@ const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
 const mailUtility = require('../../util/mailUtility')
 const commonUtil = require('../../util/commonUtil')
-const mailController=  require('../../controllers/common/mailTemplates.controller')
+const mailController = require('../../controllers/common/mailTemplates.controller')
 const config = process.env;
 const Joi = require("joi");
 const crypto = require("crypto");
@@ -21,11 +21,11 @@ const userService = service.user;
 const companyService = service.company;
 var constants = require('../../constants/userConstants');
 const debtorService = service.debtor;
-const subscriptionService =  service.subscription
+const subscriptionService = service.subscription
 
 
 
-exports.signup = async(req, res) => {
+exports.signup = async (req, res) => {
 
     try {
         const oldUser = await User.findOne({ emailId: req.body.emailId });
@@ -33,16 +33,16 @@ exports.signup = async(req, res) => {
             return res.status(409).send({ message: "User Already Exist.", success: false });
         }
         let password = commonUtil.generateRandomPassword()
-        if(process.env.ENV == "LOCAL"){
+        if (process.env.ENV == "LOCAL") {
             password = "password";
         }
 
         let encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create a Tutorial
-        req.body.role="OWNER";
-        req.body.password= encryptedPassword;
-        let user =await userService.addUser( req.body );
+        req.body.role = "OWNER";
+        req.body.password = encryptedPassword;
+        let user = await userService.addUser(req.body);
         let companyDetails = {
             companyName: req.body.companyName,
             gstin: req.body.gstin,
@@ -53,46 +53,46 @@ exports.signup = async(req, res) => {
         }
         const company = await companyService.addCompany(companyDetails)
         await userService.addCompanyToUser(user._id, company)
-        
-        user = await userService.getUserById( user._id ).populate("companies");
+
+        user = await userService.getUserById(user._id).populate("companies");
         req.body.debtorType = "Unknown"
         req.body.customerEmail = user.emailId
         req.body.customerMobile = user.phoneNumber
         const tempDebtor = await debtorService.addDebtor(req.body)
 
         // Adding Free Subscription by default for 5 years
-       let currentDate = new Date();
-       currentDate.setFullYear(currentDate.getFullYear() + 5);
-       endDate = currentDate.toISOString();
+        let currentDate = new Date();
+        currentDate.setFullYear(currentDate.getFullYear() + 5);
+        endDate = currentDate.toISOString();
 
-       req.body.subscriptionPkgId = constants.FREE_PLAN_SUBSCRIPTION_PKG_ID
-       req.body.tenure = "NO_LIMIT"
-       token = {
-        "userDetails":{
-            "id": user._id
+        req.body.subscriptionPkgId = constants.FREE_PLAN_SUBSCRIPTION_PKG_ID
+        req.body.tenure = "NO_LIMIT"
+        token = {
+            "userDetails": {
+                "id": user._id
+            }
         }
-       }
-       await  subscriptionService.createSubscription(token, req, currentDate, endDate)
+        await subscriptionService.createSubscription(token, req, currentDate, endDate)
 
-       let replacements = [];
-       replacements.push({target: "password", value: password })
-       mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
+        let replacements = [];
+        replacements.push({ target: "password", value: password })
+        mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
 
-       mailObj.to = req.body.emailId
-       mailUtility.sendMail(mailObj)
+        mailObj.to = req.body.emailId
+        mailUtility.sendMail(mailObj)
 
-       res.status(201).json({success: true, response: user });
+        res.status(201).json({ success: true, response: user });
 
     } catch (err) {
         console.log(err)
         res
             .status(500)
-              .send({ message: "Something went wrong", success: false });
+            .send({ message: "Something went wrong", success: false });
     }
 };
 
 
-exports.updateUserData = async(req, res) => {
+exports.updateUserData = async (req, res) => {
 
     try {
         const oldUser = await User.findOne({ emailId: req.token.userDetails.emailId });
@@ -101,24 +101,24 @@ exports.updateUserData = async(req, res) => {
         }
         let password = commonUtil.generateRandomPassword()
         let encryptedPassword = await bcrypt.hash(password, 10);
-        req.body.password= encryptedPassword;
-        let user =await userService.updateUser(req.token.userDetails.id, req.body);        
-        user = await userService.getUserById( user._id ).populate("companies");
+        req.body.password = encryptedPassword;
+        let user = await userService.updateUser(req.token.userDetails.id, req.body);
+        user = await userService.getUserById(user._id).populate("companies");
         user.token = jwtUtil.generateUserToken(user);
         user.refreshToken = jwtUtil.generateUserRefreshToken(user);
 
-       res.status(200).json({success: true, response: user });
+        res.status(200).json({ success: true, response: user });
 
     } catch (err) {
         console.log(err)
         res
             .status(500)
-              .send({ message: "Something went wrong", success: false });
+            .send({ message: "Something went wrong", success: false });
     }
 };
 
 
-exports.addEmployee = async(req, res) => {
+exports.addEmployee = async (req, res) => {
 
     try {
         const oldUser = await User.findOne({ emailId: req.body.emailId });
@@ -126,61 +126,61 @@ exports.addEmployee = async(req, res) => {
             return res.status(409).send({ message: "User Already Exist.", success: false });
         }
         let password = commonUtil.generateRandomPassword()
-        if(process.env.ENV == "LOCAL"){
+        if (process.env.ENV == "LOCAL") {
             password = "password";
         }
         let encryptedPassword = await bcrypt.hash(password, 10);
 
         // Create a Tutorial
-        req.body.role="EMPLOYEE";
-        req.body.password= encryptedPassword;
+        req.body.role = "EMPLOYEE";
+        req.body.password = encryptedPassword;
         req.body._id = undefined;
         let permissions = [];
         req.body.permissions.forEach(row => {
-            if(row.allowed)
+            if (row.allowed)
                 permissions.push(row.apiName);
         })
         req.body.permissions = permissions;
-        
-        let user = await userService.addUser( req.body );
+
+        let user = await userService.addUser(req.body);
 
         await userService.addCompanyToUser(user._id, req.token.companyDetails)
-        user =await  userService.getUserById( user._id ).populate("companies");
+        user = await userService.getUserById(user._id).populate("companies");
 
         // Adding Free Subscription by default for 5 years
         let currentDate = new Date();
         currentDate.setFullYear(currentDate.getFullYear() + 5);
         endDate = currentDate.toISOString();
- 
+
         req.body.subscriptionPkgId = constants.FREE_PLAN_SUBSCRIPTION_PKG_ID
         req.body.tenure = "NO_LIMIT"
         token = {
-         "userDetails":{
-             "id": user._id
-         }
+            "userDetails": {
+                "id": user._id
+            }
         }
-        await  subscriptionService.createSubscription(token, req, currentDate, endDate)
- 
-       let replacements = [];
-       replacements.push({target: "password", value: password })
-       mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
+        await subscriptionService.createSubscription(token, req, currentDate, endDate)
 
-       mailObj.to = req.body.emailId
-       mailUtility.sendMail(mailObj)
+        let replacements = [];
+        replacements.push({ target: "password", value: password })
+        mailObj = await mailController.getMailTemplate("USER_SIGNUP", replacements)
+
+        mailObj.to = req.body.emailId
+        mailUtility.sendMail(mailObj)
 
 
-       res.status(201).json({success: true, response: user });
+        res.status(201).json({ success: true, response: user });
 
     } catch (err) {
         console.log(err)
         res
             .status(500)
-              .send({ message: "Something went wrong", success: false });
+            .send({ message: "Something went wrong", success: false });
     }
 };
 
 
-exports.getAllEmployees = async(req, res) => {
+exports.getAllEmployees = async (req, res) => {
     try {
         let condition = { 'companies': { $in: [req.token.companyDetails.id] } };
         let emmployees = await User.find(condition);
@@ -193,20 +193,20 @@ exports.getAllEmployees = async(req, res) => {
             .send({ message: "Something went wrong", success: false });
     }
 };
-exports.changePasswordUsingToken = async(req, res) => {
+exports.changePasswordUsingToken = async (req, res) => {
     try {
         var decodedToken = jwt.verify(req.body.passwordChangeToken, config.TOKEN_KEY)
-        var query = {_id: decodedToken.userDetails.id, password: decodedToken.userDetails.password};
-        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) ,passwordChangeNeeded: false}};
-        console.log( await User.findOne(query))
-        let out =await User.findOneAndUpdate(query, newvalues)
-        
-        if(out) {
-            res.status(200).json({message: "Password changed successfully.",  success: true});
+        var query = { _id: decodedToken.userDetails.id, password: decodedToken.userDetails.password };
+        var newvalues = { $set: { password: await bcrypt.hash(req.body.password, 10), passwordChangeNeeded: false } };
+        console.log(await User.findOne(query))
+        let out = await User.findOneAndUpdate(query, newvalues)
+
+        if (out) {
+            res.status(200).json({ message: "Password changed successfully.", success: true });
         } else {
-            res.status(200).json({message: "Invalid details provided.",  success: false});
+            res.status(200).json({ message: "Invalid details provided.", success: false });
         }
-    }catch (err) {
+    } catch (err) {
         console.log(err)
         res
             .status(500)
@@ -217,7 +217,7 @@ exports.changePasswordUsingToken = async(req, res) => {
 
 
 
-exports.forgetPassword = async(req, res) => {
+exports.forgetPassword = async (req, res) => {
     try {
         const schema = Joi.object({ emailId: Joi.string().email().required() });
         const { error } = schema.validate(req.body);
@@ -225,7 +225,7 @@ exports.forgetPassword = async(req, res) => {
 
         const user = await User.findOne({ emailId: req.body.emailId });
         if (!user)
-            return res.status(400).send({message: "user with given email doesn't exist.",  success: false});
+            return res.status(400).send({ message: "user with given email doesn't exist.", success: false });
 
         let token = await Token.findOne({ userId: user._id });
         if (!token) {
@@ -237,13 +237,13 @@ exports.forgetPassword = async(req, res) => {
 
         const link = `${process.env.USER_FRONTEND_BASE_URL}/password-reset/${user._id}/${token.token}`;
         let replacements = [];
-        replacements.push({target: "PASSWORD_RESET_LINK", value: link })
+        replacements.push({ target: "PASSWORD_RESET_LINK", value: link })
         mailObj = await mailController.getMailTemplate("FORGET_PASSWORD", replacements)
- 
+
         mailObj.to = req.body.emailId
         mailUtility.sendMail(mailObj)
- 
-        res.status(200).json({message: "password reset link sent to your email account.",  success: true});
+
+        res.status(200).json({ message: "password reset link sent to your email account.", success: true });
 
     } catch (error) {
         console.log(err)
@@ -253,26 +253,26 @@ exports.forgetPassword = async(req, res) => {
     }
 };
 
-exports.forgetPasswordLink = async(req, res) => {
+exports.forgetPasswordLink = async (req, res) => {
     try {
         const schema = Joi.object({ password: Joi.string().required() });
         const { error } = schema.validate(req.body);
         if (error) return res.status(400).send(error.details[0].message);
 
         const user = await User.findById(req.params.userId);
-        if (!user) return res.status(400).send({message: "invalid link or expired.",  success: false});
+        if (!user) return res.status(400).send({ message: "invalid link or expired.", success: false });
 
         const token = await Token.findOne({
             userId: user._id,
             token: req.params.token,
         });
-        if (!token) return res.status(400).send({message: "Invalid link or expired.",  success: false});
+        if (!token) return res.status(400).send({ message: "Invalid link or expired.", success: false });
 
         user.password = await bcrypt.hash(req.body.password, 10);
         await user.save();
         await token.delete();
 
-        res.status(200).json({message: "password reset sucessfully.",  success: true});
+        res.status(200).json({ message: "password reset sucessfully.", success: true });
 
     } catch (error) {
         console.log(err)
@@ -282,20 +282,20 @@ exports.forgetPasswordLink = async(req, res) => {
     }
 };
 
-exports.changePasswordUsingOldPass = async(req, res) => {
+exports.changePasswordUsingOldPass = async (req, res) => {
     try {
-        var query = {_id: req.token.userDetails.id};
-        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) }};
-        let user =  await User.findOne(query)
-        
+        var query = { _id: req.token.userDetails.id };
+        var newvalues = { $set: { password: await bcrypt.hash(req.body.password, 10) } };
+        let user = await User.findOne(query)
+
         if (user && (await bcrypt.compare(req.body.oldPassword, user.password))) {
             user.password = await bcrypt.hash(req.body.password, 10);
             user.save()
-            res.status(200).json({message: "Password changed successfully.",  success: true});
+            res.status(200).json({ message: "Password changed successfully.", success: true });
         } else {
-            res.status(200).json({message: "Invalid details provided.",  success: false});
+            res.status(200).json({ message: "Invalid details provided.", success: false });
         }
-    }catch (err) {
+    } catch (err) {
         console.log(err)
         res
             .status(500)
@@ -305,7 +305,7 @@ exports.changePasswordUsingOldPass = async(req, res) => {
 
 
 
-exports.authenticateUser = async(req, res) => {
+exports.authenticateUser = async (req, res) => {
     try {
         const id = req.body.userName;
         // Validate if user exist in our database
@@ -314,13 +314,13 @@ exports.authenticateUser = async(req, res) => {
             res.status(200).send({ message: "User not found, Please signup", success: false });
         } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
             // Create token
-            if(!user.passwordChangeNeeded){
+            if (!user.passwordChangeNeeded) {
                 user.token = jwtUtil.generateUserToken(user);
                 user.refreshToken = jwtUtil.generateUserRefreshToken(user);
                 res.status(200).json({ message: "Logged in Successfully.", success: true, response: user });
             } else {
                 let passwordChangeToken = jwtUtil.generateUserToken(user);
-                res.status(200).json({ message: "Please change your password to continue.", success: false , passwordChangeNeeded: true, passwordChangeToken: passwordChangeToken});
+                res.status(200).json({ message: "Please change your password to continue.", success: false, passwordChangeNeeded: true, passwordChangeToken: passwordChangeToken });
             }
         } else {
             res.status(400).send({ message: "Invalid Credentials", success: false });
@@ -335,21 +335,21 @@ exports.authenticateUser = async(req, res) => {
 };
 
 
-exports.refreshToken = async(req, res) => {
+exports.refreshToken = async (req, res) => {
     try {
         const refreshToken = req.body.refreshToken;
         let payload = await jwtUtil.verifyRefreshToken(refreshToken)
         let accessToken = ""
         let refToken = ""
-        if(payload.companyDetails){
+        if (payload.companyDetails) {
             accessToken = jwtUtil.generateUserTokenWithCmpDetails(payload.userDetails, payload.companyDetails)
             refToken = jwtUtil.generateUserRefreshTokenWithCmpDetails(payload.userDetails, payload.companyDetails);
-        } else{
+        } else {
             accessToken = jwtUtil.generateUserToken(payload.userDetails)
             refToken = jwtUtil.generateUserRefreshToken(payload.userDetails);
         }
-  
-        res.send({ message: "New Token generated successfully.", success: true, response: {"token": accessToken, "refreshToken": refToken}})
+
+        res.send({ message: "New Token generated successfully.", success: true, response: { "token": accessToken, "refreshToken": refToken } })
 
     } catch (err) {
         console.log(err)
@@ -363,30 +363,30 @@ exports.refreshToken = async(req, res) => {
 exports.logout = (req, res) => {
     req.session.destroy();
 };
-exports.getLoginInfo = async(req, res) => {
+exports.getLoginInfo = async (req, res) => {
     let loggedInUser = await User.findOne({ _id: req.token.userDetails.id });
-    let company = await Companies.findOne({_id: req.token.companyDetails.id});
-    loggedInUser = {...loggedInUser.toJSON(),loggedInCompany : company};
+    let company = await Companies.findOne({ _id: req.token.companyDetails.id });
+    loggedInUser = { ...loggedInUser.toJSON(), loggedInCompany: company };
     if (loggedInUser) {
-        res.send({message: 'Login Info', success: true, response: loggedInUser});
+        res.send({ message: 'Login Info', success: true, response: loggedInUser });
     } else
         res.status(403).send({ message: "Unauthorised", success: false });
 };
 
 
 //Temporary APIs
-exports.changePasswordForce = async(req, res) => {
+exports.changePasswordForce = async (req, res) => {
     try {
-        var query = {emailId: req.body.emailId};
-        var newvalues = { $set: {password: await bcrypt.hash(req.body.password, 10) ,passwordChangeNeeded: false}};
-        let out =await User.findOneAndUpdate(query, newvalues)
-        
-        if(out) {
-            res.status(200).json({message: "Password changed successfully.",  success: true});
+        var query = { emailId: req.body.emailId };
+        var newvalues = { $set: { password: await bcrypt.hash(req.body.password, 10), passwordChangeNeeded: false } };
+        let out = await User.findOneAndUpdate(query, newvalues)
+
+        if (out) {
+            res.status(200).json({ message: "Password changed successfully.", success: true });
         } else {
-            res.status(200).json({message: "User does not exists.",  success: false});
+            res.status(200).json({ message: "User does not exists.", success: false });
         }
-    }catch (err) {
+    } catch (err) {
         console.log(err)
         res
             .status(500)
@@ -395,16 +395,16 @@ exports.changePasswordForce = async(req, res) => {
 };
 
 
-exports.deleteUser = async(req, res) => {
+exports.deleteUser = async (req, res) => {
 
     try {
-        await User.deleteOne({ emailId: req.body.emailId});
-        res.status(201).json({success: true, message: "User deleted successfully." });
+        await User.deleteOne({ emailId: req.body.emailId });
+        res.status(201).json({ success: true, message: "User deleted successfully." });
 
     } catch (err) {
         console.log(err)
         res
             .status(500)
-              .send({ message: "Something went wrong", success: false });
+            .send({ message: "Something went wrong", success: false });
     }
 };
