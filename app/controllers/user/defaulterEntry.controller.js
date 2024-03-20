@@ -1,6 +1,7 @@
 const db = require("../../models/user");
 const commondb = require("../../models/common");
 const Documents = commondb.documents;
+const Logs = commondb.logs;
 const admin_db = require("../../models/admin");
 const SendBillTransactions = db.sendBillTransactions;
 const DefaulterEntry = db.defaulterEntry; 
@@ -232,8 +233,18 @@ exports.initiatePaymentVerification = async(req, res) => {
         let pmtHistory;
         if(req.body.requestor == "DEBTOR"){
             pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, await  DefaulterEntry.findById(req.body.defaulterEntryId),  "PENDING", "L1", "false");
+            // create log
+            const log = await Logs.create({
+                pmtHistoryId: pmtHistory._id,  // pmtHistory id
+                logs: ["Payment recorded from debtor"]
+            });
         } else if(req.body.requestor == "CREDITOR"){
             pmtHistory = await defaulterEntryService.createPaymentHistory(req.body, await  DefaulterEntry.findById(req.body.defaulterEntryId),"APPROVED", "", "true");
+            // create log
+            const log = await Logs.create({
+                pmtHistoryId: pmtHistory._id,  // pmtHistory id
+                logs: ["Payment recorded from creditor"]  
+            });
             let deftEntry = await DefaulterEntry.findOne({_id: req.body.defaulterEntryId});
             deftEntry.totalAmount = deftEntry.totalAmount - req.body.amtPaid;
             deftEntry.save()
@@ -281,6 +292,11 @@ exports.initiatePaymentVerificationGeneral = async(req, res) => {
                 break
             }
         }
+        // create log
+        const log = await Logs.create({
+            pmtHistoryId: pmtHistory._id,  // pmtHistory id
+            logs: ["Payment recorded for General"]  
+        });
         return res.status(200).send({ message: "Payment verification started with payment history creation", success: true, response: this.pmtHistory });
     } catch (err) {
         console.log(err)

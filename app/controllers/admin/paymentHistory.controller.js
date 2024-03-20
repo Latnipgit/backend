@@ -1,5 +1,7 @@
 const db = require("../../models/admin/");
 const user_db = require("../../models/user/");
+const commondb = require("../../models/common");
+const Logs = commondb.logs;
 
 const PaymentHistory = db.paymentHistory;
 const Companies = user_db.companies;
@@ -68,6 +70,14 @@ exports.approveOrRejectPayment = async(req, res) => {
             }
             deftEntry.save()
 
+            const existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+            if (existingLog) {
+                // If the document exists, update the logs array
+                let temp = "Payment approved for amount "+result.amtPaid+".";
+                existingLog.logs.push(temp);
+                await existingLog.save();
+            }
+
             return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, deftEntry} });
 
         } else if(req.body.approve == false){
@@ -103,6 +113,13 @@ exports.askForSupportingDocument = async(req, res) => {
                 {path: "defaulterEntry.debtor"},
                 { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
             ]);
+            const existingLog = await Logs.findOne({ pmtHistoryId: req.body.paymentId });
+            if (existingLog) {
+                // If the document exists, update the logs array
+                let temp = "Payment record/history moved to documents needed queue";
+                existingLog.logs.push(temp);
+                await existingLog.save();
+            }
             
             // mail for debtor
             let replacements = [];
@@ -119,6 +136,14 @@ exports.askForSupportingDocument = async(req, res) => {
             debtorDocumentIds.push(...transaction.debtoradditionaldocuments);
 
             mailUtility.sendEmailWithAttachments(mailObj, debtorDocumentIds);
+
+            //log mail
+            if (existingLog) {
+                // If the document exists, update the logs array
+                let temp = "Mail sent to Debtor for providing supporting document";
+                existingLog.logs.push(temp);
+                await existingLog.save();
+            }
 
             if(req.body.isDocumentsRequiredByCreditor){
                 let credMail = await userService.getCompanyOwner(transaction.defaulterEntry.creditorCompanyId).select("emailId");
@@ -163,7 +188,15 @@ exports.askForSupportingDocument = async(req, res) => {
                     credDocumentIds.push(...invoiceDocuments);
                 }
 
-                mailUtility.sendEmailWithAttachments(mailObj2, credDocumentIds)
+                mailUtility.sendEmailWithAttachments(mailObj2, credDocumentIds);
+
+                //log mail
+                if (existingLog) {
+                    // If the document exists, update the logs array
+                    let temp = "Mail sent to Creditor for providing supporting document";
+                    existingLog.logs.push(temp);
+                    await existingLog.save();
+                }
             }
      
             return res.status(200).send({ message: "Transaction has now been moved to Document Needed Queue and mail is sent to Creditor and Debtor", success: true, response: transaction });
