@@ -6,10 +6,10 @@ module.exports = app => {
     const auth = require("../../middleware/authentication.js");
 
     // Create a new Tutorial
-    router.post("/add", /* auth, */ admin.addAdmin);
+    router.post("/add", auth, admin.addAdmin);
     router.post("/logout", auth, admin.logout);
     router.get("/getLoginInfo", auth, admin.getLoginInfo);
-    router.get("/getAllAdmins", /* auth, */ admin.getAllAdmins);
+    router.get("/getAllAdmins", auth, admin.getAllAdmins);
     router.post("/getalltransactions", auth, admin.getAllTransactions);
     router.post("/getalltransactionsMerged", auth, admin.getalltransactionsMerged);
     router.get("/getAllUsers", auth, admin.getAllUsers);
