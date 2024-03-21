@@ -1,5 +1,7 @@
 const db = require("../../models/admin");
 const user_db = require("../../models/user");
+const commondb = require("../../models/common");
+const Logs = commondb.logs;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
@@ -43,7 +45,7 @@ exports.moveDocumentsWithPendingDocBackToAdminQueue = function()  {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     console.log('PaymentHistory status updated for documents older than 7 days.');
 
-    return PaymentHistory.updateMany(
+    let result = PaymentHistory.updateMany(
         {
             documentsPendingSince: { $lte: sevenDaysAgo },
             status: { $ne: constants.PAYMENT_HISTORY_STATUS.PENDING }
@@ -54,6 +56,16 @@ exports.moveDocumentsWithPendingDocBackToAdminQueue = function()  {
              }
         }
     )
+    // update many logs using many payment histories
+    // Logs.updateMany(
+    //     {
+
+    //     },{
+        
+    //     }
+    // );
+
+    return result;
 }
 
 exports.addPaymentHistory = function(details, amount) {

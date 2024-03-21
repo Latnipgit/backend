@@ -32,6 +32,13 @@ exports.signup = async (req, res) => {
         if (oldUser) {
             return res.status(409).send({ message: "User Already Exist.", success: false });
         }
+
+        // Check if GSTIN already exists
+        const existingCompany = await Companies.findOne({ gstin: req.body.gstin });
+        if (existingCompany) {
+            return res.status(409).send({ message: "Company with given GSTIN Already Exists.", success: false });
+        }
+
         let password = commonUtil.generateRandomPassword()
         if (process.env.ENV == "LOCAL") {
             password = "password";

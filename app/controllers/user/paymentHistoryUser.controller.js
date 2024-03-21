@@ -1,5 +1,7 @@
 const db = require("../../models/admin/");
 const user_db = require("../../models/user");
+const commondb = require("../../models/common");
+const Logs = commondb.logs;
 const mongoose = require('mongoose');
 const uService = require("../../service/user/");
 const userService = uService.user;
@@ -26,6 +28,13 @@ exports.confirmPaymentByCreditor = async(req, res) => {
                 pendingWith: "",
                 approvedByCreditor: "true"
             }, {new: true});
+            const existingLog = await Logs.findOne({ pmtHistoryId: pHistory._id });
+            if (existingLog) {
+                // If the document exists, update the logs array
+                let temp = "Payment approved by creditor";
+                existingLog.logs.push(temp);
+                await existingLog.save();
+            }
     
         }else{
             const pmtHistory = await PaymentHistory.create({
@@ -35,6 +44,11 @@ exports.confirmPaymentByCreditor = async(req, res) => {
                 status: "APPROVED",
                 pendingWith: "",
                 approvedByCreditor: "true"
+            });
+            // create log
+            const log = await Logs.create({
+              pmtHistoryId: pmtHistory._id,  // pmtHistory id
+              logs: ["Payment approved by creditor"]  
             });
         };
         
@@ -347,6 +361,7 @@ exports.uploadSupportingDocuments = async(req, res) => {
             { path: 'defaulterEntry', populate: ['invoices']},
             { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
         ]);
+      const existingLog = await Logs.findOne({ pmtHistoryId: pHistory._id });
       if(req.body.type == "DEBTOR"){
         pHistory.debtorcacertificate = mongoose.Types.ObjectId(req.body.debtorcacertificate)
         pHistory.debtoradditionaldocuments = mongoose.Types.ObjectId(req.body.debtoradditionaldocuments)
@@ -356,6 +371,13 @@ exports.uploadSupportingDocuments = async(req, res) => {
         let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_DEBTOR, replacements)
         mailObj.to = pHistory.defaulterEntry.debtor.customerEmail
         mailUtility.sendMail(mailObj)
+        
+        if (existingLog) {
+            // If the document exists, update the logs array
+            let temp = "Debtor support document upload and confimation mail sent";
+            existingLog.logs.push(temp);
+            await existingLog.save();
+        }
 
       }
       else if(req.body.type == "CREDITOR"){
@@ -385,11 +407,23 @@ exports.uploadSupportingDocuments = async(req, res) => {
         let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_CREDITOR, replacements)
         mailObj.to = credMail
         mailUtility.sendMail(mailObj)
+        if (existingLog) {
+            // If the document exists, update the logs array
+            let temp = "Creditor support document upload and confimation mail sent";
+            existingLog.logs.push(temp);
+            await existingLog.save();
+        }
 
       }
       if(!(pHistory.isDocumentsRequiredByCreditor && pHistory.isDocumentsRequiredByDebtor)){
         pHistory.status = constants.PAYMENT_HISTORY_STATUS.PENDING
         pHistory.pendingWith = "L1"
+        if (existingLog) {
+            // If the document exists, update the logs array
+            let temp = "Payment Record pending with L1";
+            existingLog.logs.push(temp);
+            await existingLog.save();
+        }
       }
       await pHistory.save();
       
