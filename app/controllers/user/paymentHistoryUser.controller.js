@@ -28,12 +28,21 @@ exports.confirmPaymentByCreditor = async(req, res) => {
                 pendingWith: "",
                 approvedByCreditor: "true"
             }, {new: true});
-            const existingLog = await Logs.findOne({ pmtHistoryId: pHistory._id });
+            
+            //logging
+            let paymentId = pHistory._id.toString();
+            let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+            let logMsg = "Payment approved by creditor";
             if (existingLog) {
                 // If the document exists, update the logs array
-                let temp = "Payment approved by creditor";
-                existingLog.logs.push(temp);
+                existingLog.logs.push(logMsg);
                 await existingLog.save();
+            } else {
+                // create log
+                let log = await Logs.create({
+                    pmtHistoryId: paymentId,  // pmtHistory id
+                    logs: [logMsg]  
+                });
             }
     
         }else{
@@ -361,7 +370,7 @@ exports.uploadSupportingDocuments = async(req, res) => {
             { path: 'defaulterEntry', populate: ['invoices']},
             { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
         ]);
-      const existingLog = await Logs.findOne({ pmtHistoryId: pHistory._id });
+      let paymentId = pHistory._id.toString();
       if(req.body.type == "DEBTOR"){
         pHistory.debtorcacertificate = mongoose.Types.ObjectId(req.body.debtorcacertificate)
         pHistory.debtoradditionaldocuments = mongoose.Types.ObjectId(req.body.debtoradditionaldocuments)
@@ -371,12 +380,19 @@ exports.uploadSupportingDocuments = async(req, res) => {
         let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_DEBTOR, replacements)
         mailObj.to = pHistory.defaulterEntry.debtor.customerEmail
         mailUtility.sendMail(mailObj)
-        
+
+        let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+        let logMsg = "Debtor support document upload and confimation mail sent";
         if (existingLog) {
             // If the document exists, update the logs array
-            let temp = "Debtor support document upload and confimation mail sent";
-            existingLog.logs.push(temp);
+            existingLog.logs.push(logMsg);
             await existingLog.save();
+        } else {
+            // create log
+            let log = await Logs.create({
+                pmtHistoryId: paymentId,  // pmtHistory id
+                logs: [logMsg]  
+            });
         }
 
       }
@@ -407,22 +423,38 @@ exports.uploadSupportingDocuments = async(req, res) => {
         let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_UPLOADED_CREDITOR, replacements)
         mailObj.to = credMail
         mailUtility.sendMail(mailObj)
+
+        let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+        let logMsg = "Creditor support document upload and confimation mail sent";
         if (existingLog) {
             // If the document exists, update the logs array
-            let temp = "Creditor support document upload and confimation mail sent";
-            existingLog.logs.push(temp);
+            existingLog.logs.push(logMsg);
             await existingLog.save();
+        } else {
+            // create log
+            let log = await Logs.create({
+                pmtHistoryId: paymentId,  // pmtHistory id
+                logs: [logMsg]  
+            });
         }
 
       }
       if(!(pHistory.isDocumentsRequiredByCreditor && pHistory.isDocumentsRequiredByDebtor)){
         pHistory.status = constants.PAYMENT_HISTORY_STATUS.PENDING
         pHistory.pendingWith = "L1"
+
+        let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+        let logMsg = "Payment Record Pending with L1";
         if (existingLog) {
             // If the document exists, update the logs array
-            let temp = "Payment Record pending with L1";
-            existingLog.logs.push(temp);
+            existingLog.logs.push(logMsg);
             await existingLog.save();
+        } else {
+            // create log
+            let log = await Logs.create({
+                pmtHistoryId: paymentId,  // pmtHistory id
+                logs: [logMsg]  
+            });
         }
       }
       await pHistory.save();

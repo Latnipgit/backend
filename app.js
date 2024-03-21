@@ -91,6 +91,7 @@ require("./app/routes/admin/admin.routes")(app);
 require("./app/routes/common/mailTemplates.routes")(app);
 require("./app/routes/admin/paymentHistory.routes")(app);
 require("./app/routes/common/fileUpload.routes")(app);
+require("./app/routes/common/logs.routes")(app);
 require("./app/routes/user/defaulterEntry.routes")(app);
 
 // set port, listen for requests

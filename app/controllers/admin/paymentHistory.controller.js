@@ -55,11 +55,12 @@ exports.getAllDisputedTransactions = async(req, res) => {
 exports.approveOrRejectPayment = async(req, res) => {
     try {
         let status = null;
+        let deftE = [];
         if(req.body.payments && req.body.payments.length!==0){
             for(let i=0;i<req.body.payments.length;i++){
                 let payment = req.body.payments[i]
                 let paymentId= payment.paymentId;
-                let amtPaid = payment.amtPaid;
+                let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
 
                 if(req.body.approve == true){
                     status = constants.PAYMENT_HISTORY_STATUS.APPROVED;
@@ -72,8 +73,8 @@ exports.approveOrRejectPayment = async(req, res) => {
                         deftEntry.status=  constants.INVOICE_STATUS.PAID
                     }
                     deftEntry.save()
-
-                    let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+                    deftE.push(deftEntry);
+                    
                     let logMsg = "Payment approved for amount "+result.amtPaid+".";
                     if (existingLog) {
                         // If the document exists, update the logs array
@@ -90,11 +91,24 @@ exports.approveOrRejectPayment = async(req, res) => {
                 } else if(req.body.approve == false){
                     status = constants.PAYMENT_HISTORY_STATUS.REJECTED;
                     result = await paymentHistoryService.updatePaymentHistoryStatus({status, paymentId});
+
+                    let logMsg = "Payment Rejected";
+                    if (existingLog) {
+                        // If the document exists, update the logs array
+                        existingLog.logs.push(logMsg);
+                        await existingLog.save();
+                    } else {
+                        // create log
+                        let log = await Logs.create({
+                            pmtHistoryId: paymentId,  // pmtHistory id
+                            logs: [logMsg]  
+                        });
+                    }
                 }
             }
         }
         if(req.body.approve) {
-            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, deftEntry} });
+            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, deftE} });
         } else {
             return res.status(200).send({ message: "Payment Rejected", success: true, response: result });
         }
@@ -113,6 +127,8 @@ exports.askForSupportingDocument = async(req, res) => {
         if(req.body.payments && req.body.payments.length!==0){
             for(let i=0;i<req.body.payments.length;i++){
                 let paymentId = req.body.payments[i].paymentId
+                let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+
                 let transaction = await paymentHistoryService.moveToDocumentsNeededQueue({
                     status: constants.PAYMENT_HISTORY_STATUS.DOCUMENTS_NEEDED,
                     paymentId: paymentId,
@@ -130,19 +146,7 @@ exports.askForSupportingDocument = async(req, res) => {
                     { path: "defaulterEntry", populate: { path: "debtor", select: "customerEmail" } }
                 ]);
 
-                let existingLog = await Logs.findOne({ pmtHistoryId: req.body.paymentId });
-                let logMsg = "Payment record/history moved to documents needed queue";
-                if (existingLog) {
-                    // If the document exists, update the logs array
-                    existingLog.logs.push(logMsg);
-                    await existingLog.save();
-                } else {
-                    // create log
-                    let log = await Logs.create({
-                        pmtHistoryId: req.body.paymentId,  // pmtHistory id
-                        logs: [logMsg]  
-                    });
-                }
+                let logMsg = ["Payment record/history moved to documents needed queue"];
                 
                 // mail for debtor
                 let replacements = [];
@@ -160,20 +164,8 @@ exports.askForSupportingDocument = async(req, res) => {
 
                 mailUtility.sendEmailWithAttachments(mailObj, debtorDocumentIds);
 
-                //log mail
-                let logMsgd = "Mail sent to Debtor for providing supporting document";
-                if (existingLog) {
-                    // If the document exists, update the logs array
-                    existingLog.logs.push(logMsgd);
-                    await existingLog.save();
-                } else {
-                    // create log
-                    let log = await Logs.create({
-                        pmtHistoryId: req.body.paymentId,  // pmtHistory id
-                        logs: [logMsgd]  
-                    });
-                }
-            
+                //log mail for debtor
+                logMsg.push("Mail sent to Debtor for providing supporting document");
 
                 if(req.body.isDocumentsRequiredByCreditor){
                     let credMail = await userService.getCompanyOwner(transaction.defaulterEntry.creditorCompanyId).select("emailId");
@@ -220,19 +212,22 @@ exports.askForSupportingDocument = async(req, res) => {
 
                     mailUtility.sendEmailWithAttachments(mailObj2, credDocumentIds);
 
-                    //log mail
-                    let logMsgc = "Mail sent to Creditor for providing supporting document";
-                    if (existingLog) {
-                        // If the document exists, update the logs array
-                        existingLog.logs.push(logMsgc);
-                        await existingLog.save();
-                    } else {
-                        // create log
-                        let log = await Logs.create({
-                            pmtHistoryId: req.body.paymentId,  // pmtHistory id
-                            logs: [logMsgc]  
-                        });
-                    }
+                    //log mail for Creditor
+                    logMsg.push("Mail sent to Creditor for providing supporting document");
+                }
+
+                // logging
+                if (existingLog) {
+                    // If the document exists, update the logs array
+                    existingLog.logs.push(...logMsg);
+                    await existingLog.save();
+                } 
+                else {
+                    // create log
+                    let log = await Logs.create({
+                        pmtHistoryId: paymentId,  // pmtHistory id
+                        logs: logMsg
+                    });
                 }
         
                 return res.status(200).send({ message: "Transaction has now been moved to Document Needed Queue and mail is sent to Creditor and Debtor", success: true, response: transaction });

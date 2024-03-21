@@ -19,6 +19,7 @@ const Questions = user_db.questions;
 const Companies = user_db.companies;
 const Debtor = user_db.debtors;
 const Token = commondb.token;
+const Logs = commondb.logs;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
@@ -613,9 +614,35 @@ exports.escalateRequest = async (req, res) => {
         if (req.token.adminDetails.adminRole == "L1") {
             pendingWith = "L2";
             result = await paymentHistoryService.updatePaymentHistoryForEscalate({ pendingWith, paymentId });
+            let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+            let logMsg = "Payment Record escalated to L2";
+            if (existingLog) {
+                // If the document exists, update the logs array
+                existingLog.logs.push(logMsg);
+                await existingLog.save();
+            } else {
+                // create log
+                let log = await Logs.create({
+                    pmtHistoryId: paymentId,  // pmtHistory id
+                    logs: [logMsg]  
+                });
+            }
         } if (req.token.adminDetails.adminRole == "L2") {
-            pendingWith = "L2";
+            pendingWith = "L3";
             result = await paymentHistoryService.updatePaymentHistoryForEscalate({ pendingWith, paymentId });
+            let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
+            let logMsg = "Payment Record escalated to L3";
+            if (existingLog) {
+                // If the document exists, update the logs array
+                existingLog.logs.push(logMsg);
+                await existingLog.save();
+            } else {
+                // create log
+                let log = await Logs.create({
+                    pmtHistoryId: paymentId,  // pmtHistory id
+                    logs: [logMsg]  
+                });
+            }
         }
         return res.status(200).send({ message: "Issue Escalated", success: true, response: result });
     } catch (err) {
