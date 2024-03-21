@@ -813,7 +813,7 @@ exports.getDisputedTransactionsStateCityWise = async (req, res) => {
 exports.deleteAdmin = async (req, res) => {
     console.log('dfd', req.body.emailid);
     try {
-        await Admin.deleteOne({ emailid: req.body.emailId });
+        await Admin.deleteOne({ emailId: req.body.emailid });
         res.status(201).json({ success: true, message: "User deleted successfully." });
 
     } catch (err) {
