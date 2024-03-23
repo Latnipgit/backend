@@ -27,18 +27,24 @@ var constants = require('../../constants/userConstants');
 exports.addQuestion = async(req, res) => {
 
     try {
-        const q = await Questions.findOne({ questionDesc: req.body.questionDesc });
-        if (q) {
-            return res.status(404).send({ message: "Question already exist.", success: false });
-        }
+        let questions = [];
+        for(let i = 0; i < req.body.length; i++){
+            const q = await Questions.findOne({ questionDesc: req.body[i].questionDesc });
+            if (q) {
+                return res.status(404).send({ message: "Question already exist.", success: false });
+            }
 
-        const question = await Questions.create({
-            questionDesc: req.body.questionDesc,
-            questionType: req.body.questionType,
-            values: req.body.values
-        });
+            const question = await Questions.create({
+                questionDesc: req.body[i].questionDesc,
+                questionType: req.body[i].questionType,
+                values: req.body[i].values
+            });
+
+            questions.push(question);
+        }
         
-       res.status(200).json({success: true, message: "Question added successfully", response: question });
+        
+       res.status(200).json({success: true, message: "Questions added successfully", response: questions });
 
     } catch (err) {
         console.log(err)

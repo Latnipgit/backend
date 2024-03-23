@@ -125,6 +125,8 @@ exports.approveOrRejectPayment = async(req, res) => {
 exports.askForSupportingDocument = async(req, res) => {
     try {
         if(req.body.payments && req.body.payments.length!==0){
+            let isDocumentsRequiredByCreditor= req.body.documentsRequiredFromCreditor.length === 0 ? false : true;
+            let isDocumentsRequiredByDebtor= req.body.documentsRequiredFromDebtor.length === 0 ? false : true;
             for(let i=0;i<req.body.payments.length;i++){
                 let paymentId = req.body.payments[i].paymentId
                 let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
@@ -135,8 +137,8 @@ exports.askForSupportingDocument = async(req, res) => {
                     pendingWith: "USER",
                     documentsRequiredFromCreditor: req.body.documentsRequiredFromCreditor,
                     documentsRequiredFromDebtor: req.body.documentsRequiredFromDebtor,
-                    isDocumentsRequiredByCreditor: req.body.isDocumentsRequiredByCreditor,
-                    isDocumentsRequiredByDebtor: true,
+                    isDocumentsRequiredByCreditor: isDocumentsRequiredByCreditor,
+                    isDocumentsRequiredByDebtor: isDocumentsRequiredByDebtor,
                     adminRemarksForDebtor: req.body.adminRemarksForDebtor,
                     adminRemarksForCreditor: req.body.adminRemarksForCreditor
                 }).populate([
@@ -148,26 +150,28 @@ exports.askForSupportingDocument = async(req, res) => {
 
                 let logMsg = ["Payment record/history moved to documents needed queue"];
                 
-                // mail for debtor
-                let replacements = [];
-                let userDetailsId = await Users.findOne({"emailId": transaction.defaulterEntry.debtor.customerEmail})._id;
-                linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": userDetailsId, "type": "DEBTOR"}, "CUSTOM");
-                const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=${linkToken}&userType=DEBTOR`;
-                replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
+                if(isDocumentsRequiredByDebtor){
+                    // mail for debtor
+                    let replacements = [];
+                    let userDetailsId = await Users.findOne({"emailId": transaction.defaulterEntry.debtor.customerEmail})._id;
+                    linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": userDetailsId, "type": "DEBTOR"}, "CUSTOM");
+                    const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=${linkToken}&userType=DEBTOR`;
+                    replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
-                let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
-                mailObj.to = transaction.defaulterEntry.debtor.customerEmail
+                    let mailObj = await mailController.getMailTemplate(constants.MAIL_TEMPLATES.SUPPORTING_DOCUMENTS_NEEDED_DEBTOR, replacements)
+                    mailObj.to = transaction.defaulterEntry.debtor.customerEmail
 
-                let debtorDocumentIds = []
-                debtorDocumentIds.push(transaction.debtorcacertificate);
-                debtorDocumentIds.push(...transaction.debtoradditionaldocuments);
+                    let debtorDocumentIds = []
+                    debtorDocumentIds.push(transaction.debtorcacertificate);
+                    debtorDocumentIds.push(...transaction.debtoradditionaldocuments);
 
-                mailUtility.sendEmailWithAttachments(mailObj, debtorDocumentIds);
+                    mailUtility.sendEmailWithAttachments(mailObj, debtorDocumentIds);
 
-                //log mail for debtor
-                logMsg.push("Mail sent to Debtor for providing supporting document");
+                    //log mail for debtor
+                    logMsg.push("Mail sent to Debtor for providing supporting document");
+                }
 
-                if(req.body.isDocumentsRequiredByCreditor){
+                if(isDocumentsRequiredByCreditor){
                     let credMail = await userService.getCompanyOwner(transaction.defaulterEntry.creditorCompanyId).select("emailId");
 
                     // mail for creditor
