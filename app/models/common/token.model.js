@@ -1,7 +1,8 @@
 module.exports = mongoose => {
   var schema = mongoose.Schema(
     {
-      userId: String,
+      paymentId: String,
+      userType: String,
       token: String,
       createdAt: {
         type: Date,

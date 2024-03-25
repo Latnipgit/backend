@@ -5,6 +5,7 @@ const Logs = commondb.logs;
 const mongoose = require('mongoose');
 const uService = require("../../service/user/");
 const userService = uService.user;
+const commonService = require("../../service/common");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const jwtUtil = require('../../util/jwtUtil')
@@ -372,6 +373,15 @@ exports.uploadSupportingDocuments = async(req, res) => {
         ]);
       let paymentId = pHistory._id.toString();
       if(req.body.type == "DEBTOR"){
+
+        if(req.body.token){
+          let token =  jwtUtil.verifyCustomToken(req.body.token)
+          let dbToken = await commonService.tokenService.getTokenByPaymentIdAndUser({"paymentId": token.tokenDetails.paymentId, "userType": "DEBTOR"});
+          if(!dbToken){
+            return res.status(403).json({message: 'Token not Found.', success: false, response: ""});
+          }
+        }
+
         pHistory.debtorcacertificate = mongoose.Types.ObjectId(req.body.debtorcacertificate)
         pHistory.debtoradditionaldocuments = mongoose.Types.ObjectId(req.body.debtoradditionaldocuments)
         pHistory.isDocumentsRequiredByDebtor = false
@@ -394,9 +404,21 @@ exports.uploadSupportingDocuments = async(req, res) => {
                 logs: [logMsg]  
             });
         }
-
+        if(req.body.token){
+          let token =  jwtUtil.verifyCustomToken(req.body.token)
+          await commonService.tokenService.deleteTokenFromDb({"paymentId": token.tokenDetails.paymentId, "userType": "DEBTOR"});
+        }
       }
       else if(req.body.type == "CREDITOR"){
+
+        if(req.body.token){
+          let token =  jwtUtil.verifyCustomToken(req.body.token)
+          let dbToken = await commonService.tokenService.getTokenByPaymentIdAndUser({"paymentId": token.tokenDetails.paymentId, "userType": "CREDITOR"});
+          if(!dbToken){
+            return res.status(403).json({message: 'Token not Found.', success: false, response: ""});
+          }
+        }
+
         pHistory.creditorcacertificate =  mongoose.Types.ObjectId(req.body.creditorcacertificate)
         pHistory.creditoradditionaldocuments = mongoose.Types.ObjectId(req.body.creditoradditionaldocuments)
         
@@ -437,7 +459,10 @@ exports.uploadSupportingDocuments = async(req, res) => {
                 logs: [logMsg]  
             });
         }
-
+        if(req.body.token){
+          let token =  jwtUtil.verifyCustomToken(req.body.token)
+          await commonService.tokenService.deleteTokenFromDb({"paymentId": token.tokenDetails.paymentId, "userType": "CREDITOR"});
+        }
       }
       if(!(pHistory.isDocumentsRequiredByCreditor && pHistory.isDocumentsRequiredByDebtor)){
         pHistory.status = constants.PAYMENT_HISTORY_STATUS.PENDING

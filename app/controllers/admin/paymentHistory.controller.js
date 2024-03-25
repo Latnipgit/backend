@@ -11,6 +11,7 @@ const DefaulterEntry = user_db.defaulterEntry;
 const constants = require('../../constants/userConstants');
 const service = require("../../service/admin/");
 const userService = require("../../service/user/user.service");
+const commonService = require("../../service/common");
 const paymentHistoryService = service.paymentHistoryService
 const mailController=  require('../../controllers/common/mailTemplates.controller')
 const mailUtility = require('../../util/mailUtility')
@@ -155,6 +156,7 @@ exports.askForSupportingDocument = async(req, res) => {
                     let replacements = [];
                     let userDetailsId = await Users.findOne({"emailId": transaction.defaulterEntry.debtor.customerEmail})._id;
                     linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": userDetailsId, "type": "DEBTOR"}, "CUSTOM");
+                    commonService.tokenService.saveTokenToDb({"paymentId":paymentId, "userType": "DEBTOR", "linkToken":linkToken});
                     const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=${linkToken}&userType=DEBTOR`;
                     replacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
@@ -178,6 +180,7 @@ exports.askForSupportingDocument = async(req, res) => {
                     let creditorReplacements = [];
                     let credUserDetailsId = await Users.findOne({"emailId": credMail})._id;
                     linkToken = jwtUtil.generateCustomToken({"paymentId": transaction.id, "userId": credUserDetailsId, "type": "CREDITOR"}, "CUSTOM");
+                    commonService.tokenService.saveTokenToDb({"paymentId":paymentId, "userType": "CREDITOR", "linkToken":linkToken});
                     const link = `${process.env.USER_FRONTEND_BASE_URL}/upload-supporting-document-direct?token=${linkToken}&userType=CREDITOR`;
                     creditorReplacements.push({target: "UPLOAD_SUPPORTING_DOCUMENTS_LINK", value: link })
 
