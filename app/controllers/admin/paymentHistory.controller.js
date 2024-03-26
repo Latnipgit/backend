@@ -63,7 +63,7 @@ exports.approveOrRejectPayment = async(req, res) => {
                 let paymentId= payment.paymentId;
                 let existingLog = await Logs.findOne({ pmtHistoryId: paymentId });
 
-                if(req.body.approve == true){
+                if(req.body.status == "APPROVED"){
                     status = constants.PAYMENT_HISTORY_STATUS.APPROVED;
                     result = await paymentHistoryService.updatePaymentHistoryStatus({status, paymentId});
                     let deftEntry = await DefaulterEntry.findById(result.defaulterEntryId);
@@ -88,8 +88,10 @@ exports.approveOrRejectPayment = async(req, res) => {
                             logs: [logMsg]  
                         });
                     }
+
+                    return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, deftE} });
                             
-                } else if(req.body.approve == false){
+                } else if(req.body.status == "REJECTED"){
                     status = constants.PAYMENT_HISTORY_STATUS.REJECTED;
                     result = await paymentHistoryService.updatePaymentHistoryStatus({status, paymentId});
 
@@ -105,15 +107,33 @@ exports.approveOrRejectPayment = async(req, res) => {
                             logs: [logMsg]  
                         });
                     }
+
+                    return res.status(200).send({ message: "Payment Rejected", success: true, response: result });
+
+                } else {
+                    status = req.body.status;
+                    result = await paymentHistoryService.updatePaymentHistoryStatus({status, paymentId});
+
+                    let logMsg = "Payment status changed to "+(req.body.status);
+                    if (existingLog) {
+                        // If the document exists, update the logs array
+                        existingLog.logs.push(logMsg);
+                        await existingLog.save();
+                    } else {
+                        // create log
+                        let log = await Logs.create({
+                            pmtHistoryId: paymentId,  // pmtHistory id
+                            logs: [logMsg]  
+                        });
+                    }
+
+                    return res.status(200).send({ message: "Payment Status changed", success: true, response: result });
+
                 }
+
             }
         }
-        if(req.body.approve) {
-            return res.status(200).send({ message: "Payment Approved!", success: true, response: {result, deftE} });
-        } else {
-            return res.status(200).send({ message: "Payment Rejected", success: true, response: result });
-        }
-        // return res.status(409).send({ message: "Not Implemented", success: true, response: result });
+        
     } catch (err) {
         console.log(err)
         res
