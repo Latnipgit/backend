@@ -4,7 +4,6 @@ module.exports = app => {
     const router = require("express").Router();
     const auth = require("../../middleware/authentication.js");
 
-    router.post("/addQuestion", auth, questions.addQuestion);
     router.get("/getQuestionById", auth, questions.getQuestionById);
     router.get("/getAllQuestions", auth, questions.getAllQuestions);
 

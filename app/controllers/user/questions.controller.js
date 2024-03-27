@@ -24,36 +24,6 @@ const debtorService = service.debtor;
 var constants = require('../../constants/userConstants');
 
 
-exports.addQuestion = async(req, res) => {
-
-    try {
-        let questions = [];
-        for(let i = 0; i < req.body.length; i++){
-            const q = await Questions.findOne({ questionDesc: req.body[i].questionDesc });
-            if (q) {
-                return res.status(404).send({ message: "Question already exist.", success: false });
-            }
-
-            const question = await Questions.create({
-                questionDesc: req.body[i].questionDesc,
-                questionType: req.body[i].questionType,
-                values: req.body[i].values
-            });
-
-            questions.push(question);
-        }
-        
-        
-       res.status(200).json({success: true, message: "Questions added successfully", response: questions });
-
-    } catch (err) {
-        console.log(err)
-        res
-            .status(500)
-              .send({ message: "Something went wrong", success: false });
-    }
-};
-
 exports.getQuestionById = async(req, res) => {
 
     try {

@@ -14,7 +14,10 @@ module.exports = app => {
     router.post("/getalltransactionsMerged", auth, admin.getalltransactionsMerged);
     router.get("/getAllUsers", auth, admin.getAllUsers);
     router.post("/escalateRequest", auth, admin.escalateRequest);
+
     router.post("/removeQuestionById", auth, admin.removeQuestion);
+    router.post("/addQuestion", auth, admin.addQuestion);
+
     router.get("/companiesFilter", auth, admin.companiesFilter);
     router.get("/getAllCompanies", auth, admin.getAllCompanies);
     router.post("/getCompanyCountStateWise", auth, admin.getCompanyCountStateWise);
