@@ -231,9 +231,12 @@ exports.forgetPassword = async (req, res) => {
         if (error) return res.status(400).send(error.details[0].message);
 
         const user = await User.findOne({ emailId: req.body.emailId });
-        if (!user)
+        if (!user){
             return res.status(400).send({ message: "user with given email doesn't exist.", success: false });
-
+        } else if(user.isActiveAccount && user.isActiveAccount == "INACTIVE"){
+                res.status(200).send({ message: "User is Inactive", success: false });
+        }
+        
         let token = await Token.findOne({ userId: user._id });
         if (!token) {
             token = await new Token({
@@ -319,6 +322,8 @@ exports.authenticateUser = async (req, res) => {
         const user = await User.findOne({ userName: req.body.userName });
         if (!user) {
             res.status(200).send({ message: "User not found, Please signup", success: false });
+        } else if(user.isActiveAccount && user.isActiveAccount == "INACTIVE"){
+            res.status(200).send({ message: "User is Inactive", success: false });
         } else if (user && (await bcrypt.compare(req.body.password, user.password))) {
             // Create token
             if (!user.passwordChangeNeeded) {

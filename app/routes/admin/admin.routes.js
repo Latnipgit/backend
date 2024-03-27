@@ -43,6 +43,7 @@ module.exports = app => {
     router.post("/changePasswordUsingOldPass", auth, admin.changePasswordUsingOldPass);
     router.post("/forgetPassword", admin.forgetPassword);
     router.post("/password-reset/:userId/:token", admin.forgetPasswordLink);
+    router.post("/activateDeactivateUser", admin.activateDeactivateUser);
 
     router.post("/delete", admin.deleteAdmin);
 

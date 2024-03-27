@@ -851,19 +851,38 @@ exports.deleteAdmin = async (req, res) => {
     }
 };
 
-// exports.getDefaulterCountForSelectedCompanies = async(req, res) => {
-//     try {
-//         let defEntCnt = []
-//         for(let i = 0; i < req.body.length; i++){
-//             await defaulterEntryService.getDefaulterCountForSelectedCompany(req.body[i].gstin)
-//         }
+exports.activateDeactivateUser = async(req, res) => {
+    try {
 
-//         res.status(200).json({success: true, message: "Count Retrieved", response: defEntCnt});
+        let user = await User.findOne({_id: req.body.userId});
+        if(req.body.userActivateFlag == "ACTIVE"){
 
-//     } catch (err) {
-//         console.log(err)
-//         res
-//             .status(500)
-//               .send({ message: "Something went wrong", success: false });
-//     }
-// }
+            if(user.isActiveAccount && user.isActiveAccount=="ACTIVE"){  // already active
+                res.status(200).json({success: true, message: "User is already active.", response: ""});
+            }else{              // user.isActiveAccount && user.isActiveAccount=="INACTIVE" or just not exist
+                user.isActiveAccount = "ACTIVE";
+                user.save();
+                res.status(200).json({success: true, message: "User Activated", response: user});
+            }   
+            
+        }else if(req.body.userActivateFlag == "INACTIVE"){
+
+            if(user.isActiveAccount && user.isActiveAccount=="INACTIVE"){  // already Inactive
+                res.status(200).json({success: true, message: "User is already Inactive.", response: ""});
+            }else{              // user.isActiveAccount && user.isActiveAccount=="ACTIVE" or just not exist
+                user.isActiveAccount = "INACTIVE";
+                user.save();
+                res.status(200).json({success: true, message: "User De-activated", response: user});
+            } 
+
+        }else{
+            res.status(403).json({message: 'User not Found to activate or deactivate.', success: false, response: ""});
+        }
+
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+              .send({ message: "Something went wrong", success: false });
+    }
+}

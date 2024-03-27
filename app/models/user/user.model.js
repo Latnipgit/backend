@@ -13,6 +13,7 @@ module.exports = mongoose => {
         status: Boolean,
         city: String,
         state: String,
+        isActiveAccount: String,
         token: { type: String },
         refreshToken: { type: String },
         permissions: [{ type: String}],
